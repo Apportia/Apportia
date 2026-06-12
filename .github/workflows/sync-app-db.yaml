@@ -1,0 +1,175 @@
+name: Sync App DB
+
+on:
+  schedule:
+    - cron: '0 */8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install p7zip
+        run: sudo apt-get install -y p7zip-full
+
+      - name: Download update archive
+        id: download
+        run: |
+          URL="https://portableapps.com/updater/update.php"
+          UA="Wget/1.21.4"
+
+          wget --server-response -q -U "$UA" --content-disposition -O /dev/null "$URL" 2>&1 \
+            | grep -i 'content-disposition' \
+            | grep -o 'filename=[^ ]*' \
+            | cut -d= -f2 | tr -d '"\r' > /tmp/archive_name.txt
+
+          ARCHIVE=$(cat /tmp/archive_name.txt)
+          [ -z "$ARCHIVE" ] && ARCHIVE="update.7z"
+
+          wget -q -U "$UA" -O "$ARCHIVE" "$URL"
+
+          if ! file "$ARCHIVE" | grep -q '7-zip'; then
+            echo "Downloaded file is not a valid 7z archive."
+            exit 1
+          fi
+
+          echo "archive=$ARCHIVE" >> "$GITHUB_OUTPUT"
+
+      - name: Extract INI file
+        id: extract
+        run: |
+          TMPDIR=$(mktemp -d)
+          7z e "${{ steps.download.outputs.archive }}" -o"$TMPDIR" -y
+
+          INI_PATH=$(find "$TMPDIR" -maxdepth 2 -name "*.ini" | head -n 1)
+
+          if [ -z "$INI_PATH" ]; then
+            echo "No INI file found in archive."
+            exit 1
+          fi
+
+          echo "ini=$INI_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Process INI file
+        run: |
+          NEW="${{ steps.extract.outputs.ini }}"
+          PROCESSED="/tmp/app_database_processed.ini"
+
+          python3 - "$NEW" "$PROCESSED" <<'PYEOF'
+          import sys, re, urllib.parse
+
+          SKIP_SECTIONS_PREFIX = "PortableApps.com"
+          SKIP_SECTIONS = {"PrivateBrowsingByPortableApps"}
+          SKIP_KEYS = {"compatibility", "pacinstaller"}
+
+          src, dst = sys.argv[1], sys.argv[2]
+
+          with open(src, encoding="utf-8", errors="replace") as f:
+              raw = f.read()
+
+          # Normalise line endings to LF
+          raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+
+          sections = []
+          current_header = None
+          current_keys = []
+          skip = False
+          seen_regular = False
+
+          for line in raw.split("\n"):
+              stripped = line.strip()
+
+              # Drop all comments
+              if stripped.startswith(";") or stripped.startswith("#"):
+                  continue
+
+              # Section header
+              if stripped.startswith("[") and stripped.endswith("]"):
+                  if current_header is not None and not skip:
+                      sections.append((current_header, current_keys))
+                  current_header = stripped
+                  current_keys = []
+                  section_name = stripped[1:-1]
+                  is_prefix = section_name.startswith(SKIP_SECTIONS_PREFIX)
+                  skip = (is_prefix and not seen_regular) or section_name in SKIP_SECTIONS
+                  if not is_prefix and section_name not in SKIP_SECTIONS:
+                      seen_regular = True
+                  continue
+
+              if skip or current_header is None:
+                  continue
+
+              # Skip unwanted keys / rewrite download paths
+              sep = stripped.find("=")
+              if sep > 0:
+                  key = stripped[:sep].strip().lower()
+                  if key in SKIP_KEYS:
+                      continue
+                  if key == "downloadpath":
+                      val = stripped[sep + 1:].strip()
+                      if "/redirect/" in val:
+                          params = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(val).query))
+                          d = params.get("d", "")
+                          t = params.get("t", "")
+                          p = params.get("p", "")
+                          section_name = current_header[1:-1]
+                          if d == "sfpa":
+                              line = "DownloadPath=https://downloads.sourceforge.net/portableapps"
+                          elif d == "pa":
+                              line = f"DownloadPath=http://downloads.portableapps.com/portableapps/{section_name}"
+
+              # Only include non-blank key lines (no blank lines within a section)
+              if stripped:
+                  current_keys.append(line.rstrip())
+
+          if current_header is not None and not skip:
+              sections.append((current_header, current_keys))
+
+          out = []
+          for header, keys in sections:
+              out.append(header)
+              out.extend(keys)
+              out.append("")  # one blank line between sections
+
+          result = "\n".join(out).strip() + "\n"
+
+          with open(dst, "w", encoding="utf-8", newline="\n") as f:
+              f.write(result)
+          PYEOF
+
+          echo "processed=$PROCESSED" >> "$GITHUB_OUTPUT"
+        id: process
+
+      - name: Update app_database.ini if changed
+        id: changed
+        run: |
+          NEW="${{ steps.process.outputs.processed }}"
+          TARGET="data/app_database.ini"
+
+          mkdir -p "$(dirname "$TARGET")"
+
+          if [ -f "$TARGET" ] && diff -q "$NEW" "$TARGET" > /dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            cp "$NEW" "$TARGET"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/app_database.ini
+          git commit -m "chore: update app_database.ini"
+          for i in 1 2 3; do
+            git push && break
+            git pull --rebase
+          done

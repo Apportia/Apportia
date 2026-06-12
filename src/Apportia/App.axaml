@@ -1,0 +1,45 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Apportia.App"
+             RequestedThemeVariant="Default">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="AppWindowBrush" Color="#f5f5f7" />
+                    <SolidColorBrush x:Key="AppCategoryBrush" Color="#e4e4ea" />
+                    <SolidColorBrush x:Key="AppColHeaderBrush" Color="#dadadf" />
+                    <SolidColorBrush x:Key="AppSeparatorBrush" Color="#ccccd4" />
+                    <SolidColorBrush x:Key="AppHoverBrush" Color="#e2eaf8" />
+                    <SolidColorBrush x:Key="AppTextBrush" Color="#111111" />
+                    <SolidColorBrush x:Key="AppSubTextBrush" Color="#444458" />
+                    <SolidColorBrush x:Key="AppInstalledBrush" Color="#c8eac8" />
+                    <SolidColorBrush x:Key="AppUpdateBrush" Color="#f5e0a0" />
+                    <SolidColorBrush x:Key="AppQueuedBrush" Color="#b8d4f0" />
+                    <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#f5c842" />
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AppWindowBrush" Color="#1e1e1e" />
+                    <SolidColorBrush x:Key="AppCategoryBrush" Color="#2c2c2c" />
+                    <SolidColorBrush x:Key="AppColHeaderBrush" Color="#272727" />
+                    <SolidColorBrush x:Key="AppSeparatorBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="AppHoverBrush" Color="#2a2a2a" />
+                    <SolidColorBrush x:Key="AppTextBrush" Color="#dcdcdc" />
+                    <SolidColorBrush x:Key="AppSubTextBrush" Color="#888888" />
+                    <SolidColorBrush x:Key="AppInstalledBrush" Color="#1a3a1a" />
+                    <SolidColorBrush x:Key="AppUpdateBrush" Color="#3a2e00" />
+                    <SolidColorBrush x:Key="AppQueuedBrush" Color="#1a3050" />
+                    <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#7a5c00" />
+                </ResourceDictionary>
+
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

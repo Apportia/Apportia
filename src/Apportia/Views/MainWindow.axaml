@@ -1,0 +1,650 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Apportia.ViewModels"
+        xmlns:conv="using:Avalonia.Data.Converters"
+        x:Class="Apportia.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Apportia"
+        Icon="avares://Apportia/Assets/ProgramIcon.ico"
+        Width="1024"
+        Height="720"
+        MinWidth="840"
+        MinHeight="400"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <Window.Styles>
+        <Style Selector="Border.categoryHeader">
+            <Setter Property="Background" Value="{DynamicResource AppCategoryBrush}" />
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="Margin" Value="0,8,0,0" />
+            <Setter Property="CornerRadius" Value="4,4,0,0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Border.categoryHeader TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+        </Style>
+        <Style Selector="Border.subCategoryHeader">
+            <Setter Property="Background" Value="{DynamicResource AppCategoryBrush}" />
+            <Setter Property="Opacity" Value="0.75" />
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Margin" Value="8,4,0,0" />
+            <Setter Property="CornerRadius" Value="4,4,0,0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Border.subCategoryHeader TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+        </Style>
+        <Style Selector="Border.columnHeader">
+            <Setter Property="Background" Value="{DynamicResource AppColHeaderBrush}" />
+            <Setter Property="Padding" Value="0,3" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppSeparatorBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+        <Style Selector="Border.columnHeader TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.appRow">
+            <Setter Property="Padding" Value="0,2" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppSeparatorBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+        <Style Selector="Border.appRow.indentedRow">
+            <Setter Property="Margin" Value="16,0,0,0" />
+        </Style>
+        <Style Selector="Border.appRow.installedRow">
+            <Setter Property="Background" Value="{DynamicResource AppInstalledBrush}" />
+        </Style>
+        <Style Selector="Border.appRow.updateRow">
+            <Setter Property="Background" Value="{DynamicResource AppUpdateBrush}" />
+        </Style>
+        <Style Selector="Border.appRow.queuedRow">
+            <Setter Property="Background" Value="{DynamicResource AppQueuedBrush}" />
+        </Style>
+        <Style Selector="Border.appRow.activeInstallRow">
+            <Setter Property="Background" Value="{DynamicResource AppActiveInstallBrush}" />
+        </Style>
+        <Style Selector="Border.appRow.launchingRow">
+            <Style.Animations>
+                <Animation Duration="0:0:0.7" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Opacity" Value="0.4" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1.0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.appRow:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AppHoverBrush}" />
+        </Style>
+        <Style Selector="Border.appRow TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+        </Style>
+        <Style Selector="Thumb.colResizer">
+            <Setter Property="Width" Value="5" />
+            <Setter Property="Cursor" Value="SizeWestEast" />
+            <Setter Property="Template">
+                <ControlTemplate TargetType="Thumb">
+                    <Border Background="Transparent" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Thumb.colResizer:pointerover">
+            <Setter Property="Template">
+                <ControlTemplate TargetType="Thumb">
+                    <Border Background="{DynamicResource AppSeparatorBrush}" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <Border DockPanel.Dock="Top" Padding="8,6">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            Spacing="12"
+                            VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Button x:Name="IconSizeButton"
+                                VerticalAlignment="Center"
+                                Padding="6,3"
+                                FontSize="11"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Opacity="0.6"
+                                Click="OnIconSizeCycle" />
+                        <Button x:Name="ViewModeButton"
+                                VerticalAlignment="Center"
+                                Padding="6,3"
+                                FontSize="11"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Opacity="0.6"
+                                Click="OnViewModeToggle" />
+                        <Button x:Name="FontSizeButton"
+                                VerticalAlignment="Center"
+                                Padding="6,3"
+                                FontSize="11"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Opacity="0.6"
+                                Click="OnFontSizeCycle" />
+                        <Button x:Name="CategoryScopeButton"
+                                VerticalAlignment="Center"
+                                Padding="6,3"
+                                FontSize="11"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Opacity="0.6"
+                                Click="OnCategoryScopeCycle" />
+                        <Button x:Name="CategoryDisplayButton"
+                                VerticalAlignment="Center"
+                                Padding="6,3"
+                                FontSize="11"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Opacity="0.6"
+                                Click="OnCategoryDisplayCycle" />
+                        <Button x:Name="InstallFilterButton"
+                                VerticalAlignment="Center"
+                                Padding="6,3"
+                                FontSize="11"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Opacity="0.6"
+                                Click="OnInstallFilterCycle" />
+                    </StackPanel>
+                </StackPanel>
+                <AutoCompleteBox x:Name="SearchBox"
+                                 Grid.Column="1"
+                                 HorizontalAlignment="Center"
+                                 MinWidth="280"
+                                 MaxWidth="480"
+                                 PlaceholderText="{Binding SearchPlaceholder}"
+                                 FilterMode="ContainsOrdinal"
+                                 ItemsSource="{Binding AppNames}"
+                                 DropDownClosed="OnSearchDropDownClosed"
+                                 KeyDown="OnSearchKeyDown" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button x:Name="UpdateButton"
+                            IsVisible="False"
+                            Click="OnUpdateApp" />
+                    <Button Content="Import App" Click="OnImportApp" />
+                    <Button x:Name="ThemeToggleButton"
+                            VerticalAlignment="Center"
+                            Padding="6,3"
+                            FontSize="15"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Opacity="0.6"
+                            Click="OnThemeToggle" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border x:Name="DownloadBar"
+                DockPanel.Dock="Bottom"
+                IsVisible="False"
+                Background="{DynamicResource AppColHeaderBrush}"
+                BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="10,6">
+            <Grid ColumnDefinitions="*,Auto,120">
+                <ProgressBar x:Name="DownloadProgressBar"
+                             Grid.Column="0"
+                             Minimum="0" Maximum="100"
+                             Height="6"
+                             VerticalAlignment="Center" />
+                <TextBlock x:Name="DownloadSizeText"
+                           Grid.Column="1"
+                           Margin="10,0"
+                           VerticalAlignment="Center"
+                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
+                           FontSize="12"
+                           Foreground="{DynamicResource AppSubTextBrush}" />
+                <TextBlock x:Name="DownloadSpeedText"
+                           Grid.Column="2"
+                           TextAlignment="Right"
+                           VerticalAlignment="Center"
+                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
+                           FontSize="12"
+                           Foreground="{DynamicResource AppSubTextBrush}" />
+            </Grid>
+        </Border>
+
+        <Grid RowDefinitions="Auto,*">
+
+            <!-- Fixed column header (detail mode only) -->
+            <Border Grid.Row="0" Classes="columnHeader" Margin="8,0"
+                    IsVisible="{Binding !Columns.IsGridView}">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Width="36" Text="" />
+
+                    <TextBlock DockPanel.Dock="Left" Width="{Binding Columns.Name}"
+                               Text="{Binding Columns.NameHeader}"
+                               Margin="4,0,0,0" Cursor="Hand"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="Name" Tapped="OnColumnHeaderTapped" />
+                    <Thumb Classes="colResizer" DockPanel.Dock="Left"
+                           Tag="Name" DragDelta="OnColumnResize" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           IsVisible="{Binding Columns.ShowUsedColumn}"
+                           Tag="Used" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Used}"
+                               IsVisible="{Binding Columns.ShowUsedColumn}"
+                               Text="{Binding Columns.UsedHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="Used" Tapped="OnColumnHeaderTapped" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           IsVisible="{Binding Columns.ShowMetaColumns}"
+                           Tag="Install" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Install}"
+                               IsVisible="{Binding Columns.ShowMetaColumns}"
+                               Text="{Binding Columns.InstallHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="Install" Tapped="OnColumnHeaderTapped" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           IsVisible="{Binding Columns.ShowMetaColumns}"
+                           Tag="Download" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Download}"
+                               IsVisible="{Binding Columns.ShowMetaColumns}"
+                               Text="{Binding Columns.DownloadHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="Download" Tapped="OnColumnHeaderTapped" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           Tag="Version" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Version}"
+                               Text="{Binding Columns.VersionHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="Version" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           Tag="Updated" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Updated}"
+                               Text="{Binding Columns.UpdatedHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="Updated" Tapped="OnColumnHeaderTapped" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           IsVisible="{Binding Columns.ShowCurrentColumn}"
+                           Tag="Current" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Current}"
+                               IsVisible="{Binding Columns.ShowCurrentColumn}"
+                               Text="{Binding Columns.CurrentHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0"
+                               FontSize="{Binding Columns.FontSizeSub}" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           IsVisible="{Binding Columns.ShowReleasedColumn}"
+                           Tag="Released" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Released}"
+                               IsVisible="{Binding Columns.ShowReleasedColumn}"
+                               Text="{Binding Columns.ReleasedHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="Released" Tapped="OnColumnHeaderTapped" />
+
+                    <TextBlock Text="Description" Margin="4,0,0,0"
+                               FontSize="{Binding Columns.FontSizeSub}" />
+                </DockPanel>
+            </Border>
+
+            <!-- Scrollable content + sticky header overlay -->
+            <Grid Grid.Row="1">
+                <ScrollViewer x:Name="MainScroller"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+
+                        <!-- Detail list -->
+                        <ItemsControl x:Name="MainList" ItemsSource="{Binding FlatRows}" Margin="8,0,8,8"
+                                      IsVisible="{Binding !Columns.IsGridView}">
+                            <ItemsControl.DataTemplates>
+
+                                <!-- Subcategory header with expand/collapse toggle -->
+                                <DataTemplate x:DataType="vm:SubCategoryNode">
+                                    <Border Classes="subCategoryHeader"
+                                            Tapped="OnSubCategoryHeaderTapped">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▼"
+                                                       IsVisible="{Binding IsExpanded}"
+                                                       FontSize="9"
+                                                       Opacity="0.6"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,0,0" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▶"
+                                                       IsVisible="{Binding !IsExpanded}"
+                                                       FontSize="9"
+                                                       Opacity="0.6"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,0,0" />
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="{Binding Columns.FontSizeSub}" />
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+
+                                <!-- Category header with expand/collapse toggle -->
+                                <DataTemplate x:DataType="vm:CategoryNode">
+                                    <Border Classes="categoryHeader"
+                                            IsVisible="{Binding HasCategory}"
+                                            Tapped="OnCategoryHeaderTapped">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▼"
+                                                       IsVisible="{Binding IsExpanded}"
+                                                       FontSize="10"
+                                                       Opacity="0.6"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,0,0" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▶"
+                                                       IsVisible="{Binding !IsExpanded}"
+                                                       FontSize="10"
+                                                       Opacity="0.6"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,0,0" />
+                                            <TextBlock Text="{Binding Category}"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+
+                                <!-- App row -->
+                                <DataTemplate x:DataType="vm:AppNode">
+                                    <Border Classes="appRow"
+                                            Classes.installedRow="{Binding IsHighlighted}"
+                                            Classes.updateRow="{Binding NeedsUpdate}"
+                                            Classes.queuedRow="{Binding IsQueued}"
+                                            Classes.activeInstallRow="{Binding IsBeingInstalled}"
+                                            Classes.launchingRow="{Binding IsLaunching}"
+                                            Classes.indentedRow="{Binding IsIndented}"
+                                            PointerPressed="OnAppRowPointerPressed"
+                                            Tapped="OnAppRowTapped">
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Cancel Installation"
+                                                          IsVisible="{Binding ShowCancelInstall}"
+                                                          Click="OnMenuCancelInstall" />
+                                                <MenuItem Header="Add to Install / Update Queue"
+                                                          IsVisible="{Binding ShowAddToQueue}"
+                                                          Click="OnMenuAddToQueue" />
+                                                <MenuItem Header="Remove from Queue"
+                                                          IsVisible="{Binding ShowRemoveFromQueue}"
+                                                          Click="OnMenuRemoveFromQueue" />
+                                                <MenuItem Header="Install" IsVisible="{Binding ShowInstallActions}"
+                                                          Click="OnMenuInstall" />
+                                                <MenuItem Header="Install &amp; Run"
+                                                          IsVisible="{Binding ShowInstallActions}"
+                                                          Click="OnMenuInstallRun" />
+                                                <MenuItem Header="Update" IsVisible="{Binding ShowUpdateActions}"
+                                                          Click="OnMenuUpdate" />
+                                                <MenuItem Header="Update &amp; Run"
+                                                          IsVisible="{Binding ShowUpdateActions}"
+                                                          Click="OnMenuUpdateRun" />
+                                                <MenuItem Header="Run" IsVisible="{Binding ShowRunActions}"
+                                                          Click="OnMenuRun" />
+                                                <MenuItem Header="Run with Parameters..."
+                                                          IsVisible="{Binding ShowRunActions}"
+                                                          Click="OnMenuRunWithArgs" />
+                                                <MenuItem Header="Run as Administrator" Click="OnMenuRunAsAdmin">
+                                                    <MenuItem.IsVisible>
+                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
+                                                            <Binding Path="ShowRunActions" />
+                                                            <Binding Path="IsWindows" />
+                                                        </MultiBinding>
+                                                    </MenuItem.IsVisible>
+                                                </MenuItem>
+                                                <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
+                                                          Click="OnMenuOpenFolder" />
+                                                <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
+                                                          Click="OnMenuUninstall" />
+                                                <Separator />
+                                                <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
+                                                          Click="OnMenuSettings" />
+                                                <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
+                                                          Click="OnMenuVisitWebsite" />
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <DockPanel LastChildFill="True">
+                                            <Image DockPanel.Dock="Left"
+                                                   Source="{Binding Icon}"
+                                                   Width="{Binding Columns.IconSize}"
+                                                   Height="{Binding Columns.IconSize}"
+                                                   Margin="4,0,4,0"
+                                                   VerticalAlignment="Center"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                            <TextBlock DockPanel.Dock="Left"
+                                                       Width="{Binding Columns.Name}"
+                                                       Text="{Binding Name}"
+                                                       Margin="0,0,8,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       ToolTip.Tip="{Binding Name}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Used}"
+                                                       IsVisible="{Binding Columns.ShowUsedColumn}"
+                                                       Text="{Binding UsedSize}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Install}"
+                                                       IsVisible="{Binding Columns.ShowMetaColumns}"
+                                                       Text="{Binding InstallSize}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Download}"
+                                                       IsVisible="{Binding Columns.ShowMetaColumns}"
+                                                       Text="{Binding DownloadSize}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Version}"
+                                                       Text="{Binding PackageVersion}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Updated}"
+                                                       Text="{Binding UpdateDate}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Current}"
+                                                       IsVisible="{Binding Columns.ShowCurrentColumn}"
+                                                       Text="{Binding CurrentDate}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Released}"
+                                                       IsVisible="{Binding Columns.ShowReleasedColumn}"
+                                                       Text="{Binding ReleaseDate}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock Text="{Binding Description}" Margin="4,0,0,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       ToolTip.Tip="{Binding Description}" />
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+
+                            </ItemsControl.DataTemplates>
+                        </ItemsControl>
+
+                        <!-- Grid / tile view -->
+                        <ItemsControl x:Name="MainGridList" ItemsSource="{Binding FlatRows}" Margin="8,0,8,8"
+                                      IsVisible="{Binding Columns.IsGridView}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.DataTemplates>
+
+                                <DataTemplate x:DataType="vm:SubCategoryNode">
+                                    <Border Classes="subCategoryHeader"
+                                            Margin="0,4,0,0"
+                                            Width="{Binding $parent[ItemsControl].Bounds.Width}"
+                                            Tapped="OnSubCategoryHeaderTapped">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▼" IsVisible="{Binding IsExpanded}"
+                                                       FontSize="9" Opacity="0.6"
+                                                       VerticalAlignment="Center" Margin="4,0,0,0" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▶" IsVisible="{Binding !IsExpanded}"
+                                                       FontSize="9" Opacity="0.6"
+                                                       VerticalAlignment="Center" Margin="4,0,0,0" />
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="{Binding Columns.FontSizeSub}" />
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+
+                                <DataTemplate x:DataType="vm:CategoryNode">
+                                    <Border Classes="categoryHeader"
+                                            IsVisible="{Binding HasCategory}"
+                                            Width="{Binding $parent[ItemsControl].Bounds.Width}"
+                                            Tapped="OnCategoryHeaderTapped">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▼" IsVisible="{Binding IsExpanded}"
+                                                       FontSize="10" Opacity="0.6"
+                                                       VerticalAlignment="Center" Margin="4,0,0,0" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Text="▶" IsVisible="{Binding !IsExpanded}"
+                                                       FontSize="10" Opacity="0.6"
+                                                       VerticalAlignment="Center" Margin="4,0,0,0" />
+                                            <TextBlock Text="{Binding Category}"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+
+                                <DataTemplate x:DataType="vm:AppNode">
+                                    <Border Classes="appRow"
+                                            Classes.installedRow="{Binding IsHighlighted}"
+                                            Classes.updateRow="{Binding NeedsUpdate}"
+                                            Classes.queuedRow="{Binding IsQueued}"
+                                            Classes.activeInstallRow="{Binding IsBeingInstalled}"
+                                            Classes.launchingRow="{Binding IsLaunching}"
+                                            Width="{Binding Columns.TileWidth}"
+                                            Padding="4,6"
+                                            PointerPressed="OnAppRowPointerPressed"
+                                            Tapped="OnAppRowTapped">
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Cancel Installation"
+                                                          IsVisible="{Binding ShowCancelInstall}"
+                                                          Click="OnMenuCancelInstall" />
+                                                <MenuItem Header="Add to Install / Update Queue"
+                                                          IsVisible="{Binding ShowAddToQueue}"
+                                                          Click="OnMenuAddToQueue" />
+                                                <MenuItem Header="Remove from Queue"
+                                                          IsVisible="{Binding ShowRemoveFromQueue}"
+                                                          Click="OnMenuRemoveFromQueue" />
+                                                <MenuItem Header="Install" IsVisible="{Binding ShowInstallActions}"
+                                                          Click="OnMenuInstall" />
+                                                <MenuItem Header="Install &amp; Run"
+                                                          IsVisible="{Binding ShowInstallActions}"
+                                                          Click="OnMenuInstallRun" />
+                                                <MenuItem Header="Update" IsVisible="{Binding ShowUpdateActions}"
+                                                          Click="OnMenuUpdate" />
+                                                <MenuItem Header="Update &amp; Run"
+                                                          IsVisible="{Binding ShowUpdateActions}"
+                                                          Click="OnMenuUpdateRun" />
+                                                <MenuItem Header="Run" IsVisible="{Binding ShowRunActions}"
+                                                          Click="OnMenuRun" />
+                                                <MenuItem Header="Run with Parameters..."
+                                                          IsVisible="{Binding ShowRunActions}"
+                                                          Click="OnMenuRunWithArgs" />
+                                                <MenuItem Header="Run as Administrator" Click="OnMenuRunAsAdmin">
+                                                    <MenuItem.IsVisible>
+                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
+                                                            <Binding Path="ShowRunActions" />
+                                                            <Binding Path="IsWindows" />
+                                                        </MultiBinding>
+                                                    </MenuItem.IsVisible>
+                                                </MenuItem>
+                                                <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
+                                                          Click="OnMenuOpenFolder" />
+                                                <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
+                                                          Click="OnMenuUninstall" />
+                                                <Separator />
+                                                <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
+                                                          Click="OnMenuSettings" />
+                                                <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
+                                                          Click="OnMenuVisitWebsite" />
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <StackPanel HorizontalAlignment="Center" Spacing="4">
+                                            <Image Source="{Binding Icon}"
+                                                   Width="{Binding Columns.IconSize}"
+                                                   Height="{Binding Columns.IconSize}"
+                                                   HorizontalAlignment="Center"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                            <TextBlock Text="{Binding Name}"
+                                                       TextAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       TextTrimming="None"
+                                                       MaxLines="2"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       VerticalAlignment="Top" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+
+                            </ItemsControl.DataTemplates>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </ScrollViewer>
+                <Border x:Name="StickyHeader"
+                        VerticalAlignment="Top"
+                        Margin="8,0,8,0"
+                        IsVisible="False"
+                        ZIndex="1"
+                        Background="{DynamicResource AppCategoryBrush}"
+                        Padding="8,5"
+                        CornerRadius="4,4,0,0"
+                        Cursor="Hand"
+                        Tapped="OnStickyHeaderTapped">
+                    <TextBlock x:Name="StickyHeaderText"
+                               FontWeight="SemiBold"
+                               FontSize="13"
+                               Foreground="{DynamicResource AppTextBrush}" />
+                </Border>
+            </Grid>
+
+        </Grid>
+
+    </DockPanel>
+</Window>

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <ApplicationIcon>Assets/ProgramIcon.ico</ApplicationIcon>
+        <SelfContained>true</SelfContained>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
+        <AssemblyTitle>Apportia</AssemblyTitle>
+        <Product>Apportia</Product>
+        <Description>Browse, install, and launch Windows portable apps on any platform</Description>
+        <Company>Roy Bock</Company>
+        <Copyright>Copyright © Roy Bock $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
+        <_VersionRevision Condition="'$(Configuration)' == 'Release'">0</_VersionRevision>
+        <_VersionRevision Condition="'$(Configuration)' != 'Release'">$([System.DateTime]::Now.ToString('HHmm'))</_VersionRevision>
+        <Version>$([System.DateTime]::Now.ToString('yy.M.d')).$(_VersionRevision)</Version>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+        <TrimmerRootDescriptor>TrimmerRoots.xml</TrimmerRootDescriptor>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets/AppImage.png"/>
+        <AvaloniaResource Include="Assets/ProgramIcon.ico"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="12.0.4"/>
+        <PackageReference Include="Avalonia.Desktop" Version="12.0.4"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4"/>
+        <PackageReference Include="SharpCompress" Version="0.49.1"/>
+    </ItemGroup>
+
+</Project>

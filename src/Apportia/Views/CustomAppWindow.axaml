@@ -1,0 +1,131 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Apportia.Views.CustomAppWindow"
+        Width="500"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <Window.Styles>
+        <Style Selector="Border.iconThumb">
+            <Setter Property="Width" Value="52" />
+            <Setter Property="Height" Value="52" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Border.iconThumb:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AppHoverBrush}" />
+        </Style>
+        <Style Selector="Border.iconThumb.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Background" Value="{DynamicResource AppInstalledBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <StackPanel Margin="20" Spacing="4">
+
+        <StackPanel x:Name="FolderSection">
+            <TextBlock Text="App Folder"
+                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                       Margin="0,8,0,2" />
+            <Grid ColumnDefinitions="*,8,Auto">
+                <TextBox x:Name="FolderBox" Grid.Column="0" IsReadOnly="True"
+                         Foreground="{DynamicResource AppTextBrush}" />
+                <Button Grid.Column="2" Content="Browse..." Click="OnBrowseFolder" />
+            </Grid>
+        </StackPanel>
+
+        <TextBlock Text="Executable"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <ComboBox x:Name="ExeCombo" HorizontalAlignment="Stretch"
+                  SelectionChanged="OnExeSelectionChanged" />
+
+        <TextBlock Text="Name"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <TextBox x:Name="NameBox" Foreground="{DynamicResource AppTextBrush}" />
+
+        <TextBlock Text="Description"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <TextBox x:Name="DescriptionBox" Foreground="{DynamicResource AppTextBrush}" />
+
+        <TextBlock Text="Category"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <ComboBox x:Name="CategoryCombo" HorizontalAlignment="Stretch"
+                  SelectionChanged="OnCategorySelectionChanged" />
+
+        <TextBlock Text="SubCategory"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <ComboBox x:Name="SubCategoryCombo" HorizontalAlignment="Stretch" />
+
+        <TextBlock Text="Website"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <TextBox x:Name="WebsiteBox" Foreground="{DynamicResource AppTextBrush}" />
+
+        <TextBlock Text="Version Source"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <ComboBox x:Name="VersionExeCombo" HorizontalAlignment="Stretch"
+                  SelectionChanged="OnVersionExeSelectionChanged" />
+
+        <TextBlock Text="Version"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <TextBox x:Name="VersionBox" Foreground="{DynamicResource AppTextBrush}" />
+
+        <TextBlock Text="Icon Source"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <ComboBox x:Name="IconExeCombo" HorizontalAlignment="Stretch"
+                  SelectionChanged="OnIconExeSelectionChanged" />
+
+        <TextBlock Text="Icon"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+
+        <Border x:Name="IconGalleryBorder"
+                IsVisible="False"
+                BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Margin="0,0,0,4">
+            <ScrollViewer x:Name="IconScrollViewer"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          Padding="2"
+                          PointerWheelChanged="OnIconScrollWheel">
+                <StackPanel x:Name="IconGallery" Orientation="Horizontal" Margin="4,4,4,20" />
+            </ScrollViewer>
+        </Border>
+
+        <Grid ColumnDefinitions="*,8,Auto">
+            <TextBox x:Name="IconBox" Grid.Column="0" IsReadOnly="True"
+                     Foreground="{DynamicResource AppSubTextBrush}"
+                     PlaceholderText="Pick from above or browse..." />
+            <Button Grid.Column="2" Content="Browse..." Click="OnBrowseIcon" />
+        </Grid>
+
+        <TextBlock x:Name="ErrorText"
+                   IsVisible="False"
+                   Foreground="#e05555"
+                   TextWrapping="Wrap"
+                   Margin="0,8,0,0" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,16,0,0">
+            <Button x:Name="ActionButton" Click="OnAction" />
+            <Button Content="Cancel" Click="OnCancel" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>

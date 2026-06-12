@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Apportia.Views.LanguageDialog"
+        Title="Select Language"
+        Width="320"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <StackPanel Margin="20" Spacing="12">
+
+        <TextBlock x:Name="AppLabel"
+                   FontSize="13" FontWeight="SemiBold"
+                   Foreground="{DynamicResource AppTextBrush}" />
+
+        <TextBlock TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppTextBrush}">
+            <Run Text="This app is available in multiple languages." />
+            <LineBreak />
+            <LineBreak />
+            <Run Text="Select your preferred language:" />
+        </TextBlock>
+
+        <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="1" CornerRadius="4">
+            <ListBox x:Name="LanguageList"
+                     MaxHeight="240"
+                     Background="Transparent"
+                     SelectionMode="Single" />
+        </Border>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,4,0,0">
+            <Button Content="Install" Click="OnInstall" />
+            <Button Content="Cancel" Click="OnCancel" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>

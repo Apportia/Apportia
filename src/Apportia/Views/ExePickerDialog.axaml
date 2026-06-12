@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Apportia.Views.ExePickerDialog"
+        Title="Select Executable"
+        Width="360"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <StackPanel Margin="20" Spacing="12">
+
+        <TextBlock x:Name="AppLabel"
+                   FontSize="13" FontWeight="SemiBold"
+                   Foreground="{DynamicResource AppTextBrush}" />
+
+        <TextBlock TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppTextBrush}">
+            <Run Text="Multiple executables were found in the application folder." />
+            <LineBreak />
+            <LineBreak />
+            <Run Text="Select the main executable for this application:" />
+        </TextBlock>
+
+        <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="1" CornerRadius="4">
+            <ListBox x:Name="ExeList"
+                     MaxHeight="200"
+                     Background="Transparent"
+                     SelectionMode="Single" />
+        </Border>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,4,0,0">
+            <Button Content="Select" Click="OnSelect" />
+            <Button Content="Cancel" Click="OnCancel" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>

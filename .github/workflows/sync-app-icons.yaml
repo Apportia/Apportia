@@ -1,0 +1,169 @@
+name: Sync App Icons
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Pillow
+        run: pip install Pillow
+
+      - name: Download and resize icons
+        run: |
+          python3 - <<'PYEOF'
+          from pathlib import Path
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          from urllib.request import urlopen, Request
+          from urllib.error import URLError, HTTPError
+          from PIL import Image
+
+          CDN   = "https://cdn2.portableapps.com/"
+          SIZES = [96, 64, 48, 32, 24]
+          BASE  = Path("data/AppImages")
+          UA    = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.0 Safari/537.36"
+
+          # Substring fixes for URL-safe CDN names (e.g. "+" is not valid in a filename on the CDN).
+          NAME_FIXES = [
+              ("+", "Plus"),
+          ]
+
+          # Sections whose CDN image is published under a different section name.
+          # The file is always saved under the original section name; only the download URL differs.
+          CDN_ALIASES = {
+              "FirefoxPortable2ndProfile":      "FirefoxPortable",
+              "FirefoxPortableLegacy45":        "FirefoxPortableLegacy52",
+              "FirefoxPortableNightly64":       "FirefoxPortableNightly",
+              "FirefoxPortablePrivateWindow":   "FirefoxPortable",
+              "KritaPortableLegacyWin7x64":     "KritaPortableLegacyx86",
+              "MaxthonPortableLegacyWin7":      "MaxthonPortable",
+              "SeaMonkeyPortable2ndProfile":    "SeaMonkeyPortable",
+              "SunbirdPortable2ndProfile":      "SunbirdPortable",
+              "ThunderbirdPortable2ndProfile":  "ThunderbirdPortable",
+              "ThunderbirdPortableAddressBook": "ThunderbirdPortable",
+          }
+
+          def local_name(section):
+              s = section
+              for old, new in NAME_FIXES:
+                  s = s.replace(old, new)
+              return s
+
+          def cdn_name(section):
+              if section in CDN_ALIASES:
+                  return CDN_ALIASES[section]
+              return local_name(section)
+
+          def read_sections(ini_path):
+              sections = []
+              with open(ini_path, encoding="utf-8", errors="replace") as f:
+                  for line in f:
+                      s = line.strip()
+                      if s.startswith('[') and s.endswith(']') and len(s) > 2:
+                          sections.append(s[1:-1])
+              return sections
+
+          def fetch(url):
+              req = Request(url, headers={"User-Agent": UA})
+              with urlopen(req, timeout=15) as r:
+                  return r.read()
+
+          def process(section):
+              cdn = cdn_name(section)
+              loc = local_name(section)
+              log = []
+
+              all_sizes = [128] + SIZES + [16]
+              if all((BASE / str(sz) / f"{loc}.png").exists() for sz in all_sizes):
+                  return log
+
+              def ensure_size(path, expected):
+                  try:
+                      img = Image.open(path)
+                      if img.size != (expected, expected):
+                          log.append(f"WARN: {path.name} is {img.size[0]}x{img.size[1]}, correcting to {expected}px")
+                          img.convert("RGBA").resize((expected, expected), Image.LANCZOS).save(path, "PNG")
+                  except Exception as e:
+                      log.append(f"ERROR: failed to validate size of {path.name}: {e}")
+
+              p128 = BASE / "128" / f"{loc}.png"
+              if not p128.exists():
+                  try:
+                      data = fetch(f"{CDN}{cdn}_128.png")
+                      p128.parent.mkdir(parents=True, exist_ok=True)
+                      p128.write_bytes(data)
+                      log.append(f"Downloaded 128px: {loc}.png")
+                  except (URLError, HTTPError, OSError) as e:
+                      log.append(f"ERROR: failed to download 128px for {section}: {e}")
+                      return log
+              ensure_size(p128, 128)
+
+              sizes_needed = [sz for sz in SIZES if not (BASE / str(sz) / f"{loc}.png").exists()]
+              if sizes_needed:
+                  try:
+                      img = Image.open(p128).convert("RGBA")
+                      for size in sizes_needed:
+                          p = BASE / str(size) / f"{loc}.png"
+                          p.parent.mkdir(parents=True, exist_ok=True)
+                          img.resize((size, size), Image.LANCZOS).save(p, "PNG")
+                          log.append(f"Resized {size}px: {loc}.png")
+                  except Exception as e:
+                      log.append(f"ERROR: failed to resize {section}: {e}")
+
+              p16 = BASE / "16" / f"{loc}.png"
+              if not p16.exists():
+                  try:
+                      data = fetch(f"{CDN}{cdn}_16.png")
+                      p16.parent.mkdir(parents=True, exist_ok=True)
+                      p16.write_bytes(data)
+                      log.append(f"Downloaded 16px: {loc}.png")
+                  except (URLError, HTTPError, OSError) as e:
+                      if p128.exists():
+                          try:
+                              img16 = Image.open(p128).convert("RGBA")
+                              p16.parent.mkdir(parents=True, exist_ok=True)
+                              img16.resize((16, 16), Image.LANCZOS).save(p16, "PNG")
+                              log.append(f"Resized 16px (fallback): {loc}.png")
+                          except Exception as e2:
+                              log.append(f"ERROR: failed to resize 16px fallback for {section}: {e2}")
+                      else:
+                          log.append(f"ERROR: failed to download 16px for {section}: {e}")
+              ensure_size(p16, 16)
+
+              return log
+
+          sections = read_sections("data/app_database.ini")
+          print(f"Sections: {len(sections)}")
+
+          with ThreadPoolExecutor(max_workers=8) as ex:
+              for future in as_completed(ex.submit(process, s) for s in sections):
+                  for line in future.result():
+                      print(line)
+
+          print("Done.")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/AppImages/
+          if git diff --cached --quiet; then
+            echo "No icon changes."
+          else
+            git commit -m "chore: sync app icons"
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase
+            done
+          fi

@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Apportia.Views.RunArgsDialog"
+        Title="Run App"
+        Width="460"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <StackPanel Margin="20" Spacing="4">
+
+        <TextBlock x:Name="AppLabel"
+                   FontSize="13" FontWeight="SemiBold"
+                   Foreground="{DynamicResource AppTextBrush}"
+                   Margin="0,0,0,8" />
+
+        <TextBlock Text="Parameters"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,0,0,2" />
+
+        <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="1" CornerRadius="4" Padding="4">
+            <ScrollViewer MaxHeight="200"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="ArgsList" Spacing="4" Margin="2" />
+            </ScrollViewer>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+            <Button Content="Add Parameter" Click="OnAddArg" />
+            <Button Content="Add File..." Click="OnAddFile" />
+            <Button Content="Add Folder..." Click="OnAddFolder" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,16,0,0">
+            <Button Content="Run" Click="OnRunWithArgs" />
+            <Button x:Name="RunAsAdminButton" Content="Run as Administrator" Click="OnRunAsAdmin" />
+            <Button Content="Run without Parameters" Click="OnRunWithoutArgs" />
+            <Button Content="Cancel" Click="OnCancel" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>
