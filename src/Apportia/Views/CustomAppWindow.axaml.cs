@@ -253,9 +253,10 @@ public partial class CustomAppWindow : Window
 
     private void RefreshSubCategoryCombo(string category, string selectedSubCategory)
     {
+        var prefix = category + " \u2013 ";
         var subs = _subCategoriesMap.TryGetValue(category, out var list) ? list : [];
         var items = new List<string> { string.Empty };
-        items.AddRange(subs);
+        items.AddRange(subs.Where(s => !s.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
         SubCategoryCombo.ItemsSource = items;
         SubCategoryCombo.SelectedItem = selectedSubCategory;
         if (SubCategoryCombo.SelectedIndex < 0)
