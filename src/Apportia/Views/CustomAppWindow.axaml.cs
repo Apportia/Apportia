@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 
 namespace Apportia.Views;
 
@@ -24,6 +25,8 @@ public partial class CustomAppWindow : Window
         new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
 
     private List<IconVariant> _galleryIcons = [];
+    private int _galleryShift;
+    private bool _galleryShifted;
     private bool _iconManuallySelected;
     private Border? _selectedThumb;
     private string? _tempIconPath;
@@ -211,12 +214,11 @@ public partial class CustomAppWindow : Window
             else
             {
                 var exePath = Path.Combine(_appDir, exeFile);
-                if (File.Exists(exePath))
-                {
-                    var (name, desc) = PeReader.ReadVersionInfo(exePath);
-                    NameBox.Text = name;
-                    DescriptionBox.Text = desc;
-                }
+                if (!File.Exists(exePath))
+                    return;
+                var (name, desc) = PeReader.ReadVersionInfo(exePath);
+                NameBox.Text = name;
+                DescriptionBox.Text = desc;
             }
 
             return;
@@ -564,6 +566,51 @@ public partial class CustomAppWindow : Window
         foreach (var v in _galleryIcons)
             v.Icon.Dispose();
         _galleryIcons = [];
+    }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        if (IconGalleryBorder.IsVisible)
+            ShiftForGallery(true);
+        IconGalleryBorder.PropertyChanged += (_, args) =>
+        {
+            if (args.Property.Name == "IsVisible")
+                ShiftForGallery((bool)args.NewValue!);
+        };
+    }
+
+    private void ShiftForGallery(bool show)
+    {
+        if (!show)
+        {
+            if (!_galleryShifted)
+                return;
+            _galleryShifted = false;
+            Position = new PixelPoint(Position.X, Position.Y + _galleryShift);
+            return;
+        }
+
+        if (_galleryShifted)
+            return;
+
+        if (_galleryShift > 0)
+        {
+            _galleryShifted = true;
+            Position = new PixelPoint(Position.X, Position.Y - _galleryShift);
+            return;
+        }
+
+        var heightBefore = ClientSize.Height;
+        Dispatcher.UIThread.Post(() =>
+        {
+            var half = (int)((ClientSize.Height - heightBefore) / 2);
+            if (half <= 0)
+                return;
+            _galleryShift = half;
+            _galleryShifted = true;
+            Position = new PixelPoint(Position.X, Position.Y - half);
+        }, DispatcherPriority.Background);
     }
 
     protected override void OnClosed(EventArgs e)
