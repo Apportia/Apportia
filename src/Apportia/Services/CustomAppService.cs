@@ -102,7 +102,7 @@ public static class CustomAppService
         string version = "",
         string versionSource = "")
     {
-        var baseFolderName = Path.GetFileName(sourceFolder.TrimEnd(Path.DirectorySeparatorChar));
+        var baseFolderName = Path.GetFileNameWithoutExtension(exeFile);
         var folderName = baseFolderName;
         while (Directory.Exists(Path.Combine(CustomAppsDir, folderName)))
         {
