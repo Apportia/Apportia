@@ -1,0 +1,31 @@
+{
+    "https://downloads.sourceforge.net": {
+        "UserAgent": "Wget/1.21.4",
+        "Mirrors": {
+            "https://downloads.sourceforge.net": "Auto-select",
+            "https://pilotfiber.dl.sourceforge.net": "New York, United States",
+            "https://netactuate.dl.sourceforge.net": "Durham, NC",
+            "https://cytranet.dl.sourceforge.net": "Las Vegas, NV",
+            "https://cytranet-dal.dl.sourceforge.net": "Dallas, United States",
+            "https://phoenixnap.dl.sourceforge.net": "Phoenix, AZ",
+            "https://gigenet.dl.sourceforge.net": "Fayetteville, United States",
+            "https://cfhcable.dl.sourceforge.net": "Tampa, United States",
+            "https://altushost-swe.dl.sourceforge.net": "Stockholm, Sweden",
+            "https://altushost-bul.dl.sourceforge.net": "Sofia, Bulgaria",
+            "https://netix.dl.sourceforge.net": "Bulgaria",
+            "https://sitsa.dl.sourceforge.net": "Villa Maria, Argentina",
+            "https://twds.dl.sourceforge.net": "Taipei City, Taiwan",
+            "https://sf-west-interserver-2.dl.sourceforge.net": "United States",
+            "https://excellmedia.dl.sourceforge.net": "Hyderabad, India",
+            "https://ixpeering.dl.sourceforge.net": "Brisbane, Australia"
+        }
+    },
+    "http://downloads.portableapps.com": {
+        "UserAgent": "Wget/1.21.4",
+        "Mirrors": {
+            "http://downloads.portableapps.com": "Default",
+            "http://download2.portableapps.com": "Mirror 2",
+            "http://downloads2.portableapps.com": "Mirror 3"
+        }
+    }
+}
