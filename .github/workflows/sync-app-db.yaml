@@ -19,156 +19,413 @@ jobs:
       - name: Install p7zip
         run: sudo apt-get install -y p7zip-full
 
-      - name: Download update archive
-        id: download
+      - name: Run sync script
         run: |
-          URL="https://portableapps.com/updater/update.php"
-          UA="Wget/1.21.4"
+          python3 - <<'PYEOF'
+          import json
+          import re
+          import subprocess
+          import sys
+          import tempfile
+          import urllib.parse
+          import urllib.request
+          from datetime import date, datetime
+          from pathlib import Path
 
-          wget --server-response -q -U "$UA" --content-disposition -O /dev/null "$URL" 2>&1 \
-            | grep -i 'content-disposition' \
-            | grep -o 'filename=[^ ]*' \
-            | cut -d= -f2 | tr -d '"\r' > /tmp/archive_name.txt
-
-          ARCHIVE=$(cat /tmp/archive_name.txt)
-          [ -z "$ARCHIVE" ] && ARCHIVE="update.7z"
-
-          wget -q -U "$UA" -O "$ARCHIVE" "$URL"
-
-          if ! file "$ARCHIVE" | grep -q '7-zip'; then
-            echo "Downloaded file is not a valid 7z archive."
-            exit 1
-          fi
-
-          echo "archive=$ARCHIVE" >> "$GITHUB_OUTPUT"
-
-      - name: Extract INI file
-        id: extract
-        run: |
-          TMPDIR=$(mktemp -d)
-          7z e "${{ steps.download.outputs.archive }}" -o"$TMPDIR" -y
-
-          INI_PATH=$(find "$TMPDIR" -maxdepth 2 -name "*.ini" | head -n 1)
-
-          if [ -z "$INI_PATH" ]; then
-            echo "No INI file found in archive."
-            exit 1
-          fi
-
-          echo "ini=$INI_PATH" >> "$GITHUB_OUTPUT"
-
-      - name: Process INI file
-        run: |
-          NEW="${{ steps.extract.outputs.ini }}"
-          PROCESSED="/tmp/app_database_processed.ini"
-
-          python3 - "$NEW" "$PROCESSED" <<'PYEOF'
-          import sys, re, urllib.parse
+          URL    = "https://portableapps.com/updater/update.php"
+          UA     = "Wget/1.21.4"
+          TARGET = Path("data/app_database.json")
 
           SKIP_SECTIONS_PREFIX = "PortableApps.com"
-          SKIP_SECTIONS = {"PrivateBrowsingByPortableApps"}
-          SKIP_KEYS = {"compatibility", "pacinstaller"}
+          SKIP_SECTIONS        = {"PrivateBrowsingByPortableApps"}
+          SKIP_KEYS            = {"compatibility", "pacinstaller"}
 
-          src, dst = sys.argv[1], sys.argv[2]
+          WEBSITE_OVERRIDES = {
+              "FreeCommanderPortable":        "https://freecommander.com/",
+              "LibreOfficePortable":          "https://www.documentfoundation.org/",
+              "LibreOfficePortablePrevious":  "https://www.documentfoundation.org/",
+          }
 
-          with open(src, encoding="utf-8", errors="replace") as f:
-              raw = f.read()
+          NAME_REPLACEMENTS = [
+              ("jPortable Launcher", "JRE Application Launcher"),
+              ("jPortable",          "JRE"),
+              ("jdk",                "JDK"),
+          ]
 
-          # Normalise line endings to LF
-          raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+          NAME_FILTER_EXCLUSIONS = [
+              "PortableApps.com AppCompactor",
+              "PortableApps.com Installer",
+              "PortableApps.com Launcher",
+          ]
 
-          sections = []
-          current_header = None
-          current_keys = []
-          skip = False
-          seen_regular = False
+          NAME_FILTERS = [
+              "By PortableApps.com",
+              ", Portable Edition",
+              "Portable",
+          ]
 
-          for line in raw.split("\n"):
-              stripped = line.strip()
+          DESCRIPTION_WORD_FIXES = [
+              ("windows", "Windows"), ("linux",   "Linux"),
+              ("aac",     "AAC"),     ("avi",     "AVI"),
+              ("dvd",     "DVD"),     ("flac",    "FLAC"),
+              ("ftp",     "FTP"),     ("gui",     "GUI"),
+              ("html",    "HTML"),    ("id3",     "ID3"),
+              ("lan",     "LAN"),     ("mkv",     "MKV"),
+              ("mp3",     "MP3"),     ("mp4",     "MP4"),
+              ("ogg",     "OGG"),     ("pdf",     "PDF"),
+              ("ssh",     "SSH"),     ("url",     "URL"),
+              ("usb",     "USB"),     ("vpn",     "VPN"),
+              ("wav",     "WAV"),     ("xml",     "XML"),
+              (".chm",    "CHM"),
+          ]
 
-              # Drop all comments
-              if stripped.startswith(";") or stripped.startswith("#"):
-                  continue
+          CATEGORY_REPLACEMENTS = {
+              "Graphics and Pictures": "Graphics & Pictures",
+              "Music and Video":       "Music & Video",
+          }
 
-              # Section header
-              if stripped.startswith("[") and stripped.endswith("]"):
-                  if current_header is not None and not skip:
-                      sections.append((current_header, current_keys))
-                  current_header = stripped
-                  current_keys = []
-                  section_name = stripped[1:-1]
-                  is_prefix = section_name.startswith(SKIP_SECTIONS_PREFIX)
-                  skip = (is_prefix and not seen_regular) or section_name in SKIP_SECTIONS
-                  if not is_prefix and section_name not in SKIP_SECTIONS:
-                      seen_regular = True
-                  continue
+          SUB_CATEGORY_REPLACEMENTS = {
+              "Download managers":             "Download Managers",
+              "Font tools":                    "Font Tools",
+              "Registry tools":                "Registry Tools",
+              "System tools":                  "System Tools",
+              "Antivirus and Antispyware":     "Antivirus & Antispyware",
+              "Audio Editors and Converters":  "Audio Editors & Converters",
+              "CD/DVD Burning and Authoring":  "CD/DVD Burning & Authoring",
+              "Drawing and Animation":         "Drawing & Animation",
+              "File Compression and Packaging":"File Compression & Packaging",
+              "Music Creation and Notation":   "Music Creation & Notation",
+              "Text Editors and IDEs":         "Text Editors & IDEs",
+              "Video Editors and Converters":  "Video Editors & Converters",
+              "CAD (Computer-Aided Design)":   "Computer-Aided Design",
+              "Consoles":                      "Terminal Emulators",
+              "Misc":                          "Runtime Components",
+              "Physics":                       "Simulation",
+              "Document Tools":                "Document Viewers & Tools",
+              "Document Viewers":              "Document Viewers & Tools",
+              "Journaling":                    "Note-Taking",
+              "On-Screen Keyboards":           "Input Assistance",
+              "Password Generator":            "Password Tools",
+              "Password Managers":             "Password Tools",
+              "Podcast Receivers":             "Podcasts & RSS",
+              "RSS Readers":                   "Podcasts & RSS",
+              "Screen Capture":                "Screenshot Tools",
+              "Sticky Notes":                  "Note-Taking",
+              "Typing Assistance":             "Input Assistance",
+              "Video Editors":                 "Video Editors & Converters",
+              "Application Launcher":          "Desktop Enhancement",
+              "Auditory":                      "Memorization",
+              "Cryptocurrency":                "Financial",
+              "Data Recovery":                 "Disk Tools",
+              "File Analysis":                 "Disk Tools",
+              "Other":                         "Miscellaneous",
+              "Religion":                      "Miscellaneous",
+              "Servers":                       "Programming Environment",
+              "Social Media":                  "Chat",
+              "Spreadsheets":                  "Office Suites",
+              "Technical Computing":           "Miscellaneous",
+              "Time Wasters":                  "Desktop Enhancement",
+              "Translation":                   "Miscellaneous",
+              "Web Editors":                   "Text Editors & IDEs",
+          }
 
-              if skip or current_header is None:
-                  continue
+          SUB_CATEGORY_OVERRIDES = {
+              "IObitUnlockerPortable":         "Disk Tools",
+              "WhoDatPortable":                "Networking",
+              "WhyNotWin11Portable":           "System Tools",
+              "RedNotebookPortableLegacyx86":  "Note-Taking",
+          }
 
-              # Skip unwanted keys / rewrite download paths
-              sep = stripped.find("=")
-              if sep > 0:
-                  key = stripped[:sep].strip().lower()
+          ADVANCED_KEYWORDS = [
+              " ESR", " LTS", " Test", " via ", ", Address Book",
+              "2nd Profile", "AppRenamed", "Beta", "Chrome Dev", "Classic", "Compat",
+              "Developer Edition", "Ghostscript", "GPG", "GPGLegacy32bit",
+              "Incognito Mode", "JDK", "jdkPortable", "jPortable", "JRE",
+              "LibreOffice Previous", "Nightly", "Notepad2-mod", "OpenJDK",
+              "Portable Dev", "PortableApps.com", "Private Browsing", "Private Window",
+              "qBittorrent Enhanced",
+          ]
+
+          LEGACY_KEYWORDS = [
+              " Retro", "Discontinued", "Legacy",
+              "FirefoxPortableNightly64", "PrivateBrowsingByPortableApps",
+          ]
+
+          MIN_ENTRY_COUNT = 100
+          MIN_ENTRY_RATIO = 0.8
+
+          REQUIRED_KEYS = {
+              "Name", "Category", "SubCategory", "DisplayVersion", "PackageVersion",
+              "DownloadSize", "InstallSize", "DownloadFile", "DownloadPath", "Hash",
+              "ReleaseDate", "UpdateDate",
+          }
+
+          DATE_KEYS = {"releasedate", "updatedate"}
+
+
+          def clean_name(raw):
+              if not raw:
+                  return ""
+              name = raw
+              for frm, to in NAME_REPLACEMENTS:
+                  name = name.replace(frm, to)
+              excluded = any(name.lower() == ex.lower() for ex in NAME_FILTER_EXCLUSIONS)
+              if not excluded:
+                  for f in NAME_FILTERS:
+                      name = re.sub(re.escape(f), "", name, flags=re.IGNORECASE)
+              while "  " in name:
+                  name = name.replace("  ", " ")
+              return name.rstrip(" ,")
+
+
+          def normalize_description(raw):
+              if not raw:
+                  return ""
+              s = raw
+              for word, replacement in DESCRIPTION_WORD_FIXES:
+                  escaped = re.escape(word)
+                  lb = r"\b" if re.match(r"\w", word[0])  else ""
+                  rb = r"\b" if re.match(r"\w", word[-1]) else ""
+                  s = re.sub(lb + escaped + rb, replacement, s, flags=re.IGNORECASE)
+              return s[0].upper() + s[1:] if s else ""
+
+
+          def normalize_category(raw):
+              return CATEGORY_REPLACEMENTS.get(raw, raw)
+
+
+          def normalize_sub_category(section, raw):
+              value = SUB_CATEGORY_REPLACEMENTS.get(raw, raw)
+              return SUB_CATEGORY_OVERRIDES.get(section, value)
+
+
+          def classify(section, fields):
+              targets = (section, fields.get("Name", ""), fields.get("DisplayVersion", ""))
+              if any(kw.lower() in t.lower() for kw in LEGACY_KEYWORDS for t in targets):
+                  return "Legacy"
+              if any(kw.lower() in t.lower() for kw in ADVANCED_KEYWORDS for t in targets):
+                  return "Advanced"
+              return None
+
+
+          def normalize_date(raw):
+              if not raw or not raw.strip():
+                  return ""
+              digits = "".join(c for c in raw if c.isdigit())
+              if len(digits) >= 8:
+                  try:
+                      d = date(int(digits[:4]), int(digits[4:6]), int(digits[6:8]))
+                      return d.isoformat()
+                  except ValueError:
+                      pass
+              try:
+                  return datetime.fromisoformat(raw.strip()).strftime("%Y-%m-%d")
+              except ValueError:
+                  return "1970-01-01"
+
+
+          def fetch_wget_ua():
+              try:
+                  out = subprocess.check_output(["wget", "--version"], text=True, stderr=subprocess.STDOUT)
+                  m = re.search(r"GNU Wget ([\d.]+)", out)
+                  if m:
+                      return f"Wget/{m.group(1)}"
+              except Exception:
+                  pass
+              return UA
+
+
+          def fetch_chrome_ua():
+              api = ("https://versionhistory.googleapis.com/v1/chrome/platforms/win64/channels/stable"
+                     "/versions/all/releases?order_by=starttime%20desc&filter=endtime=none")
+              try:
+                  with urllib.request.urlopen(api, timeout=10) as resp:
+                      data = json.loads(resp.read())
+                  major = data["releases"][0]["version"].split(".")[0]
+                  return (f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                          f"(KHTML, like Gecko) Chrome/{major}.0.0.0 Safari/537.36")
+              except Exception:
+                  return ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                          "(KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36")
+
+
+          def ua_for(download_path, wget_ua, chrome_ua):
+              if download_path.startswith(("https://github.com", "https://downloads.sourceforge.net")):
+                  return wget_ua
+              if download_path.startswith("http://downloads.portableapps.com"):
+                  return "Wget/1.21.4"
+              return chrome_ua
+
+
+          def download_archive(tmp):
+              req = urllib.request.Request(URL, headers={"User-Agent": UA})
+              with urllib.request.urlopen(req) as resp:
+                  cd   = resp.headers.get("Content-Disposition", "")
+                  m    = re.search(r'filename="?([^";\r\n]+)"?', cd)
+                  name = m.group(1).strip() if m else "update.7z"
+                  data = resp.read()
+              archive = tmp / name
+              archive.write_bytes(data)
+              print(f"Downloaded: {name} ({len(data):,} bytes)")
+              return archive
+
+
+          def extract_ini(archive, tmp):
+              subprocess.run(["7z", "e", str(archive), f"-o{tmp}", "-y"],
+                             check=True, capture_output=True)
+              matches = list(tmp.glob("*.ini"))
+              if not matches:
+                  raise FileNotFoundError("No INI file found in archive")
+              return matches[0]
+
+
+          def _fixup_website(section_name, fields):
+              if section_name in WEBSITE_OVERRIDES:
+                  fields["Website"] = WEBSITE_OVERRIDES[section_name]
+                  return
+              dl = fields.get("DownloadPath", "")
+              if dl.startswith("https://github.com"):
+                  fields["Website"] = re.sub(r"/releases/.*$", "/releases/latest", dl)
+
+
+          def _resolve_download_path(val, section_name):
+              if "/redirect/" in val:
+                  params = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(val).query))
+                  d = params.get("d", "")
+                  if d == "sfpa":
+                      val = "https://downloads.sourceforge.net/portableapps"
+                  elif d == "pa":
+                      val = f"http://downloads.portableapps.com/portableapps/{section_name}"
+                  elif d == "pb":
+                      val = params.get("p", val).rstrip("/")
+                  elif not d:
+                      val = params.get("t", val).rstrip("/")
+              if val.startswith("https://github.com") and val.endswith("/download/download"):
+                  val = val[:-len("/download")]
+              return val.replace("%WINDOWSVERSION%", "11")
+
+
+          def process_ini(src, wget_ua, chrome_ua):
+              raw = src.read_text(encoding="utf-8", errors="replace")
+              raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+              result         = {}
+              current_name   = None
+              current_fields = {}
+              skip           = False
+              seen_regular   = False
+
+              def flush():
+                  if current_name and not skip and current_fields:
+                      _fixup_website(current_name, current_fields)
+                      cls = classify(current_name, current_fields)
+                      if cls:
+                          current_fields["Class"] = cls
+                      result[current_name] = current_fields
+
+              for line in raw.split("\n"):
+                  stripped = line.strip()
+                  if stripped.startswith(";") or stripped.startswith("#"):
+                      continue
+                  if stripped.startswith("[") and stripped.endswith("]"):
+                      flush()
+                      current_name   = stripped[1:-1]
+                      current_fields = {}
+                      is_prefix      = current_name.startswith(SKIP_SECTIONS_PREFIX)
+                      skip           = (is_prefix and not seen_regular) or current_name in SKIP_SECTIONS
+                      if not is_prefix and current_name not in SKIP_SECTIONS:
+                          seen_regular = True
+                      continue
+                  if skip or current_name is None or not stripped:
+                      continue
+                  sep = stripped.find("=")
+                  if sep <= 0:
+                      continue
+                  raw_key = stripped[:sep].strip()
+                  key     = raw_key.lower()
+                  val     = stripped[sep + 1:].strip()
                   if key in SKIP_KEYS:
                       continue
-                  if key == "downloadpath":
-                      val = stripped[sep + 1:].strip()
-                      if "/redirect/" in val:
-                          params = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(val).query))
-                          d = params.get("d", "")
-                          t = params.get("t", "")
-                          p = params.get("p", "")
-                          section_name = current_header[1:-1]
-                          if d == "sfpa":
-                              line = "DownloadPath=https://downloads.sourceforge.net/portableapps"
-                          elif d == "pa":
-                              line = f"DownloadPath=http://downloads.portableapps.com/portableapps/{section_name}"
+                  if key == "name":
+                      current_fields["Name"] = clean_name(val) or clean_name(current_name)
+                  elif key == "description":
+                      current_fields["Description"] = normalize_description(val)
+                  elif key == "category":
+                      current_fields["Category"] = normalize_category(val)
+                  elif key == "subcategory":
+                      current_fields["SubCategory"] = normalize_sub_category(current_name, val)
+                  elif key == "url":
+                      current_fields["Website"] = val
+                  elif key == "downloadpath":
+                      resolved = _resolve_download_path(val, current_name)
+                      current_fields["DownloadPath"] = resolved
+                      current_fields["UserAgent"]    = ua_for(resolved, wget_ua, chrome_ua)
+                  elif key in DATE_KEYS:
+                      current_fields[raw_key] = normalize_date(val)
+                  else:
+                      current_fields[raw_key] = val
 
-              # Only include non-blank key lines (no blank lines within a section)
-              if stripped:
-                  current_keys.append(line.rstrip())
+              flush()
+              return result
 
-          if current_header is not None and not skip:
-              sections.append((current_header, current_keys))
 
-          out = []
-          for header, keys in sections:
-              out.append(header)
-              out.extend(keys)
-              out.append("")  # one blank line between sections
+          def _count_valid(data):
+              return sum(1 for fields in data.values() if REQUIRED_KEYS.issubset(fields))
 
-          result = "\n".join(out).strip() + "\n"
 
-          with open(dst, "w", encoding="utf-8", newline="\n") as f:
-              f.write(result)
+          def is_valid(data):
+              new_count = _count_valid(data)
+              if new_count < MIN_ENTRY_COUNT:
+                  print(f"  INVALID: only {new_count} complete entries (minimum {MIN_ENTRY_COUNT})")
+                  return False
+              if TARGET.exists():
+                  try:
+                      existing = json.loads(TARGET.read_text(encoding="utf-8"))
+                      existing_count = _count_valid(existing)
+                      if existing_count > 0 and new_count < existing_count * MIN_ENTRY_RATIO:
+                          print(f"  INVALID: {new_count} entries vs {existing_count} existing "
+                                f"(below {MIN_ENTRY_RATIO:.0%} ratio)")
+                          return False
+                  except Exception:
+                      pass
+              return True
+
+
+          def main():
+              print("Fetching Wget version...")
+              wget_ua = fetch_wget_ua()
+              print(f"  {wget_ua}")
+              print("Fetching Chrome version...")
+              chrome_ua = fetch_chrome_ua()
+              m = re.search(r"Chrome/([\d.]+)", chrome_ua)
+              print(f"  Chrome/{m.group(1) if m else '?'}")
+              with tempfile.TemporaryDirectory() as tmp:
+                  tmp      = Path(tmp)
+                  archive  = download_archive(tmp)
+                  ini_path = extract_ini(archive, tmp)
+                  print(f"Extracted:  {ini_path.name}")
+                  data = process_ini(ini_path, wget_ua, chrome_ua)
+              print(f"Validating: {_count_valid(data):,} complete entries...")
+              if not is_valid(data):
+                  print("Aborted: result did not pass validation.")
+                  return 1
+              result = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+              if TARGET.exists() and TARGET.read_text(encoding="utf-8") == result:
+                  print("No changes.")
+                  return
+              TARGET.parent.mkdir(parents=True, exist_ok=True)
+              TARGET.write_text(result, encoding="utf-8", newline="\n")
+              print(f"Updated:    {TARGET} ({len(data):,} entries)")
+
+          sys.exit(main())
           PYEOF
 
-          echo "processed=$PROCESSED" >> "$GITHUB_OUTPUT"
-        id: process
-
-      - name: Update app_database.ini if changed
-        id: changed
-        run: |
-          NEW="${{ steps.process.outputs.processed }}"
-          TARGET="data/app_database.ini"
-
-          mkdir -p "$(dirname "$TARGET")"
-
-          if [ -f "$TARGET" ] && diff -q "$NEW" "$TARGET" > /dev/null 2>&1; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            cp "$NEW" "$TARGET"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Commit and push
-        if: steps.changed.outputs.changed == 'true'
         run: |
+          git diff --quiet data/app_database.json && exit 0
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/app_database.ini
-          git commit -m "chore: update app_database.ini"
+          git add data/app_database.json
+          git commit -m "chore: update app_database.json"
           for i in 1 2 3; do
             git push && break
             git pull --rebase
