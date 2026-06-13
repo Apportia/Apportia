@@ -583,7 +583,7 @@ public partial class MainWindow : Window
             }
 
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
-                RunAsAdmin(node, args);
+                await Task.Run(() => RunAsAdmin(node, args));
             else if (node.IsCustom)
                 RunCustomApp(node, args);
             else
@@ -1023,7 +1023,7 @@ public partial class MainWindow : Window
             }
 
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
-                RunAsAdmin(node, args);
+                await Task.Run(() => RunAsAdmin(node, args));
             else if (node.IsCustom)
                 RunCustomApp(node, args);
             else

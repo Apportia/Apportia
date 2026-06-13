@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Apportia.Views.RunArgsDialog"
         Title="Run App"
-        Width="460"
+        Width="540"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
@@ -37,7 +37,7 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                     Spacing="8" Margin="0,16,0,0">
-            <Button Content="Run" Click="OnRunWithArgs" />
+            <Button x:Name="RunButton" Content="Run" Click="OnRunWithArgs" />
             <Button x:Name="RunAsAdminButton" Content="Run as Administrator" Click="OnRunAsAdmin" />
             <Button Content="Run without Parameters" Click="OnRunWithoutArgs" />
             <Button Content="Cancel" Click="OnCancel" />

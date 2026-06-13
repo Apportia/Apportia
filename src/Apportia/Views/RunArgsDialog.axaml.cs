@@ -130,9 +130,22 @@ public partial class RunArgsDialog : Window
         Grid.SetColumn(removeBtn, 1);
         row.Children.Add(removeBtn);
 
-        removeBtn.Click += (_, _) => ArgsList.Children.Remove(row);
+        textBox.TextChanged += (_, _) => UpdateRunButtons();
+        removeBtn.Click += (_, _) =>
+        {
+            ArgsList.Children.Remove(row);
+            UpdateRunButtons();
+        };
 
         ArgsList.Children.Add(row);
+        UpdateRunButtons();
+    }
+
+    private void UpdateRunButtons()
+    {
+        var hasArgs = ArgsArray.Length > 0;
+        RunButton.IsEnabled = hasArgs;
+        RunAsAdminButton.IsEnabled = hasArgs;
     }
 
     private void OnRunWithArgs(object? sender, RoutedEventArgs e)
