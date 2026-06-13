@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 namespace Apportia.Services;
 
 [JsonSerializable(typeof(Dictionary<string, Dictionary<string, string>>))]
+[JsonSerializable(typeof(Dictionary<string, string>))]
 internal partial class MirrorDatabaseJsonContext : JsonSerializerContext;
 
 internal static class MirrorService
@@ -15,7 +16,7 @@ internal static class MirrorService
         Path.Combine(AppContext.BaseDirectory, "Data", "mirror_database.json");
 
     private static readonly string PrefsPath =
-        Path.Combine(AppContext.BaseDirectory, "Data", "mirrors.json");
+        Path.Combine(AppContext.BaseDirectory, "Data", "preferred_mirrors.json");
 
     private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? _database;
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
@@ -62,40 +63,91 @@ internal static class MirrorService
         return _database;
     }
 
-    internal static string? GetCurrentMirrorBase(string url)
+    private static bool IsSourceForgePrefix(string prefix)
     {
-        return !Uri.TryCreate(url, UriKind.Absolute, out var uri) ? null : $"{uri.Scheme}://{uri.Host}";
+        return prefix.EndsWith("sourceforge.net", StringComparison.OrdinalIgnoreCase);
     }
 
-    internal static string ReplaceMirror(string url, string newBase)
+    private static string? GetGroupPrefix(string url)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-            return url;
-        var currentBase = $"{uri.Scheme}://{uri.Host}";
-        return newBase + url[currentBase.Length..];
-    }
-
-    internal static IReadOnlyList<(string Base, string Label)> GetAvailableMirrors(string url)
-    {
-        foreach (var (prefix, mirrors) in GetDatabase())
+            return null;
+        foreach (var (prefix, _) in GetDatabase())
         {
-            if (!url.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            var parts = prefix.Split('.');
+            if (parts.Length < 2)
                 continue;
-            return mirrors.Select(kv => (kv.Key, kv.Value)).ToList();
+            var baseDomain = string.Join('.', parts[^2..]);
+            if (uri.Host.Equals(baseDomain, StringComparison.OrdinalIgnoreCase) ||
+                uri.Host.EndsWith("." + baseDomain, StringComparison.OrdinalIgnoreCase))
+                return prefix;
         }
 
-        return [];
+        return null;
     }
 
-    internal static string? LoadPreferredMirror()
+    internal static string? GetCurrentMirrorSlug(string url)
     {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return null;
+        var prefix = GetGroupPrefix(url);
+        if (prefix == null)
+            return null;
+
+        if (!IsSourceForgePrefix(prefix))
+            return uri.Host.Split('.')[0];
+
+        foreach (var part in uri.Query.TrimStart('?').Split('&'))
+        {
+            if (part.StartsWith("use_mirror=", StringComparison.OrdinalIgnoreCase))
+                return part["use_mirror=".Length..];
+        }
+
+        return "downloads";
+    }
+
+    internal static string ApplyMirror(string url, string slug)
+    {
+        var prefix = GetGroupPrefix(url);
+        if (prefix == null)
+            return url;
+
+        if (IsSourceForgePrefix(prefix))
+        {
+            var baseUrl = url.Contains('?') ? url[..url.IndexOf('?')] : url;
+            return slug == "downloads" ? baseUrl : $"{baseUrl}?use_mirror={slug}";
+        }
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return url;
+        var prefixParts = prefix.Split('.');
+        var baseDomain = string.Join('.', prefixParts[^2..]);
+        return $"{uri.Scheme}://{slug}.{baseDomain}{uri.PathAndQuery}";
+    }
+
+    internal static IReadOnlyList<(string Slug, string Label)> GetAvailableMirrors(string url)
+    {
+        var prefix = GetGroupPrefix(url);
+        if (prefix == null || !GetDatabase().TryGetValue(prefix, out var mirrors))
+            return [];
+        return mirrors.Select(kv => (kv.Key, kv.Value)).ToList();
+    }
+
+    internal static string? LoadPreferredMirror(string url)
+    {
+        var prefix = GetGroupPrefix(url);
+        if (prefix == null)
+            return null;
         try
         {
-            if (File.Exists(PrefsPath))
-            {
-                var val = File.ReadAllText(PrefsPath).Trim();
-                return val.Length > 0 ? val : null;
-            }
+            if (File.Exists(PrefsPath) &&
+                JsonSerializer.Deserialize(
+                        File.ReadAllText(PrefsPath),
+                        typeof(Dictionary<string, string>),
+                        MirrorDatabaseJsonContext.Default)
+                    is Dictionary<string, string> prefs &&
+                prefs.TryGetValue(prefix, out var slug))
+                return slug;
         }
         catch
         {
@@ -105,12 +157,25 @@ internal static class MirrorService
         return null;
     }
 
-    internal static void SavePreferredMirror(string mirror)
+    internal static void SavePreferredMirror(string url, string slug)
     {
+        var prefix = GetGroupPrefix(url);
+        if (prefix == null)
+            return;
         try
         {
+            Dictionary<string, string> prefs = [];
+            if (File.Exists(PrefsPath) &&
+                JsonSerializer.Deserialize(
+                        File.ReadAllText(PrefsPath),
+                        typeof(Dictionary<string, string>),
+                        MirrorDatabaseJsonContext.Default)
+                    is Dictionary<string, string> existing)
+                prefs = existing;
+            prefs[prefix] = slug;
             Directory.CreateDirectory(Path.GetDirectoryName(PrefsPath)!);
-            File.WriteAllText(PrefsPath, mirror);
+            File.WriteAllText(PrefsPath,
+                              JsonSerializer.Serialize(prefs, typeof(Dictionary<string, string>), MirrorDatabaseJsonContext.Default));
         }
         catch
         {

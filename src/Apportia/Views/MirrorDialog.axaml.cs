@@ -5,7 +5,7 @@ namespace Apportia.Views;
 
 public partial class MirrorDialog : Window
 {
-    private readonly IReadOnlyList<(string Base, string Label)> _mirrors = [];
+    private readonly IReadOnlyList<(string Slug, string Label)> _mirrors = [];
 
     public MirrorDialog()
     {
@@ -15,13 +15,13 @@ public partial class MirrorDialog : Window
     public MirrorDialog(
         string appName,
         string? failedMirror,
-        IReadOnlyList<(string Base, string Label)> mirrors) : this()
+        IReadOnlyList<(string Slug, string Label)> mirrors) : this()
     {
         _mirrors = mirrors;
         AppLabel.Text = appName;
         FailedMirrorText.Text = failedMirror != null
-            ? $"The connection to {failedMirror} timed out.\n\nSelect a different mirror to retry the download:"
-            : "The download connection timed out.\n\nSelect a mirror to retry:";
+            ? $"The download from {failedMirror} failed.\n\nSelect a different mirror to retry:"
+            : "The download failed.\n\nSelect a mirror to retry:";
 
         MirrorList.ItemsSource = mirrors.Select(m => m.Label).ToList();
 
@@ -35,7 +35,7 @@ public partial class MirrorDialog : Window
     {
         var idx = MirrorList.SelectedIndex;
         if (idx >= 0 && idx < _mirrors.Count)
-            SelectedMirror = _mirrors[idx].Base;
+            SelectedMirror = _mirrors[idx].Slug;
         Close();
     }
 

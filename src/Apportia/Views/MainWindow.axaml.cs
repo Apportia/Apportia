@@ -41,7 +41,6 @@ public partial class MainWindow : Window
     private bool _pendingScrollTop;
 
     private AppUpdateInfo? _pendingUpdate;
-    private string? _preferredMirror = MirrorService.LoadPreferredMirror();
     private ThemeVariant? _prevTheme;
     private List<string> _searchHistory = [];
     private bool _systemIsDark;
@@ -1285,8 +1284,9 @@ public partial class MainWindow : Window
             });
 
             string localPath;
-            var downloadUrl = _preferredMirror != null && MirrorService.GetAvailableMirrors(url).Count > 0
-                ? MirrorService.ReplaceMirror(url, _preferredMirror)
+            var preferred = MirrorService.LoadPreferredMirror(url);
+            var downloadUrl = preferred != null
+                ? MirrorService.ApplyMirror(url, preferred)
                 : url;
             while (true)
             {
@@ -1296,31 +1296,6 @@ public partial class MainWindow : Window
                     await progressCts.CancelAsync();
                     progressCts.Dispose();
                     break;
-                }
-                catch (TimeoutException tex)
-                {
-                    if (_installCts.IsCancellationRequested)
-                        return;
-                    var failed = MirrorService.GetCurrentMirrorBase(downloadUrl);
-                    var available = MirrorService.GetAvailableMirrors(downloadUrl);
-                    if (available.Count > 0)
-                    {
-                        ShowDownloadBar(false);
-                        var mirrorDialog = new MirrorDialog(node.Name, failed, available) { Icon = new WindowIcon(node.Icon) };
-                        await mirrorDialog.ShowDialog(this);
-                        if (mirrorDialog.SelectedMirror != null)
-                        {
-                            _preferredMirror = mirrorDialog.SelectedMirror;
-                            MirrorService.SavePreferredMirror(_preferredMirror);
-                            downloadUrl = MirrorService.ReplaceMirror(downloadUrl, _preferredMirror);
-                            ShowDownloadBar(true);
-                            DownloadSizeText.Text = $"Preparing {node.Name}...";
-                            continue;
-                        }
-                    }
-
-                    await ShowDialog(node, "Download Failed", tex.Message, "OK");
-                    return;
                 }
                 catch (Exception ex)
                 {
@@ -1333,6 +1308,23 @@ public partial class MainWindow : Window
                     catch
                     {
                         /* partial download file may not exist yet if the connection failed early */
+                    }
+
+                    var failed = MirrorService.GetCurrentMirrorSlug(downloadUrl);
+                    var available = MirrorService.GetAvailableMirrors(downloadUrl);
+                    if (available.Count > 0)
+                    {
+                        ShowDownloadBar(false);
+                        var mirrorDialog = new MirrorDialog(node.Name, failed, available) { Icon = new WindowIcon(node.Icon) };
+                        await mirrorDialog.ShowDialog(this);
+                        if (mirrorDialog.SelectedMirror != null)
+                        {
+                            MirrorService.SavePreferredMirror(downloadUrl, mirrorDialog.SelectedMirror);
+                            downloadUrl = MirrorService.ApplyMirror(downloadUrl, mirrorDialog.SelectedMirror);
+                            ShowDownloadBar(true);
+                            DownloadSizeText.Text = $"Preparing {node.Name}...";
+                            continue;
+                        }
                     }
 
                     await ShowDialog(node, "Download Failed", ex.Message, "OK");
