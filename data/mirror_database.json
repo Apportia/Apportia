@@ -1,25 +1,21 @@
 {
-    "https://downloads.sourceforge.net": {
-        "https://downloads.sourceforge.net": "Auto-select",
-        "https://pilotfiber.dl.sourceforge.net": "New York, United States",
-        "https://cfhcable.dl.sourceforge.net": "Tampa, United States",
-        "https://netactuate.dl.sourceforge.net": "Durham, NC",
-        "https://gigenet.dl.sourceforge.net": "Fayetteville, United States",
-        "https://cytranet-dal.dl.sourceforge.net": "Dallas, United States",
-        "https://phoenixnap.dl.sourceforge.net": "Phoenix, AZ",
-        "https://cytranet.dl.sourceforge.net": "Las Vegas, NV",
-        "https://altushost-swe.dl.sourceforge.net": "Stockholm, Sweden",
-        "https://sitsa.dl.sourceforge.net": "Villa Maria, Argentina",
-        "https://altushost-bul.dl.sourceforge.net": "Sofia, Bulgaria",
-        "https://netix.dl.sourceforge.net": "Bulgaria",
-        "https://twds.dl.sourceforge.net": "Taipei City, Taiwan",
-        "https://sf-west-interserver-2.dl.sourceforge.net": "United States",
-        "https://excellmedia.dl.sourceforge.net": "Hyderabad, India",
-        "https://ixpeering.dl.sourceforge.net": "Brisbane, Australia"
+    "downloads.sourceforge.net": {
+        "downloads": "Auto-select",
+        "cfhcable": "Tampa, United States",
+        "gigenet": "Fayetteville, United States",
+        "netactuate": "Durham, NC",
+        "phoenixnap": "Phoenix, AZ",
+        "pilotfiber": "New York, United States",
+        "altushost-swe": "Stockholm, Sweden",
+        "altushost-bul": "Sofia, Bulgaria",
+        "netix": "Bulgaria",
+        "sf-west-interserver-2": "United States",
+        "ixpeering": "Brisbane, Australia",
+        "excellmedia": "Hyderabad, India"
     },
-    "http://downloads.portableapps.com": {
-        "http://downloads.portableapps.com": "Default",
-        "http://download2.portableapps.com": "Mirror 2",
-        "http://downloads2.portableapps.com": "Mirror 3"
+    "downloads.portableapps.com": {
+        "downloads": "Default",
+        "download2": "Mirror 2",
+        "downloads2": "Mirror 3"
     }
 }
