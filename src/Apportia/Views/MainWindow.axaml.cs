@@ -72,6 +72,7 @@ public partial class MainWindow : Window
             DataContext = vm;
             _ = Task.WhenAll(
                 _appDatabaseUpdater.TryUpdateAsync(_cts.Token),
+                MirrorService.TryUpdateAsync(_cts.Token),
                 StartIconDownloadsAsync(vm));
             return;
         }
@@ -124,7 +125,9 @@ public partial class MainWindow : Window
 
     private async Task StartFirstRunAsync()
     {
-        await _appDatabaseUpdater.TryUpdateAsync(_cts.Token);
+        await Task.WhenAll(
+            _appDatabaseUpdater.TryUpdateAsync(_cts.Token),
+            MirrorService.TryUpdateAsync(_cts.Token));
         var vm = BuildViewModel();
         SubscribeViewModel(vm);
         await Dispatcher.UIThread.InvokeAsync(() => DataContext = vm);

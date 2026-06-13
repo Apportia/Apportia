@@ -1,60 +1,65 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Apportia.Services;
+
+[JsonSerializable(typeof(Dictionary<string, Dictionary<string, string>>))]
+internal partial class MirrorDatabaseJsonContext : JsonSerializerContext;
 
 internal static class MirrorService
 {
-    private static readonly string DataPath =
+    private const string RemoteUrl =
+        "https://raw.githubusercontent.com/Apportia/Apportia/main/data/mirror_database.json";
+
+    private static readonly string CachePath =
+        Path.Combine(AppContext.BaseDirectory, "Data", "mirror_database.json");
+
+    private static readonly string PrefsPath =
         Path.Combine(AppContext.BaseDirectory, "Data", "mirrors.json");
 
-    private static readonly IReadOnlyDictionary<string, string> SourceForgeMirrors =
-        new Dictionary<string, string>
-        {
-            ["https://downloads.sourceforge.net"] = "United States, San Diego",
-            ["https://kumisystems.dl.sourceforge.net"] = "Austria",
-            ["https://netix.dl.sourceforge.net"] = "Bulgaria, Sofia",
-            ["https://freefr.dl.sourceforge.net"] = "France, Paris",
-            ["https://netcologne.dl.sourceforge.net"] = "Germany, Cologne",
-            ["https://deac-fra.dl.sourceforge.net"] = "Germany, Frankfurt",
-            ["https://deac-riga.dl.sourceforge.net"] = "Latvia, Riga",
-            ["https://deac-ams.dl.sourceforge.net"] = "Netherlands, Amsterdam",
-            ["https://unlimited.dl.sourceforge.net"] = "Serbia, Belgrade",
-            ["https://altushost-swe.dl.sourceforge.net"] = "Sweden, Stockholm",
-            ["https://ufpr.dl.sourceforge.net"] = "Brazil, Parana",
-            ["https://razaoinfo.dl.sourceforge.net"] = "Brazil, Rio Grande do Sul",
-            ["https://sinalbr.dl.sourceforge.net"] = "Brazil, Sao Paulo",
-            ["https://gigenet.dl.sourceforge.net"] = "United States, Chicago",
-            ["https://newcontinuum.dl.sourceforge.net"] = "United States, Chicago",
-            ["https://cytranet.dl.sourceforge.net"] = "United States, Las Vegas",
-            ["https://versaweb.dl.sourceforge.net"] = "United States, Las Vegas",
-            ["https://cfhcable.dl.sourceforge.net"] = "United States, New York",
-            ["https://phoenixnap.dl.sourceforge.net"] = "United States, Phoenix",
-            ["https://ixpeering.dl.sourceforge.net"] = "Australia, Perth",
-            ["https://sitsa.dl.sourceforge.net"] = "Argentina, Cordoba",
-            ["https://yer.dl.sourceforge.net"] = "Azerbaijan, Baku",
-            ["https://udomain.dl.sourceforge.net"] = "Hong Kong",
-            ["https://zenlayer.dl.sourceforge.net"] = "Hong Kong",
-            ["https://excellmedia.dl.sourceforge.net"] = "India, Kolkata",
-            ["https://webwerks.dl.sourceforge.net"] = "India, Kolkata",
-            ["https://jaist.dl.sourceforge.net"] = "Japan, Tokyo",
-            ["https://onboardcloud.dl.sourceforge.net"] = "Singapore",
-            ["https://nchc.dl.sourceforge.net"] = "Taiwan, Taipei",
-            ["https://liquidtelecom.dl.sourceforge.net"] = "Kenya, Nairobi",
-            ["https://tenet.dl.sourceforge.net"] = "South Africa, Johannesburg"
-        };
+    private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? _database;
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
 
-    private static readonly IReadOnlyList<string> PortableAppsMirrors =
-    [
-        "http://downloads.portableapps.com",
-        "http://downloads2.portableapps.com"
-    ];
-
-    private static bool IsSourceForgeUrl(string url)
+    internal static async Task TryUpdateAsync(CancellationToken ct = default)
     {
-        return url.Contains("sourceforge.net", StringComparison.OrdinalIgnoreCase);
+        try
+        {
+            var json = await Http.GetStringAsync(RemoteUrl, ct);
+            Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
+            await File.WriteAllTextAsync(CachePath, json, ct);
+            _database = null;
+        }
+        catch
+        {
+            /* keep existing cache intact on any failure */
+        }
     }
 
-    private static bool IsPortableAppsUrl(string url)
+    private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> GetDatabase()
     {
-        return url.Contains("portableapps.com/portableapps/", StringComparison.OrdinalIgnoreCase);
+        if (_database != null)
+            return _database;
+        try
+        {
+            if (File.Exists(CachePath) &&
+                JsonSerializer.Deserialize(
+                        File.ReadAllText(CachePath),
+                        typeof(Dictionary<string, Dictionary<string, string>>),
+                        MirrorDatabaseJsonContext.Default)
+                    is Dictionary<string, Dictionary<string, string>> dict)
+            {
+                _database = dict.ToDictionary(
+                    kv => kv.Key, IReadOnlyDictionary<string, string> (kv) => kv.Value);
+                return _database;
+            }
+        }
+        catch
+        {
+            /* corrupt or missing cache */
+        }
+
+        _database = new Dictionary<string, IReadOnlyDictionary<string, string>>();
+        return _database;
     }
 
     internal static string? GetCurrentMirrorBase(string url)
@@ -72,14 +77,13 @@ internal static class MirrorService
 
     internal static IReadOnlyList<(string Base, string Label)> GetAvailableMirrors(string url)
     {
-        if (IsSourceForgeUrl(url))
-            return SourceForgeMirrors
-                   .Select(kv => (kv.Key, kv.Value))
-                   .ToList();
-        if (IsPortableAppsUrl(url))
-            return PortableAppsMirrors
-                   .Select(m => (m, m.Replace("http://", string.Empty, StringComparison.OrdinalIgnoreCase)))
-                   .ToList();
+        foreach (var (prefix, mirrors) in GetDatabase())
+        {
+            if (!url.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                continue;
+            return mirrors.Select(kv => (kv.Key, kv.Value)).ToList();
+        }
+
         return [];
     }
 
@@ -87,9 +91,9 @@ internal static class MirrorService
     {
         try
         {
-            if (File.Exists(DataPath))
+            if (File.Exists(PrefsPath))
             {
-                var val = File.ReadAllText(DataPath).Trim();
+                var val = File.ReadAllText(PrefsPath).Trim();
                 return val.Length > 0 ? val : null;
             }
         }
@@ -105,8 +109,8 @@ internal static class MirrorService
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(DataPath)!);
-            File.WriteAllText(DataPath, mirror);
+            Directory.CreateDirectory(Path.GetDirectoryName(PrefsPath)!);
+            File.WriteAllText(PrefsPath, mirror);
         }
         catch
         {
