@@ -37,9 +37,9 @@ jobs:
           )
 
           PORTABLEAPPS_MIRRORS = {
-              "http://downloads.portableapps.com":  "Default",
-              "http://download2.portableapps.com":  "Mirror 2",
-              "http://downloads2.portableapps.com": "Mirror 3",
+              "downloads":  "Default",
+              "download2":  "Mirror 2",
+              "downloads2": "Mirror 3",
           }
 
 
@@ -50,12 +50,12 @@ jobs:
               )
               if result.returncode not in (0, 8):
                   sys.exit(f"ERROR: wget exited {result.returncode}: {result.stderr.strip()}")
-              mirrors = {"https://downloads.sourceforge.net": "Auto-select"}
+              mirrors = {"downloads": "Auto-select"}
               for m in _RE_ENTRY.finditer(result.stdout):
                   slug = m.group(1).strip()
                   if slug == "autoselect":
                       continue
-                  mirrors[f"https://{slug}.dl.sourceforge.net"] = (m.group(2) or "").strip()
+                  mirrors[slug] = (m.group(2) or "").strip()
               if len(mirrors) <= 1:
                   sys.exit("ERROR: No SourceForge mirrors parsed — page structure may have changed.")
               return mirrors
@@ -63,8 +63,8 @@ jobs:
 
           def main():
               data = {
-                  "https://downloads.sourceforge.net": fetch_sourceforge(),
-                  "http://downloads.portableapps.com": PORTABLEAPPS_MIRRORS,
+                  "downloads.sourceforge.net": fetch_sourceforge(),
+                  "downloads.portableapps.com": PORTABLEAPPS_MIRRORS,
               }
               result = json.dumps(data, indent=4, ensure_ascii=False) + "\n"
               if TARGET.exists() and TARGET.read_text(encoding="utf-8") == result:
