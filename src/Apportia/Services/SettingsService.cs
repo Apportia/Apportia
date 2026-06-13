@@ -24,11 +24,20 @@ public enum InstallFilter
     NotInstalled
 }
 
-public sealed class AppSettings
+public sealed class FilterViewSettings
 {
     public CategoryDisplayMode CategoryDisplay { get; set; } = CategoryDisplayMode.Full;
-    public InstallFilter InstallFilter { get; set; } = InstallFilter.All;
     public CategoryScope CategoryScope { get; set; } = CategoryScope.Standard;
+    public int FontSize { get; set; } = 13;
+    public int IconSize { get; set; } = 24;
+    public bool IsGridView { get; set; }
+    public double WindowWidth { get; set; } = 1024;
+    public double WindowHeight { get; set; } = 720;
+}
+
+public sealed class AppSettings
+{
+    public InstallFilter InstallFilter { get; set; } = InstallFilter.All;
     public string SortColumn { get; set; } = "Name";
     public bool SortDescending { get; set; }
     public double ColumnName { get; set; } = 200;
@@ -38,12 +47,8 @@ public sealed class AppSettings
     public double ColumnJoined { get; set; } = 90;
     public double ColumnUpdated { get; set; } = 90;
     public double ColumnUsed { get; set; } = 75;
-    public bool IsGridView { get; set; }
     public string Theme { get; set; } = "Default";
-    public double WindowWidth { get; set; } = 1024;
-    public double WindowHeight { get; set; } = 720;
-    public int IconSize { get; set; } = 24;
-    public int FontSize { get; set; } = 13;
+    public Dictionary<string, FilterViewSettings> ViewPresets { get; set; } = new();
 }
 
 public static class SettingsService
@@ -116,5 +121,7 @@ public static class SettingsService
 }
 
 [JsonSerializable(typeof(AppSettings))]
+[JsonSerializable(typeof(FilterViewSettings))]
+[JsonSerializable(typeof(Dictionary<string, FilterViewSettings>))]
 [JsonSourceGenerationOptions(WriteIndented = true)]
 internal partial class SettingsJsonContext : JsonSerializerContext;

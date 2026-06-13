@@ -29,6 +29,7 @@ public partial class MainWindow : Window
     private AppNode? _activeNode;
 
     private bool _ctrlHeld;
+    private FilterViewSettings _defaultView = new();
 
     private bool _downloading;
     private bool _forceClose;
@@ -69,10 +70,10 @@ public partial class MainWindow : Window
             var vm = BuildViewModel();
             SubscribeViewModel(vm);
             DataContext = vm;
+            ApplyViewPreset(vm, false);
             _ = Task.WhenAll(
                 _appDatabaseUpdater.TryUpdateAsync(_cts.Token),
-                MirrorService.TryUpdateAsync(_cts.Token),
-                StartIconDownloadsAsync(vm));
+                MirrorService.TryUpdateAsync(_cts.Token));
             return;
         }
 
@@ -86,10 +87,12 @@ public partial class MainWindow : Window
     private MainViewModel BuildViewModel()
     {
         var settings = SettingsService.Load();
-        Width = settings.WindowWidth;
-        Height = settings.WindowHeight;
+        _defaultView = settings.ViewPresets.TryGetValue("Default", out var dv) ? dv : new FilterViewSettings();
 
-        var vm = new MainViewModel(AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath), _iconManager, settings.IconSize)
+        Width = _defaultView.WindowWidth;
+        Height = _defaultView.WindowHeight;
+
+        var vm = new MainViewModel(AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath), _iconManager, _defaultView.IconSize)
         {
             Columns =
             {
@@ -104,13 +107,12 @@ public partial class MainWindow : Window
         };
 
         vm.Columns.SetSort(settings.SortColumn, settings.SortDescending);
-        vm.Columns.IconSize = settings.IconSize;
-        vm.Columns.FontSize = settings.FontSize;
-
-        vm.CategoryDisplay = settings.CategoryDisplay;
+        vm.Columns.IconSize = _defaultView.IconSize;
+        vm.Columns.FontSize = _defaultView.FontSize;
+        vm.CategoryDisplay = _defaultView.CategoryDisplay;
+        vm.CategoryScope = _defaultView.CategoryScope;
+        vm.Columns.IsGridView = _defaultView.IsGridView;
         vm.InstallFilter = settings.InstallFilter;
-        vm.CategoryScope = settings.CategoryScope;
-        vm.Columns.IsGridView = settings.IsGridView;
 
         Application.Current!.RequestedThemeVariant = settings.Theme switch
         {
@@ -130,7 +132,7 @@ public partial class MainWindow : Window
         var vm = BuildViewModel();
         SubscribeViewModel(vm);
         await Dispatcher.UIThread.InvokeAsync(() => DataContext = vm);
-        await StartIconDownloadsAsync(vm);
+        await Dispatcher.UIThread.InvokeAsync(() => ApplyViewPreset(vm, false));
     }
 
     private async Task StartIconDownloadsAsync(MainViewModel vm)
@@ -1790,7 +1792,7 @@ public partial class MainWindow : Window
                     _ = StartIconDownloadsAsync(vm);
                     break;
                 case nameof(MainViewModel.InstallFilter):
-                    _ = StartIconDownloadsAsync(vm);
+                    ApplyViewPreset(vm);
                     break;
             }
         };
@@ -2199,11 +2201,25 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel vm)
             return;
         var theme = Application.Current?.RequestedThemeVariant;
+        var existing = SettingsService.Load();
+        if (!existing.ViewPresets.ContainsKey(vm.InstallFilter.ToString()))
+        {
+            _defaultView = new FilterViewSettings
+            {
+                CategoryDisplay = vm.CategoryDisplay,
+                CategoryScope = vm.CategoryScope,
+                FontSize = vm.Columns.FontSize,
+                IconSize = vm.Columns.IconSize,
+                IsGridView = vm.Columns.IsGridView,
+                WindowWidth = Width,
+                WindowHeight = Height
+            };
+        }
+
+        existing.ViewPresets["Default"] = _defaultView;
         SettingsService.Save(new AppSettings
         {
-            CategoryDisplay = vm.CategoryDisplay,
             InstallFilter = vm.InstallFilter,
-            CategoryScope = vm.CategoryScope,
             SortColumn = vm.Columns.SortColumn,
             SortDescending = vm.Columns.SortDescending,
             ColumnName = vm.Columns.Name,
@@ -2213,14 +2229,108 @@ public partial class MainWindow : Window
             ColumnJoined = vm.Columns.Joined,
             ColumnUpdated = vm.Columns.Updated,
             ColumnUsed = vm.Columns.Used,
-            IsGridView = vm.Columns.IsGridView,
             Theme = theme == ThemeVariant.Light ? "Light" : theme == ThemeVariant.Dark ? "Dark" : "Default",
-            IconSize = vm.Columns.IconSize,
-            FontSize = vm.Columns.FontSize,
-            WindowWidth = Width,
-            WindowHeight = Height
+            ViewPresets = existing.ViewPresets
         });
         SearchHistoryService.Save(_searchHistory);
+    }
+
+    private async void OnSaveView(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await OnSaveViewAsync();
+        }
+        catch
+        {
+            /* save-view must never crash the app */
+        }
+    }
+
+    private async Task OnSaveViewAsync()
+    {
+        if (DataContext is not MainViewModel vm)
+            return;
+
+        var dialog = new SaveViewDialog();
+        await dialog.ShowDialog(this);
+
+        if (dialog.SelectedFilters.Count == 0)
+            return;
+
+        var settings = SettingsService.Load();
+
+        if (dialog.DialogAction == SaveViewDialog.Action.Reset)
+        {
+            foreach (var filter in dialog.SelectedFilters)
+                settings.ViewPresets.Remove(filter.ToString());
+        }
+        else
+        {
+            var preset = new FilterViewSettings
+            {
+                CategoryDisplay = vm.CategoryDisplay,
+                CategoryScope = vm.CategoryScope,
+                FontSize = vm.Columns.FontSize,
+                IconSize = vm.Columns.IconSize,
+                IsGridView = vm.Columns.IsGridView,
+                WindowWidth = Width,
+                WindowHeight = Height
+            };
+            foreach (var filter in dialog.SelectedFilters)
+                settings.ViewPresets[filter.ToString()] = preset;
+        }
+
+        SettingsService.Save(settings);
+
+        if (dialog.SelectedFilters.Contains(vm.InstallFilter))
+            ApplyViewPreset(vm);
+    }
+
+    private void ApplyViewPreset(MainViewModel vm, bool centerWindow = true)
+    {
+        var settings = SettingsService.Load();
+        settings.ViewPresets.TryGetValue(vm.InstallFilter.ToString(), out var preset);
+        preset ??= _defaultView;
+
+        vm.CategoryDisplay = preset.CategoryDisplay;
+        vm.CategoryScope = preset.CategoryScope;
+        vm.Columns.FontSize = preset.FontSize;
+        vm.Columns.IconSize = preset.IconSize;
+        vm.Columns.IsGridView = preset.IsGridView;
+
+        var deltaX = (int)((preset.WindowWidth - Width) / 2);
+        var deltaY = (int)((preset.WindowHeight - Height) / 2);
+        Width = preset.WindowWidth;
+        Height = preset.WindowHeight;
+
+        UpdateIconSizeButton();
+        UpdateViewModeButton();
+        UpdateFontSizeButton();
+        UpdateCategoryScopeButton();
+        UpdateCategoryDisplayButton();
+        (IconSizeButton.Parent as Control)?.InvalidateMeasure();
+        _ = ReloadIconsForSizeAsync(vm);
+
+        if (!centerWindow)
+            return;
+
+        var posX = Position.X - deltaX;
+        var posY = Position.Y - deltaY;
+        Position = new PixelPoint(posX, posY);
+
+        var screen = Screens.ScreenFromWindow(this);
+        if (screen == null)
+            return;
+
+        var wa = screen.WorkingArea;
+        var scale = RenderScaling;
+        var physW = (int)(Width * scale);
+        var physH = (int)(Height * scale);
+        var x = Math.Clamp(posX, wa.X, wa.X + wa.Width - physW);
+        var y = Math.Clamp(posY, wa.Y, wa.Y + wa.Height - physH);
+        if (x != Position.X || y != Position.Y)
+            Position = new PixelPoint(x, y);
     }
 
     private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)

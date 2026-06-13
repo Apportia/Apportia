@@ -1,0 +1,32 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Apportia.Views.SaveViewDialog"
+        SizeToContent="Height"
+        Width="300"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+    <StackPanel Margin="20" Spacing="16">
+        <TextBlock Text="Save current view settings for:"
+                   Foreground="{DynamicResource AppTextBrush}" />
+        <StackPanel Spacing="8">
+            <CheckBox x:Name="AllAppsCheck"
+                      Content="All Apps"
+                      Foreground="{DynamicResource AppTextBrush}" />
+            <CheckBox x:Name="InstalledCheck"
+                      Content="Installed"
+                      Foreground="{DynamicResource AppTextBrush}" />
+            <CheckBox x:Name="NotInstalledCheck"
+                      Content="Not Installed"
+                      Foreground="{DynamicResource AppTextBrush}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="8">
+            <Button Content="Save" Click="OnSave" />
+            <Button Content="Reset" Click="OnReset" />
+            <Button Content="Cancel" Click="OnCancel" />
+        </StackPanel>
+    </StackPanel>
+</Window>
