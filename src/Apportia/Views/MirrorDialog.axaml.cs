@@ -1,3 +1,4 @@
+using Apportia.Platform;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -30,6 +31,12 @@ public partial class MirrorDialog : Window
     }
 
     public string? SelectedMirror { get; private set; }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        Win32Window.ApplyDarkTitlebar(this);
+    }
 
     private void OnRetry(object? sender, RoutedEventArgs e)
     {

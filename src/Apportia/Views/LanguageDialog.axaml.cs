@@ -1,3 +1,4 @@
+using Apportia.Platform;
 using Apportia.Services;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -34,6 +35,12 @@ public partial class LanguageDialog : Window
     }
 
     public string? SelectedLanguageKey { get; private set; }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        Win32Window.ApplyDarkTitlebar(this);
+    }
 
     private void OnInstall(object? sender, RoutedEventArgs e)
     {

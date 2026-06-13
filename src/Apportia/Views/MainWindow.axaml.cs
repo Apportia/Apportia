@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Apportia.Models;
+using Apportia.Platform;
 using Apportia.Services;
 using Apportia.ViewModels;
 using Avalonia;
@@ -1743,17 +1743,14 @@ public partial class MainWindow : Window
 
     private void ApplyDarkTitlebar(bool dark)
     {
-        if (!OperatingSystem.IsWindows())
-            return;
-        var hwnd = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
-        if (hwnd == IntPtr.Zero)
-            return;
-        var value = dark ? 1 : 0;
-        DwmSetWindowAttribute(hwnd, 20 /* DWMWA_USE_IMMERSIVE_DARK_MODE */, ref value, sizeof(int));
+        Win32Window.ApplyDarkTitlebar(this, dark);
     }
 
-    [LibraryImport("dwmapi.dll")]
-    private static partial void DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        ApplyDarkTitlebar(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
+    }
 
     private void OnIconSizeCycle(object? sender, RoutedEventArgs e)
     {

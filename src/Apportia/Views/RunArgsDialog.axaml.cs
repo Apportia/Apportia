@@ -1,3 +1,4 @@
+using Apportia.Platform;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -164,6 +165,12 @@ public partial class RunArgsDialog : Window
     {
         Choice = RunChoice.WithoutArgs;
         Close();
+    }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        Win32Window.ApplyDarkTitlebar(this);
     }
 
     private void OnCancel(object? sender, RoutedEventArgs e)

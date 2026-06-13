@@ -1,3 +1,4 @@
+using Apportia.Platform;
 using Apportia.Services;
 using Apportia.ViewModels;
 using Avalonia;
@@ -571,6 +572,7 @@ public partial class CustomAppWindow : Window
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+        Win32Window.ApplyDarkTitlebar(this);
         if (IconGalleryBorder.IsVisible)
             ShiftForGallery(true);
         IconGalleryBorder.PropertyChanged += (_, args) =>

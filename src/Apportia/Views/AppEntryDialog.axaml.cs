@@ -1,3 +1,4 @@
+using Apportia.Platform;
 using Apportia.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -56,6 +57,12 @@ public partial class AppEntryDialog : Window
                                    })
                                    .ToArray();
         LanguagesSection.IsVisible = true;
+    }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        Win32Window.ApplyDarkTitlebar(this);
     }
 
     private void OnClose(object? sender, RoutedEventArgs e)

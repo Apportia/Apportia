@@ -1,3 +1,4 @@
+using Apportia.Platform;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -19,6 +20,12 @@ public partial class ExePickerDialog : Window
     }
 
     public string? SelectedExe { get; private set; }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        Win32Window.ApplyDarkTitlebar(this);
+    }
 
     private void OnSelect(object? sender, RoutedEventArgs e)
     {

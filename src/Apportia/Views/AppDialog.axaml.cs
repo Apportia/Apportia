@@ -1,3 +1,4 @@
+using Apportia.Platform;
 using Avalonia.Controls;
 
 namespace Apportia.Views;
@@ -27,4 +28,10 @@ public partial class AppDialog : Window
     }
 
     public string? Result { get; private set; }
+
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        Win32Window.ApplyDarkTitlebar(this);
+    }
 }
