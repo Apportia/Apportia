@@ -35,7 +35,6 @@ jobs:
               r'<li\s+id="([^"]+)">.*?</label>\s*(?:\(([^)]*)\))?',
               re.DOTALL,
           )
-          _RE_WGET_VERSION = re.compile(r'GNU Wget ([\d.]+)')
 
           PORTABLEAPPS_MIRRORS = {
               "http://downloads.portableapps.com":  "Default",
@@ -44,17 +43,9 @@ jobs:
           }
 
 
-          def wget_version():
-              result = subprocess.run(["wget", "--version"], capture_output=True, text=True)
-              m = _RE_WGET_VERSION.search(result.stdout)
-              if not m:
-                  sys.exit("ERROR: Could not determine wget version.")
-              return m.group(1)
-
-
-          def fetch_sourceforge(agent):
+          def fetch_sourceforge():
               result = subprocess.run(
-                  ["wget", "-q", "-O", "-", "--user-agent", agent, MIRROR_PAGE],
+                  ["wget", "-q", "-O", "-", MIRROR_PAGE],
                   capture_output=True, text=True, encoding="utf-8",
               )
               if result.returncode not in (0, 8):
@@ -71,16 +62,9 @@ jobs:
 
 
           def main():
-              agent = f"Wget/{wget_version()}"
               data = {
-                  "https://downloads.sourceforge.net": {
-                      "UserAgent": agent,
-                      "Mirrors":   fetch_sourceforge(agent),
-                  },
-                  "http://downloads.portableapps.com": {
-                      "UserAgent": "Wget/1.21.4",
-                      "Mirrors":   PORTABLEAPPS_MIRRORS,
-                  },
+                  "https://downloads.sourceforge.net": fetch_sourceforge(),
+                  "http://downloads.portableapps.com": PORTABLEAPPS_MIRRORS,
               }
               result = json.dumps(data, indent=4, ensure_ascii=False) + "\n"
               if TARGET.exists() and TARGET.read_text(encoding="utf-8") == result:
