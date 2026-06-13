@@ -971,10 +971,17 @@ public partial class MainWindow : Window
 
     private async void OnMenuAppDatabaseEntry(object? sender, RoutedEventArgs e)
     {
-        if (NodeFromMenu(sender) is not { } node)
-            return;
-        var dialog = new AppEntryDialog(node) { Icon = new WindowIcon(node.Icon) };
-        await dialog.ShowDialog(this);
+        try
+        {
+            if (NodeFromMenu(sender) is not { } node)
+                return;
+            var dialog = new AppEntryDialog(node) { Icon = new WindowIcon(node.Icon) };
+            await dialog.ShowDialog(this);
+        }
+        catch
+        {
+            /* window may be closing or node data is invalid */
+        }
     }
 
     private static AppNode? NodeFromMenu(object? sender)
