@@ -89,7 +89,7 @@ public partial class MainWindow : Window
         Width = settings.WindowWidth;
         Height = settings.WindowHeight;
 
-        var vm = new MainViewModel(IniParser.Parse(AppDatabaseUpdater.CachePath), _iconManager, settings.IconSize)
+        var vm = new MainViewModel(AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath), _iconManager, settings.IconSize)
         {
             Columns =
             {
@@ -869,6 +869,7 @@ public partial class MainWindow : Window
                     string.Empty,
                     string.Empty,
                     win.AppUpdateDate,
+                    string.Empty,
                     win.AppWebsite);
 
                 var icon = iconChanged
@@ -954,11 +955,11 @@ public partial class MainWindow : Window
 
     private void OnMenuVisitWebsite(object? sender, RoutedEventArgs e)
     {
-        if (NodeFromMenu(sender) is not { } node || string.IsNullOrEmpty(node.AppUrl))
+        if (NodeFromMenu(sender) is not { } node || string.IsNullOrEmpty(node.Website))
             return;
         try
         {
-            Process.Start(new ProcessStartInfo(node.AppUrl) { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo(node.Website) { UseShellExecute = true });
         }
         catch
         {
@@ -1120,6 +1121,7 @@ public partial class MainWindow : Window
                     string.Empty,
                     string.Empty,
                     win.AppUpdateDate,
+                    string.Empty,
                     win.AppWebsite);
 
                 var icon = _iconManager.GetCustomIcon(folderName);
@@ -1287,7 +1289,7 @@ public partial class MainWindow : Window
             {
                 try
                 {
-                    localPath = await _downloadService.DownloadAsync(downloadUrl, downloadFile, progress, _installCts.Token);
+                    localPath = await _downloadService.DownloadAsync(downloadUrl, downloadFile, progress, node.UserAgent, _installCts.Token);
                     await progressCts.CancelAsync();
                     progressCts.Dispose();
                     break;

@@ -20,16 +20,14 @@ public sealed class AppNode : INotifyPropertyChanged
         ColumnWidths columns,
         bool isInstalled = false,
         bool isCustom = false,
-        bool isAdvanced = false,
-        bool isLegacy = false,
         bool isPlugin = false,
         string currentDate = "")
     {
         _isInstalled = isInstalled;
         _currentDate = currentDate;
         IsCustom = isCustom;
-        IsAdvanced = isAdvanced;
-        IsLegacy = isLegacy;
+        IsAdvanced = string.Equals(entry.Class, "Advanced", StringComparison.OrdinalIgnoreCase);
+        IsLegacy = string.Equals(entry.Class, "Legacy", StringComparison.OrdinalIgnoreCase);
         IsPlugin = isPlugin;
         _icon = icon;
         Columns = columns;
@@ -49,7 +47,8 @@ public sealed class AppNode : INotifyPropertyChanged
         Hash = entry.Hash;
         ReleaseDate = entry.ReleaseDate;
         UpdateDate = entry.UpdateDate;
-        AppUrl = entry.AppUrl;
+        Website = entry.Website;
+        UserAgent = entry.UserAgent;
         _languageVariants = entry.LanguageVariants;
         columns.PropertyChanged += (_, e) =>
         {
@@ -130,7 +129,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public bool IsPlugin { get; }
     public bool RequiresJava { get; }
     public bool IsHighlighted => _isInstalled && Columns.HighlightInstalled;
-    public bool HasUrl => !string.IsNullOrEmpty(AppUrl);
+    public bool HasUrl => !string.IsNullOrEmpty(Website);
     public bool IsCustom { get; }
     public bool IsIndented { get; set; }
 
@@ -185,7 +184,8 @@ public sealed class AppNode : INotifyPropertyChanged
         }
     }
 
-    public string AppUrl { get; }
+    public string Website { get; }
+    public string UserAgent { get; }
 
     public string UsedSize
     {

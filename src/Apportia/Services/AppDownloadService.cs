@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
@@ -15,7 +14,6 @@ public sealed class AppDownloadService : IDisposable
         _downloadDir = downloadDir;
         Directory.CreateDirectory(downloadDir);
         _http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Wget", "1.21.4"));
     }
 
     public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
@@ -61,6 +59,7 @@ public sealed class AppDownloadService : IDisposable
         string url,
         string fileName,
         IProgress<DownloadProgress>? progress = null,
+        string userAgent = "",
         CancellationToken ct = default)
     {
         var localPath = Path.Combine(_downloadDir, fileName);
@@ -71,7 +70,9 @@ public sealed class AppDownloadService : IDisposable
         HttpResponseMessage response;
         try
         {
-            response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, linked.Token);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.UserAgent.ParseAdd(string.IsNullOrEmpty(userAgent) ? "Wget/1.25" : userAgent);
+            response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token);
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {

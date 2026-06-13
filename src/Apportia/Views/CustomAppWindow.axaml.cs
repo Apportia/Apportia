@@ -74,7 +74,7 @@ public partial class CustomAppWindow : Window
 
         NameBox.Text = node.Name;
         DescriptionBox.Text = node.Description;
-        WebsiteBox.Text = node.AppUrl;
+        WebsiteBox.Text = node.Website;
 
         var (storedVersion, storedVersionSource) = CustomAppService.LoadVersionInfo(node.SectionName);
 
@@ -170,7 +170,7 @@ public partial class CustomAppWindow : Window
             var appInfoPath = Path.Combine(folder, "App", "AppInfo", "appinfo.ini");
             if (!File.Exists(appInfoPath))
                 return;
-            var details = IniParser.ReadAppInfoDetails(appInfoPath);
+            var details = AppInfoReader.Read(appInfoPath);
             if (!string.IsNullOrEmpty(details.Name))
                 NameBox.Text = details.Name;
             if (!string.IsNullOrEmpty(details.Description))

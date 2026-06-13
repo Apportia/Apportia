@@ -23,7 +23,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public MainViewModel(IReadOnlyList<AppEntry> entries, IconManager iconManager, int iconSize = 24)
     {
-        var visible = CategoryManager.Filter(entries);
+        var visible = entries.Where(e => !string.Equals(e.Category, "None", StringComparison.OrdinalIgnoreCase)).ToList();
         var appsBaseDir = _appsBaseDir;
 
         // Group by real category (advanced apps are only shown under "Advanced" when not installed)
@@ -60,8 +60,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
                                      Columns,
                                      exists,
                                      false,
-                                     CategoryManager.IsAdvanced(entry),
-                                     CategoryManager.IsLegacy(entry),
                                      PluginService.IsPlugin(entry.SectionName),
                                      currentDate);
                                  node.PropertyChanged += OnNodePropertyChanged;
@@ -94,9 +92,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
         }
 
-        _advancedCategoryNode = new CategoryNode(CategoryManager.Advanced, Columns);
+        _advancedCategoryNode = new CategoryNode("Advanced", Columns);
         _advancedCategoryNode.PropertyChanged += OnCategoryPropertyChanged;
-        _legacyCategoryNode = new CategoryNode(CategoryManager.Legacy, Columns);
+        _legacyCategoryNode = new CategoryNode("Legacy", Columns);
         _legacyCategoryNode.PropertyChanged += OnCategoryPropertyChanged;
 
         UpdateHasInstalledApps();

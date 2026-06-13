@@ -15,7 +15,9 @@ public sealed record AppEntry(
     string Hash,
     string ReleaseDate,
     string UpdateDate,
-    string AppUrl,
+    string UserAgent,
+    string Website,
+    string Class = "",
     IReadOnlyDictionary<string, (string File, string Hash)>? LanguageVariants = null,
     bool RequiresJava = false
 );

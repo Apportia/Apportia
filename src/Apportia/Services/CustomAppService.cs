@@ -78,7 +78,8 @@ public static class CustomAppService
                                string.Empty,
                                string.Empty,
                                info.UpdateDate,
-                               info.AppUrl
+                               string.Empty,
+                               info.Website
                            ));
             }
             catch
@@ -130,7 +131,7 @@ public static class CustomAppService
             Name = name,
             Description = description,
             ExeFile = exeFile,
-            AppUrl = website,
+            Website = website,
             Category = category,
             SubCategory = subCategory,
             PackageVersion = version,
@@ -176,7 +177,7 @@ public static class CustomAppService
             Category = category,
             SubCategory = subCategory,
             ExeFile = exeFile,
-            AppUrl = website,
+            Website = website,
             PackageVersion = version,
             VersionSource = versionSource,
             UpdateDate = updateDate
