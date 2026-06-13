@@ -33,7 +33,7 @@ internal sealed class GitHubRelease
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 internal partial class UpdateJsonContext : JsonSerializerContext;
 
-public static class AppSelfUpdater
+public static partial class AppSelfUpdater
 {
     private const string ApiUrl = "https://api.github.com/repos/Apportia/Apportia/releases/latest";
 
@@ -52,8 +52,7 @@ public static class AppSelfUpdater
                 return null;
             if (latest <= current)
                 return null;
-            var asset = release.Assets
-                               .FirstOrDefault(a => a.BrowserDownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+            var asset = release.Assets.FirstOrDefault(a => a.BrowserDownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
             return asset == null ? null : new AppUpdateInfo(latest, asset.BrowserDownloadUrl);
         }
         catch
@@ -115,8 +114,8 @@ public static class AppSelfUpdater
         }
     }
 
-    [DllImport("libc")]
-    private static extern int system(string command);
+    [LibraryImport("libc", EntryPoint = "system", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial void System(string command);
 
     [SupportedOSPlatform("linux")]
     private static void ApplyLinux(string tempDir, string installDir)
@@ -154,7 +153,7 @@ public static class AppSelfUpdater
         File.SetUnixFileMode(
             scriptPath,
             UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        system($"sh \"{scriptPath}\" &");
+        System($"sh \"{scriptPath}\" &");
         Environment.Exit(0);
     }
 
