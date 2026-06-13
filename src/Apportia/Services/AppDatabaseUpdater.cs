@@ -99,10 +99,9 @@ public sealed class AppDatabaseUpdater : IDisposable
             using var stream = new MemoryStream(bytes);
             using var archive = SevenZipArchive.OpenArchive(stream, new ReaderOptions());
 
-            var iniEntry = archive.Entries
-                                  .FirstOrDefault(e =>
-                                                      !e.IsDirectory &&
-                                                      e.Key?.EndsWith(".ini", StringComparison.OrdinalIgnoreCase) == true);
+            var iniEntry =
+                archive.Entries
+                       .FirstOrDefault(e => !e.IsDirectory && e.Key?.EndsWith(".ini", StringComparison.OrdinalIgnoreCase) == true);
 
             if (iniEntry is null)
                 return null;
