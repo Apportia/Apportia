@@ -1,0 +1,158 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:Apportia.Views"
+        x:Class="Apportia.Views.AppEntryDialog"
+        Title="App Database Entry"
+        Width="710"
+        Height="552"
+        MinWidth="710"
+        MinHeight="552"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.sectionHeader">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style Selector="Border.sectionSep">
+            <Setter Property="BorderBrush" Value="{DynamicResource AppSeparatorBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,10">
+            <Button Content="Close" HorizontalAlignment="Right" Click="OnClose" />
+        </Border>
+
+        <ScrollViewer Padding="16,14,16,0">
+            <StackPanel Spacing="0">
+
+                <!-- General -->
+                <Border Classes="sectionSep">
+                    <TextBlock Classes="sectionHeader" Text="GENERAL" />
+                </Border>
+                <ItemsControl x:Name="GeneralList" Margin="0,0,0,16">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="views:EntryField">
+                            <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
+                                <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AppSubTextBrush}"
+                                           VerticalAlignment="Top" />
+                                <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource AppTextBrush}"
+                                           VerticalAlignment="Top" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Version -->
+                <Border Classes="sectionSep">
+                    <TextBlock Classes="sectionHeader" Text="VERSION" />
+                </Border>
+                <ItemsControl x:Name="VersionList" Margin="0,0,0,16">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="views:EntryField">
+                            <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
+                                <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AppSubTextBrush}"
+                                           VerticalAlignment="Top" />
+                                <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource AppTextBrush}"
+                                           VerticalAlignment="Top" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Download -->
+                <Border Classes="sectionSep">
+                    <TextBlock Classes="sectionHeader" Text="DOWNLOAD" />
+                </Border>
+                <ItemsControl x:Name="DownloadList" Margin="0,0,0,16">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="views:EntryField">
+                            <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
+                                <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AppSubTextBrush}"
+                                           VerticalAlignment="Top" />
+                                <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource AppTextBrush}"
+                                           VerticalAlignment="Top" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Languages -->
+                <StackPanel x:Name="LanguagesSection" IsVisible="False" Margin="0,0,0,16">
+                    <Border Classes="sectionSep">
+                        <TextBlock Classes="sectionHeader" Text="LANGUAGES" />
+                    </Border>
+                    <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="110,*,*"
+                                  Background="{DynamicResource AppColHeaderBrush}"
+                                  Margin="0">
+                                <TextBlock Grid.Column="0" Text="Language"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                                <TextBlock Grid.Column="1" Text="File"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                                <TextBlock Grid.Column="2" Text="Hash"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                            </Grid>
+                            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                    BorderThickness="0,1,0,0">
+                                <ItemsControl x:Name="LanguageList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="views:LanguageRow">
+                                            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                                    BorderThickness="0,0,0,1">
+                                                <Grid ColumnDefinitions="110,*,*">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Language}"
+                                                               Padding="8,5"
+                                                               Foreground="{DynamicResource AppTextBrush}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding File}"
+                                                               Padding="8,5"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource AppTextBrush}" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Hash}"
+                                                               Padding="8,5"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource AppSubTextBrush}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

@@ -969,6 +969,14 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void OnMenuAppDatabaseEntry(object? sender, RoutedEventArgs e)
+    {
+        if (NodeFromMenu(sender) is not { } node)
+            return;
+        var dialog = new AppEntryDialog(node) { Icon = new WindowIcon(node.Icon) };
+        await dialog.ShowDialog(this);
+    }
+
     private static AppNode? NodeFromMenu(object? sender)
     {
         return (sender as MenuItem)?.FindAncestorOfType<ContextMenu>()?.DataContext as AppNode;

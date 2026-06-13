@@ -425,6 +425,7 @@
                                                 <Separator />
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
                                                           Click="OnMenuSettings" />
+                                                <MenuItem Header="Show Database Entry" Click="OnMenuAppDatabaseEntry" />
                                                 <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
                                                           Click="OnMenuVisitWebsite" />
                                             </ContextMenu>
@@ -603,6 +604,7 @@
                                                           Click="OnMenuSettings" />
                                                 <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
                                                           Click="OnMenuVisitWebsite" />
+                                                <MenuItem Header="App Database Entry" Click="OnMenuAppDatabaseEntry" />
                                             </ContextMenu>
                                         </Border.ContextMenu>
                                         <StackPanel HorizontalAlignment="Center" Spacing="4">
