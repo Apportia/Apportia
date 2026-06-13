@@ -26,7 +26,7 @@ public partial class AppEntryDialog : Window
             new EntryField("Category", node.Category),
             new EntryField("Subcategory", node.SubCategory),
             new EntryField("Website", node.Website),
-            new EntryField("Release Date", node.ReleaseDate),
+            new EntryField("Joined Date", node.JoinedDate),
             new EntryField("Class", node.IsAdvanced ? "Advanced" : node.IsLegacy ? "Legacy" : ""),
             new EntryField("Requires Java", node.RequiresJava ? "Yes" : "")
         );

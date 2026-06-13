@@ -45,7 +45,7 @@ public sealed class AppNode : INotifyPropertyChanged
         DownloadFile = entry.DownloadFile;
         DownloadPath = entry.DownloadPath;
         Hash = entry.Hash;
-        ReleaseDate = entry.ReleaseDate;
+        JoinedDate = entry.JoinedDate;
         UpdateDate = entry.UpdateDate;
         Website = entry.Website;
         UserAgent = entry.UserAgent;
@@ -167,7 +167,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public string DownloadFile { get; }
     public string DownloadPath { get; }
     public string Hash { get; }
-    public string ReleaseDate { get; }
+    public string JoinedDate { get; }
     public string UpdateDate { get; }
 
     public string CurrentDate

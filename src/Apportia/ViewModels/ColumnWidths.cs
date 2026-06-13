@@ -80,7 +80,7 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         set => Set(ref field, Clamp(value, 70, 160));
     } = 90;
 
-    public double Released
+    public double Joined
     {
         get;
         set => Set(ref field, Clamp(value, 70, 160));
@@ -104,7 +104,7 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         set => Set(ref field, value);
     }
 
-    public bool ShowReleasedColumn
+    public bool ShowJoinedColumn
     {
         get;
         set => Set(ref field, value);
@@ -139,7 +139,7 @@ public sealed class ColumnWidths : INotifyPropertyChanged
     public string DownloadHeader => Header("Download");
     public string InstallHeader => Header("Install");
     public string CurrentHeader => "Current";
-    public string ReleasedHeader => Header("Released");
+    public string JoinedHeader => Header("Joined");
     public string UpdatedHeader => Header("Updated");
     public string UsedHeader => Header("Used");
 
@@ -166,7 +166,7 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         foreach (var h in new[]
         {
             nameof(NameHeader), nameof(VersionHeader), nameof(DownloadHeader),
-            nameof(InstallHeader), nameof(ReleasedHeader), nameof(UpdatedHeader),
+            nameof(InstallHeader), nameof(JoinedHeader), nameof(UpdatedHeader),
             nameof(UsedHeader)
         })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(h));

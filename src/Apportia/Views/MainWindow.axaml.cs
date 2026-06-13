@@ -97,7 +97,7 @@ public partial class MainWindow : Window
                 Version = settings.ColumnVersion,
                 Download = settings.ColumnDownload,
                 Install = settings.ColumnInstall,
-                Released = settings.ColumnReleased,
+                Joined = settings.ColumnJoined,
                 Updated = settings.ColumnUpdated,
                 Used = settings.ColumnUsed
             }
@@ -2184,7 +2184,7 @@ public partial class MainWindow : Window
             case "Download": vm.Columns.Download -= delta; break;
             case "Install": vm.Columns.Install -= delta; break;
             case "Current": vm.Columns.Current -= delta; break;
-            case "Released": vm.Columns.Released -= delta; break;
+            case "Joined": vm.Columns.Joined -= delta; break;
             case "Updated": vm.Columns.Updated -= delta; break;
             case "Used": vm.Columns.Used -= delta; break;
         }
@@ -2206,7 +2206,7 @@ public partial class MainWindow : Window
             ColumnVersion = vm.Columns.Version,
             ColumnDownload = vm.Columns.Download,
             ColumnInstall = vm.Columns.Install,
-            ColumnReleased = vm.Columns.Released,
+            ColumnJoined = vm.Columns.Joined,
             ColumnUpdated = vm.Columns.Updated,
             ColumnUsed = vm.Columns.Used,
             IsGridView = vm.Columns.IsGridView,

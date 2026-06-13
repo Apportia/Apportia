@@ -171,7 +171,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _installFilter = value;
             Columns.HighlightInstalled = value == InstallFilter.All;
-            Columns.ShowReleasedColumn = value != InstallFilter.Installed;
+            Columns.ShowJoinedColumn = value != InstallFilter.Installed;
             Columns.ShowUsedColumn = value == InstallFilter.Installed;
             UpdateShowMetaColumns();
             Notify();
@@ -548,7 +548,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             "Version" => nodes.OrderBy(n => n.PackageVersion, StringComparer.OrdinalIgnoreCase),
             "Download" => nodes.OrderBy(n => ParseMb(n.DownloadSize)),
             "Install" => nodes.OrderBy(n => ParseMb(n.InstallSize)),
-            "Released" => nodes.OrderBy(n => ParseDate(n.ReleaseDate)),
+            "Joined" => nodes.OrderBy(n => ParseDate(n.JoinedDate)),
             "Updated" => nodes.OrderBy(n => ParseDate(n.UpdateDate)),
             "Used" => nodes.OrderBy(n => n.UsedBytes),
             _ => nodes.OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase)

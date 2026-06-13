@@ -296,14 +296,14 @@
                                FontSize="{Binding Columns.FontSizeSub}" />
 
                     <Thumb Classes="colResizer" DockPanel.Dock="Right"
-                           IsVisible="{Binding Columns.ShowReleasedColumn}"
-                           Tag="Released" DragDelta="OnColumnResize" />
-                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Released}"
-                               IsVisible="{Binding Columns.ShowReleasedColumn}"
-                               Text="{Binding Columns.ReleasedHeader}"
+                           IsVisible="{Binding Columns.ShowJoinedColumn}"
+                           Tag="Joined" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Joined}"
+                               IsVisible="{Binding Columns.ShowJoinedColumn}"
+                               Text="{Binding Columns.JoinedHeader}"
                                TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
                                FontSize="{Binding Columns.FontSizeSub}"
-                               Tag="Released" Tapped="OnColumnHeaderTapped" />
+                               Tag="Joined" Tapped="OnColumnHeaderTapped" />
 
                     <TextBlock Text="Description" Margin="4,0,0,0"
                                FontSize="{Binding Columns.FontSizeSub}" />
@@ -484,9 +484,9 @@
                                                        FontSize="{Binding Columns.FontSize}"
                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
                                             <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Released}"
-                                                       IsVisible="{Binding Columns.ShowReleasedColumn}"
-                                                       Text="{Binding ReleaseDate}"
+                                                       Width="{Binding Columns.Joined}"
+                                                       IsVisible="{Binding Columns.ShowJoinedColumn}"
+                                                       Text="{Binding JoinedDate}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
                                                        FontSize="{Binding Columns.FontSize}"
                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />

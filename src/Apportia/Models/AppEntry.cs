@@ -13,7 +13,7 @@ public sealed record AppEntry(
     string DownloadFile,
     string DownloadPath,
     string Hash,
-    string ReleaseDate,
+    string JoinedDate,
     string UpdateDate,
     string UserAgent,
     string Website,

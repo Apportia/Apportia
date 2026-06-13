@@ -157,10 +157,10 @@ jobs:
           REQUIRED_KEYS = {
               "Name", "Category", "SubCategory", "DisplayVersion", "PackageVersion",
               "DownloadSize", "InstallSize", "DownloadFile", "DownloadPath", "Hash",
-              "ReleaseDate", "UpdateDate",
+              "JoinedDate", "UpdateDate",
           }
 
-          DATE_KEYS = {"releasedate", "updatedate"}
+          DATE_KEY_MAP = {"releasedate": "JoinedDate", "updatedate": "UpdateDate"}
 
 
           def clean_name(raw):
@@ -359,8 +359,8 @@ jobs:
                       resolved = _resolve_download_path(val, current_name)
                       current_fields["DownloadPath"] = resolved
                       current_fields["UserAgent"]    = ua_for(resolved, wget_ua, chrome_ua)
-                  elif key in DATE_KEYS:
-                      current_fields[raw_key] = normalize_date(val)
+                  elif key in DATE_KEY_MAP:
+                      current_fields[DATE_KEY_MAP[key]] = normalize_date(val)
                   else:
                       current_fields[raw_key] = val
 

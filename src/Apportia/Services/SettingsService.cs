@@ -35,7 +35,7 @@ public sealed class AppSettings
     public double ColumnVersion { get; set; } = 90;
     public double ColumnDownload { get; set; } = 85;
     public double ColumnInstall { get; set; } = 80;
-    public double ColumnReleased { get; set; } = 90;
+    public double ColumnJoined { get; set; } = 90;
     public double ColumnUpdated { get; set; } = 90;
     public double ColumnUsed { get; set; } = 75;
     public bool IsGridView { get; set; }

@@ -38,7 +38,7 @@ public static class AppDatabaseParser
                 values.TryGetValue("DownloadFile", out var downloadFile);
                 values.TryGetValue("DownloadPath", out var downloadPath);
                 values.TryGetValue("Hash", out var hash);
-                values.TryGetValue("ReleaseDate", out var releaseDate);
+                values.TryGetValue("JoinedDate", out var releaseDate);
                 values.TryGetValue("UpdateDate", out var updateDate);
                 values.TryGetValue("UserAgent", out var userAgent);
                 values.TryGetValue("Website", out var website);
