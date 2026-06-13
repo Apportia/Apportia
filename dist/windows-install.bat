@@ -17,7 +17,7 @@ if not %errorlevel% == 0 (
     exit /b 0
 )
 
-set "BINARY=%~dp0..\Apportia.exe"
+for %%i in ("%~dp0..\Apportia.exe") do set "BINARY=%%~fi"
 
 if not exist "%BINARY%" (
     echo [ERROR] Binary not found: %BINARY%
