@@ -162,6 +162,21 @@ jobs:
 
           DATE_KEY_MAP = {"releasedate": "JoinedDate", "updatedate": "UpdateDate"}
 
+          KEY_ORDER = [
+              "Name", "Description", "Website", "Category", "SubCategory", "Class",
+              "JoinedDate", "DisplayVersion", "PackageVersion", "UpdateDate",
+              "DownloadFile", "Hash", "DownloadPath", "UserAgent", "DownloadSize", "InstallSize",
+              "RequiresJava",
+          ]
+
+
+          def order_fields(fields):
+              ordered = {k: fields[k] for k in KEY_ORDER if k in fields}
+              for k in fields:
+                  if k not in ordered and (k.startswith("DownloadFile_") or k.startswith("Hash_")):
+                      ordered[k] = fields[k]
+              return ordered
+
 
           def clean_name(raw):
               if not raw:
@@ -250,9 +265,10 @@ jobs:
 
 
           def ua_for(download_path, wget_ua, chrome_ua):
-              if download_path.startswith(("https://github.com", "https://downloads.sourceforge.net")):
+              p = download_path.removeprefix("https://").removeprefix("http://")
+              if p.startswith(("github.com", "downloads.sourceforge.net")):
                   return wget_ua
-              if download_path.startswith("http://downloads.portableapps.com"):
+              if p.startswith("downloads.portableapps.com"):
                   return "Wget/1.21.4"
               return chrome_ua
 
@@ -300,7 +316,7 @@ jobs:
                       val = params.get("p", val).rstrip("/")
                   elif not d:
                       val = params.get("t", val).rstrip("/")
-              if val.startswith("https://github.com") and val.endswith("/download/download"):
+              if val.removeprefix("https://").removeprefix("http://").startswith("github.com") and val.endswith("/download/download"):
                   val = val[:-len("/download")]
               return val.replace("%WINDOWSVERSION%", "11")
 
@@ -408,7 +424,7 @@ jobs:
               if not is_valid(data):
                   print("Aborted: result did not pass validation.")
                   return 1
-              result = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+              result = json.dumps({s: order_fields(f) for s, f in data.items()}, indent=2, ensure_ascii=False) + "\n"
               if TARGET.exists() and TARGET.read_text(encoding="utf-8") == result:
                   print("No changes.")
                   return
