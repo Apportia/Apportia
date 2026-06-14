@@ -11,9 +11,6 @@ public sealed class AppNode : INotifyPropertyChanged
     private readonly IReadOnlyDictionary<string, (string File, string Hash)>? _languageVariants;
     private string _currentDate;
     private Bitmap _icon;
-    private bool _isInstalled;
-    private bool _isLaunching;
-    private bool _isSearchFlash;
 
     public AppNode(
         AppEntry entry,
@@ -24,27 +21,27 @@ public sealed class AppNode : INotifyPropertyChanged
         bool isPlugin = false,
         string currentDate = "")
     {
-        _isInstalled = isInstalled;
-        _currentDate = currentDate;
-        IsCustom = isCustom;
-        IsAdvanced = string.Equals(entry.Class, "Advanced", StringComparison.OrdinalIgnoreCase);
-        IsLegacy = string.Equals(entry.Class, "Legacy", StringComparison.OrdinalIgnoreCase);
-        IsPlugin = isPlugin;
-        _icon = icon;
         Columns = columns;
+        _icon = icon;
+        IsInstalled = isInstalled;
+        IsCustom = isCustom;
+        IsPlugin = isPlugin;
+        _currentDate = currentDate;
         SectionName = entry.SectionName;
         Name = entry.Name;
         Description = entry.Description;
         Category = entry.Category;
         SubCategory = entry.SubCategory;
+        IsAdvanced = string.Equals(entry.Class, "Advanced", StringComparison.OrdinalIgnoreCase);
+        IsLegacy = string.Equals(entry.Class, "Legacy", StringComparison.OrdinalIgnoreCase);
         RequiresJava = entry.RequiresJava;
         PackageVersion = entry.PackageVersion;
-        DownloadSize = FormatMb(entry.DownloadSize);
-        InstallSize = FormatMb(entry.InstallSize);
-        DownloadSizeBytes = ParseMbToBytes(entry.DownloadSize);
-        InstallSizeBytes = ParseMbToBytes(entry.InstallSize);
         DownloadFile = entry.DownloadFile;
         DownloadPath = entry.DownloadPath;
+        DownloadSize = FormatMb(entry.DownloadSize);
+        DownloadSizeBytes = ParseMbToBytes(entry.DownloadSize);
+        InstallSize = FormatMb(entry.InstallSize);
+        InstallSizeBytes = ParseMbToBytes(entry.InstallSize);
         Hash = entry.Hash;
         JoinedDate = entry.JoinedDate;
         UpdateDate = entry.UpdateDate;
@@ -71,12 +68,12 @@ public sealed class AppNode : INotifyPropertyChanged
 
     public bool IsInstalled
     {
-        get => _isInstalled;
+        get;
         set
         {
-            if (_isInstalled == value)
+            if (field == value)
                 return;
-            _isInstalled = value;
+            field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInstalled)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsNotInstalled)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SubCategory)));
@@ -112,55 +109,55 @@ public sealed class AppNode : INotifyPropertyChanged
         }
     }
 
-    public bool IsLaunching
+    public bool IsLaunchFx
     {
-        get => _isLaunching;
+        get;
         private set
         {
-            if (_isLaunching == value)
+            if (field == value)
                 return;
-            _isLaunching = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLaunching)));
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLaunchFx)));
         }
     }
 
-    public bool IsSearchFlash
+    public bool IsSearchFx
     {
-        get => _isSearchFlash;
+        get;
         set
         {
-            if (_isSearchFlash == value)
+            if (field == value)
                 return;
-            _isSearchFlash = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSearchFlash)));
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSearchFx)));
         }
     }
 
-    public bool IsNotInstalled => !_isInstalled;
+    public bool IsNotInstalled => !IsInstalled;
     public bool IsAdvanced { get; }
     public bool IsLegacy { get; }
     public bool IsPlugin { get; }
     public bool RequiresJava { get; }
-    public bool IsHighlighted => _isInstalled && Columns.HighlightInstalled;
+    public bool IsHighlighted => IsInstalled && Columns.HighlightInstalled;
     public bool HasUrl => !string.IsNullOrEmpty(Website);
     public bool IsCustom { get; }
     public bool IsIndented { get; set; }
 
     public bool NeedsUpdate =>
-        _isInstalled &&
+        IsInstalled &&
         DateTime.TryParse(UpdateDate, out var ud) &&
         DateTime.TryParse(CurrentDate, out var cd) &&
         cd.Date < ud.Date;
 
     public bool ShowCancelInstall { get; private set; }
 
-    public bool ShowAddToQueue => Columns.IsInstalling && !ShowCancelInstall && !ShowRemoveFromQueue && (!_isInstalled || NeedsUpdate);
+    public bool ShowAddToQueue => Columns.IsInstalling && !ShowCancelInstall && !ShowRemoveFromQueue && (!IsInstalled || NeedsUpdate);
     public bool ShowRemoveFromQueue { get; private set; }
 
-    public bool ShowInstallActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && !_isInstalled;
+    public bool ShowInstallActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && !IsInstalled;
     public bool ShowUpdateActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && NeedsUpdate;
-    public bool ShowRunActions => _isInstalled && !ShowCancelInstall && !IsPlugin;
-    public bool ShowUninstall => _isInstalled && !ShowCancelInstall;
+    public bool ShowRunActions => IsInstalled && !ShowCancelInstall && !IsPlugin;
+    public bool ShowUninstall => IsInstalled && !ShowCancelInstall;
 
     public string SectionName { get; }
     public string Name { get; }
@@ -168,7 +165,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public string Category { get; }
 
     public string SubCategory =>
-        (IsAdvanced || IsLegacy) && !_isInstalled && !string.IsNullOrEmpty(field)
+        (IsAdvanced || IsLegacy) && !IsInstalled && !string.IsNullOrEmpty(field)
             ? $"{Category} \u2013 {field}"
             : field;
 
@@ -230,12 +227,12 @@ public sealed class AppNode : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public bool TryBeginLaunch()
+    public bool TryBeginLaunchFx()
     {
-        if (_isLaunching)
+        if (IsLaunchFx)
             return false;
-        IsLaunching = true;
-        _ = Task.Delay(3000).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsLaunching = false));
+        IsLaunchFx = true;
+        _ = Task.Delay(5000).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsLaunchFx = false));
         return true;
     }
 

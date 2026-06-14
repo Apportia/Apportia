@@ -584,6 +584,7 @@ public partial class MainWindow : Window
                 args = RunArgsDialog.CombineArgs(converted);
             }
 
+            node.TryBeginLaunchFx();
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
                 await Task.Run(() => RunAsAdmin(node, args));
             else if (node.IsCustom)
@@ -1008,7 +1009,7 @@ public partial class MainWindow : Window
 
     private async Task TryLaunchWithArgsAsync(AppNode node)
     {
-        if (!node.TryBeginLaunch())
+        if (!node.TryBeginLaunchFx())
             return;
 
         if (_cliAppArgs.Length > 0)
@@ -2182,9 +2183,9 @@ public partial class MainWindow : Window
 
     private static void FlashNode(AppNode node)
     {
-        node.IsSearchFlash = true;
+        node.IsSearchFx = true;
         Task.Delay(1600).ContinueWith(_ =>
-            Dispatcher.UIThread.Post(() => node.IsSearchFlash = false));
+                                          Dispatcher.UIThread.Post(() => node.IsSearchFx = false));
     }
 
     private void OnColumnResize(object? sender, VectorEventArgs e)
