@@ -197,7 +197,9 @@
                                    Foreground="{DynamicResource AppSubTextBrush}" />
                     </StackPanel>
                     <TextBlock Grid.Column="1" x:Name="ScanDateText"
+                               HorizontalAlignment="Right"
                                VerticalAlignment="Center"
+                               Margin="0,0,10,0"
                                FontSize="12"
                                FontStyle="Italic"
                                Foreground="{DynamicResource AppSubTextBrush}" />
