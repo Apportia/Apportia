@@ -67,19 +67,19 @@ public static class CustomAppService
                                folderName,
                                info.Name,
                                info.Description,
+                               info.Website,
                                string.IsNullOrWhiteSpace(info.Category) ? "Advanced" : info.Category,
                                info.SubCategory,
+                               string.Empty,
                                version,
                                version,
-                               string.Empty,
-                               string.Empty,
+                               info.UpdateDate,
                                info.ExeFile,
                                string.Empty,
                                string.Empty,
                                string.Empty,
-                               info.UpdateDate,
                                string.Empty,
-                               info.Website
+                               string.Empty
                            ));
             }
             catch

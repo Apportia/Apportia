@@ -837,14 +837,14 @@ public partial class MainWindow : Window
                 var iconChanged = !string.IsNullOrEmpty(win.IconSourcePath);
                 await CustomAppService.UpdateAppAsync(
                     node.SectionName,
-                    win.SelectedExe,
-                    win.AppName,
-                    win.AppDescription,
-                    win.AppWebsite,
+                    win.ExeFile,
+                    win.Name,
+                    win.Description,
+                    win.Website,
                     iconChanged ? win.IconSourcePath : null,
-                    win.SelectedCategory,
-                    win.SelectedSubCategory,
-                    win.AppVersion,
+                    win.Category,
+                    win.SubCategory,
+                    win.Version,
                     win.VersionSourceExe);
 
                 if (iconChanged && win.IconSourcePath.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase))
@@ -861,21 +861,21 @@ public partial class MainWindow : Window
 
                 var entry = new AppEntry(
                     node.SectionName,
-                    win.AppName,
-                    win.AppDescription,
-                    win.SelectedCategory,
-                    win.SelectedSubCategory,
-                    win.AppVersion,
-                    win.AppVersion,
+                    win.Name,
+                    win.Description,
+                    win.Website,
+                    win.Category,
+                    win.SubCategory,
+                    string.Empty,
+                    win.Version,
+                    win.Version,
+                    win.UpdateDate,
+                    win.ExeFile,
                     string.Empty,
                     string.Empty,
-                    win.SelectedExe,
                     string.Empty,
                     string.Empty,
-                    string.Empty,
-                    win.AppUpdateDate,
-                    string.Empty,
-                    win.AppWebsite);
+                    string.Empty);
 
                 var icon = iconChanged
                     ? _iconManager.ReloadCustomIcon(node.SectionName)
@@ -1086,12 +1086,12 @@ public partial class MainWindow : Window
             {
                 while (true)
                 {
-                    var sourceSize = await Task.Run(() => AppDiskUsageService.GetDirectorySize(win.SelectedFolder));
+                    var sourceSize = await Task.Run(() => AppDiskUsageService.GetDirectorySize(win.FolderName));
                     var required = (long)(sourceSize * 1.1);
                     var available = AppDiskUsageService.GetAvailableFreeSpace(CustomAppService.CustomAppsDir);
                     if (available < required)
                     {
-                        var choice = await ShowDiskSpaceDialog(null, win.AppName, required, available);
+                        var choice = await ShowDiskSpaceDialog(null, win.Name, required, available);
                         if (choice == "Retry")
                             continue;
                         return;
@@ -1101,15 +1101,15 @@ public partial class MainWindow : Window
                 }
 
                 var folderName = await CustomAppService.ImportAppAsync(
-                    win.SelectedFolder,
-                    win.SelectedExe,
-                    win.AppName,
-                    win.AppDescription,
-                    win.AppWebsite,
+                    win.FolderName,
+                    win.ExeFile,
+                    win.Name,
+                    win.Description,
+                    win.Website,
                     win.IconSourcePath,
-                    win.SelectedCategory,
-                    win.SelectedSubCategory,
-                    win.AppVersion,
+                    win.Category,
+                    win.SubCategory,
+                    win.Version,
                     win.VersionSourceExe);
 
                 // Remove temp icon file created by the gallery picker
@@ -1128,21 +1128,21 @@ public partial class MainWindow : Window
 
                 var entry = new AppEntry(
                     folderName,
-                    win.AppName,
-                    win.AppDescription,
-                    win.SelectedCategory,
-                    win.SelectedSubCategory,
-                    win.AppVersion,
-                    win.AppVersion,
+                    win.Name,
+                    win.Description,
+                    win.Website,
+                    win.Category,
+                    win.SubCategory,
+                    string.Empty,
+                    win.Version,
+                    win.Version,
+                    win.UpdateDate,
+                    win.ExeFile,
                     string.Empty,
                     string.Empty,
-                    win.SelectedExe,
                     string.Empty,
                     string.Empty,
-                    string.Empty,
-                    win.AppUpdateDate,
-                    string.Empty,
-                    win.AppWebsite);
+                    string.Empty);
 
                 var icon = _iconManager.GetCustomIcon(folderName);
                 var newNode = vm.AddCustomApp(entry, icon);

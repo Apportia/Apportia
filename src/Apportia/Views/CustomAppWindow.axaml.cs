@@ -113,16 +113,16 @@ public partial class CustomAppWindow : Window
     }
 
     public bool Success { get; private set; }
-    public string SelectedFolder { get; private set; } = string.Empty;
-    public string SelectedExe { get; private set; } = string.Empty;
-    public string AppVersion { get; private set; } = string.Empty;
-    public string AppUpdateDate { get; private set; } = string.Empty;
+    public new string Name { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public string Website { get; private set; } = string.Empty;
+    public string Category { get; private set; } = string.Empty;
+    public string SubCategory { get; private set; } = string.Empty;
+    public string Version { get; private set; } = string.Empty;
+    public string UpdateDate { get; private set; } = string.Empty;
+    public string ExeFile { get; private set; } = string.Empty;
     public string VersionSourceExe { get; private set; } = string.Empty;
-    public string SelectedCategory { get; private set; } = string.Empty;
-    public string SelectedSubCategory { get; private set; } = string.Empty;
-    public string AppName { get; private set; } = string.Empty;
-    public string AppDescription { get; private set; } = string.Empty;
-    public string AppWebsite { get; private set; } = string.Empty;
+    public string FolderName { get; private set; } = string.Empty;
     public string IconSourcePath { get; private set; } = string.Empty;
 
     private async void OnBrowseFolder(object? sender, RoutedEventArgs e)
@@ -479,18 +479,18 @@ public partial class CustomAppWindow : Window
             return;
         }
 
-        SelectedFolder = FolderBox.Text.Trim();
-        SelectedExe = exeFile;
-        SelectedCategory = CategoryCombo.SelectedItem as string ?? string.Empty;
-        SelectedSubCategory = SubCategoryCombo.SelectedItem as string ?? string.Empty;
-        AppName = NameBox.Text.Trim();
-        AppDescription = DescriptionBox.Text?.Trim() ?? string.Empty;
-        AppWebsite = WebsiteBox.Text?.Trim() ?? string.Empty;
-        AppVersion = VersionBox.Text?.Trim() ?? string.Empty;
+        FolderName = FolderBox.Text.Trim();
+        ExeFile = exeFile;
+        Category = CategoryCombo.SelectedItem as string ?? string.Empty;
+        SubCategory = SubCategoryCombo.SelectedItem as string ?? string.Empty;
+        Name = NameBox.Text.Trim();
+        Description = DescriptionBox.Text?.Trim() ?? string.Empty;
+        Website = WebsiteBox.Text?.Trim() ?? string.Empty;
+        Version = VersionBox.Text?.Trim() ?? string.Empty;
         VersionSourceExe = (VersionExeCombo.SelectedItem as SourceItem)?.Display ?? string.Empty;
         var versionRelPath = string.IsNullOrEmpty(VersionSourceExe) ? exeFile : VersionSourceExe;
-        var versionPath = Path.Combine(SelectedFolder, versionRelPath);
-        AppUpdateDate = File.Exists(versionPath)
+        var versionPath = Path.Combine(FolderName, versionRelPath);
+        UpdateDate = File.Exists(versionPath)
             ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
             : string.Empty;
         IconSourcePath = effectiveIconPath;
@@ -516,17 +516,17 @@ public partial class CustomAppWindow : Window
 
         var effectiveIconPath = string.IsNullOrEmpty(IconBox.Text) ? _tempIconPath : IconBox.Text;
 
-        SelectedExe = exeFile;
-        SelectedCategory = CategoryCombo.SelectedItem as string ?? string.Empty;
-        SelectedSubCategory = SubCategoryCombo.SelectedItem as string ?? string.Empty;
-        AppName = NameBox.Text.Trim();
-        AppDescription = DescriptionBox.Text?.Trim() ?? string.Empty;
-        AppWebsite = WebsiteBox.Text?.Trim() ?? string.Empty;
-        AppVersion = VersionBox.Text?.Trim() ?? string.Empty;
+        ExeFile = exeFile;
+        Category = CategoryCombo.SelectedItem as string ?? string.Empty;
+        SubCategory = SubCategoryCombo.SelectedItem as string ?? string.Empty;
+        Name = NameBox.Text.Trim();
+        Description = DescriptionBox.Text?.Trim() ?? string.Empty;
+        Website = WebsiteBox.Text?.Trim() ?? string.Empty;
+        Version = VersionBox.Text?.Trim() ?? string.Empty;
         VersionSourceExe = (VersionExeCombo.SelectedItem as SourceItem)?.Display ?? string.Empty;
         var versionRelPath = string.IsNullOrEmpty(VersionSourceExe) ? exeFile : VersionSourceExe;
         var versionPath = Path.Combine(_appDir, versionRelPath);
-        AppUpdateDate = File.Exists(versionPath)
+        UpdateDate = File.Exists(versionPath)
             ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
             : string.Empty;
         IconSourcePath = effectiveIconPath ?? string.Empty;
