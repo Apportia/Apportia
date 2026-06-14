@@ -35,8 +35,8 @@
             <Button Content="Close" HorizontalAlignment="Right" Click="OnClose" />
         </Border>
 
-        <ScrollViewer Padding="16,14,16,0">
-            <StackPanel Spacing="0" Margin="0,0,0,14">
+        <ScrollViewer Padding="16,14,0,0">
+            <StackPanel Spacing="0" Margin="0,0,20,0">
 
                 <!-- General -->
                 <Border Classes="sectionSep">
@@ -171,6 +171,8 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
+
+                <Border Height="32" />
 
             </StackPanel>
         </ScrollViewer>
