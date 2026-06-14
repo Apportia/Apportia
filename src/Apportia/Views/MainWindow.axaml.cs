@@ -978,6 +978,8 @@ public partial class MainWindow : Window
         {
             if (NodeFromMenu(sender) is not { } node)
                 return;
+            if (!node.IsCustom)
+                await _iconManager.EnsureIconAsync(node.SectionName, 128, _cts.Token);
             var dialog = new AppEntryDialog(node) { Icon = new WindowIcon(node.Icon) };
             await dialog.ShowDialog(this);
         }

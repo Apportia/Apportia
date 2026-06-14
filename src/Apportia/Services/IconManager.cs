@@ -59,6 +59,12 @@ public sealed class IconManager : IDisposable
         return GetCustomIcon(folderName);
     }
 
+    public async Task EnsureIconAsync(string sectionName, int size, CancellationToken ct = default)
+    {
+        if (!File.Exists(LocalPath(sectionName, size)))
+            await DownloadAsync(sectionName, size, ct);
+    }
+
     /// Downloads missing icons in the background, calling onUpdated for each new icon.
     public async Task DownloadAllAsync(
         IEnumerable<string> sectionNames,
