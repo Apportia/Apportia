@@ -1,0 +1,364 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:Apportia.Views"
+        x:Class="Apportia.Views.VirusTotalDialog"
+        Title="VirusTotal Analysis"
+        Width="480"
+        Height="250"
+        MinWidth="480"
+        MinHeight="250"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <Window.Resources>
+        <DataTemplate x:Key="EntryRowTemplate" x:DataType="views:EntryRow">
+            <Grid ColumnDefinitions="140,*" Margin="0,1,0,1">
+                <TextBlock Grid.Column="0" Classes="label"
+                           Text="{Binding Label}"
+                           VerticalAlignment="Top" Margin="0,2,8,0" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Value}"
+                           TextWrapping="Wrap"
+                           FontSize="12"
+                           Foreground="{DynamicResource AppTextBrush}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EngineRowTemplate" x:DataType="views:VtEngineRow">
+            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                    BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="160,*,160"
+                      Classes="vtRow"
+                      Classes.detected="{Binding IsMalicious}"
+                      Classes.suspected="{Binding IsSuspicious}"
+                      Classes.harmless="{Binding IsHarmlessOrUndetected}"
+                      Classes.failed="{Binding IsFailure}"
+                      Classes.timedout="{Binding IsTimeout}"
+                      Classes.confirmedtimedout="{Binding IsConfirmedTimeout}">
+                    <TextBlock Grid.Column="0" Classes="vtEngine"
+                               Text="{Binding Engine}"
+                               Padding="8,4"
+                               Foreground="{DynamicResource AppTextBrush}" />
+                    <TextBlock Grid.Column="1" Classes="vtResult"
+                               Text="{Binding DisplayResult}"
+                               Padding="8,4"
+                               TextAlignment="Center"
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource AppTextBrush}" />
+                    <TextBlock Grid.Column="2" Classes="vtCategory"
+                               Text="{Binding DisplayCategory}"
+                               Padding="8,4"
+                               HorizontalAlignment="Left"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource AppSubTextBrush}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EngineRowTemplateNoResult" x:DataType="views:VtEngineRow">
+            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                    BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="*,160"
+                      Classes="vtRow"
+                      Classes.detected="{Binding IsMalicious}"
+                      Classes.suspected="{Binding IsSuspicious}"
+                      Classes.harmless="{Binding IsHarmlessOrUndetected}"
+                      Classes.failed="{Binding IsFailure}"
+                      Classes.timedout="{Binding IsTimeout}"
+                      Classes.confirmedtimedout="{Binding IsConfirmedTimeout}">
+                    <TextBlock Grid.Column="0" Classes="vtEngine"
+                               Text="{Binding Engine}"
+                               Padding="8,4"
+                               Foreground="{DynamicResource AppTextBrush}" />
+                    <TextBlock Grid.Column="1" Classes="vtCategory"
+                               Text="{Binding DisplayCategory}"
+                               Padding="8,4"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource AppSubTextBrush}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.sectionHeader">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}" />
+            <Setter Property="Margin" Value="0,12,0,4" />
+        </Style>
+        <Style Selector="Border.sectionSep">
+            <Setter Property="BorderBrush" Value="{DynamicResource AppSeparatorBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+        <Style Selector="Grid.vtRow.detected TextBlock.vtEngine">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Grid.vtRow.detected TextBlock.vtResult">
+            <Setter Property="Foreground" Value="#CC2222" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Grid.vtRow.suspected TextBlock.vtResult">
+            <Setter Property="Foreground" Value="#CC8800" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Grid.vtRow.detected TextBlock.vtCategory">
+            <Setter Property="Foreground" Value="#CC2222" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Grid.vtRow.suspected TextBlock.vtCategory">
+            <Setter Property="Foreground" Value="#CC8800" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Grid.vtRow.harmless TextBlock.vtCategory">
+            <Setter Property="Foreground" Value="#22AA44" />
+        </Style>
+        <Style Selector="Grid.vtRow.failed TextBlock.vtCategory">
+            <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
+        </Style>
+        <Style Selector="Grid.vtRow.timedout TextBlock.vtCategory">
+            <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
+        </Style>
+        <Style Selector="Grid.vtRow.confirmedtimedout TextBlock.vtCategory">
+            <Setter Property="Foreground" Value="#CCCC00" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,10">
+            <Button Content="Close" HorizontalAlignment="Right" Click="OnClose" />
+        </Border>
+
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="16,14,16,0">
+
+            <Grid ColumnDefinitions="70,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="10">
+                <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="API Key" />
+                <TextBox Grid.Row="0" Grid.Column="1" x:Name="ApiKeyBox" PasswordChar="*"
+                         PlaceholderText="Enter your VirusTotal API key" />
+                <Button Grid.Row="0" Grid.Column="2" Content="Save"
+                        Margin="8,0,0,0" Click="OnSaveApiKey" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="File" />
+                <ComboBox Grid.Row="1" Grid.Column="1" x:Name="FileCombo"
+                          HorizontalAlignment="Stretch"
+                          SelectionChanged="OnFileSelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="views:VtFileEntry">
+                            <TextBlock Text="{Binding DisplayText}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Row="1" Grid.Column="2" x:Name="ScanButton" Content="Scan"
+                        Margin="8,0,0,0" IsEnabled="False" Click="OnScan" />
+            </Grid>
+
+            <Button Content="Open on VirusTotal.com" HorizontalAlignment="Right"
+                    Click="OnOpenWebsite" />
+
+            <Border x:Name="StatusBorder" IsVisible="False"
+                    Background="{DynamicResource AppColHeaderBrush}"
+                    BorderBrush="{DynamicResource AppSeparatorBrush}"
+                    BorderThickness="1" CornerRadius="4" Padding="10,8">
+                <TextBlock x:Name="StatusText"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap" />
+            </Border>
+
+            <Border Classes="sectionSep" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <ScrollViewer Padding="16,10,16,0">
+            <StackPanel x:Name="ResultsPanel" IsVisible="False" Spacing="0">
+
+                <!-- Detection badge row -->
+                <Grid ColumnDefinitions="*,*" Margin="0,0,0,6">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10"
+                                VerticalAlignment="Center">
+                        <TextBlock x:Name="DetectionBadge"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="DetectionLabel"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" x:Name="ScanDateText"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               FontStyle="Italic"
+                               Foreground="{DynamicResource AppSubTextBrush}" />
+                </Grid>
+
+                <!-- File Info -->
+                <TextBlock Classes="sectionHeader" Text="File Info" />
+                <Border Classes="sectionSep" Margin="0,0,0,6" />
+                <ItemsControl x:Name="FileInfoList" ItemTemplate="{StaticResource EntryRowTemplate}" />
+
+                <!-- Hashes -->
+                <TextBlock Classes="sectionHeader" Text="Hashes" />
+                <Border Classes="sectionSep" Margin="0,0,0,6" />
+                <ItemsControl x:Name="HashList" ItemTemplate="{StaticResource EntryRowTemplate}" />
+
+                <!-- Submission -->
+                <TextBlock Classes="sectionHeader" Text="Submission" />
+                <Border Classes="sectionSep" Margin="0,0,0,6" />
+                <ItemsControl x:Name="SubmissionList" ItemTemplate="{StaticResource EntryRowTemplate}" />
+
+                <!-- Community -->
+                <TextBlock Classes="sectionHeader" Text="Community" />
+                <Border Classes="sectionSep" Margin="0,0,0,6" />
+                <ItemsControl x:Name="CommunityList" ItemTemplate="{StaticResource EntryRowTemplate}" />
+
+                <!-- Signature (conditional) -->
+                <StackPanel x:Name="SignatureSection" IsVisible="False">
+                    <TextBlock Classes="sectionHeader" Text="Signature" />
+                    <Border Classes="sectionSep" Margin="0,0,0,6" />
+                    <ItemsControl x:Name="SignatureList" ItemTemplate="{StaticResource EntryRowTemplate}" />
+                </StackPanel>
+
+                <!-- Sandbox Verdicts (conditional) -->
+                <StackPanel x:Name="SandboxSection" IsVisible="False" Spacing="0">
+                    <TextBlock Classes="sectionHeader" Text="Sandbox Verdicts" />
+                    <Border Classes="sectionSep" Margin="0,0,0,6" />
+                    <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,100,*"
+                                  Background="{DynamicResource AppColHeaderBrush}">
+                                <TextBlock Grid.Column="0" Text="Sandbox"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                                <TextBlock Grid.Column="1" Text="Category"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                                <TextBlock Grid.Column="2" Text="Classification"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                            </Grid>
+                            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                    BorderThickness="0,1,0,0">
+                                <ItemsControl x:Name="SandboxList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="views:VtSandboxRow">
+                                            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                                    BorderThickness="0,0,0,1">
+                                                <Grid ColumnDefinitions="*,100,*"
+                                                      Classes="vtRow"
+                                                      Classes.detected="{Binding IsMalicious}"
+                                                      Classes.suspected="{Binding IsSuspicious}"
+                                                      Classes.harmless="{Binding IsHarmlessOrUndetected}"
+                                                      Classes.failed="{Binding IsFailure}"
+                                                      Classes.timedout="{Binding IsTimeout}"
+                                                      Classes.confirmedtimedout="{Binding IsConfirmedTimeout}">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Sandbox}"
+                                                               Padding="8,4"
+                                                               Foreground="{DynamicResource AppTextBrush}" />
+                                                    <TextBlock Grid.Column="1" Classes="vtCategory"
+                                                               Text="{Binding Category}"
+                                                               Padding="8,4"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource AppSubTextBrush}" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Classification}"
+                                                               Padding="8,4"
+                                                               TextWrapping="Wrap"
+                                                               Foreground="{DynamicResource AppTextBrush}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- TrID (conditional) -->
+                <StackPanel x:Name="TridSection" IsVisible="False" Spacing="0">
+                    <TextBlock Classes="sectionHeader" Text="File Type Analysis (TrID)" />
+                    <Border Classes="sectionSep" Margin="0,0,0,6" />
+                    <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                            BorderThickness="1" CornerRadius="4">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,80"
+                                  Background="{DynamicResource AppColHeaderBrush}">
+                                <TextBlock Grid.Column="0" Text="File Type"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                                <TextBlock Grid.Column="1" Text="Match %"
+                                           FontWeight="SemiBold" Padding="8,5"
+                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                            </Grid>
+                            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                    BorderThickness="0,1,0,0">
+                                <ItemsControl x:Name="TridList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="views:VtTridRow">
+                                            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                                    BorderThickness="0,0,0,1">
+                                                <Grid ColumnDefinitions="*,80">
+                                                    <TextBlock Grid.Column="0" Text="{Binding FileType}"
+                                                               Padding="8,4"
+                                                               Foreground="{DynamicResource AppTextBrush}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Probability}"
+                                                               Padding="8,4"
+                                                               Foreground="{DynamicResource AppSubTextBrush}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Engine Results -->
+                <TextBlock Classes="sectionHeader" Text="Engine Results" />
+                <Border Classes="sectionSep" Margin="0,0,0,6" />
+                <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                        BorderThickness="1" CornerRadius="4">
+                    <StackPanel>
+                        <Grid x:Name="EngineHeaderGrid" ColumnDefinitions="160,*,160"
+                              Background="{DynamicResource AppColHeaderBrush}">
+                            <TextBlock Grid.Column="0" Text="Engine"
+                                       FontWeight="SemiBold" Padding="8,5"
+                                       Foreground="{DynamicResource AppSubTextBrush}" />
+                            <TextBlock Grid.Column="1" x:Name="EngineResultHeader" Text="Result"
+                                       FontWeight="SemiBold" Padding="8,5"
+                                       TextAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource AppSubTextBrush}" />
+                            <TextBlock Grid.Column="2" Text="Category"
+                                       FontWeight="SemiBold" Padding="8,5"
+                                       HorizontalAlignment="Left"
+                                       Foreground="{DynamicResource AppSubTextBrush}" />
+                        </Grid>
+                        <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                BorderThickness="0,1,0,0">
+                            <ItemsControl x:Name="EngineList"
+                                          ItemTemplate="{StaticResource EngineRowTemplate}" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Height="32" />
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

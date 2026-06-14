@@ -454,7 +454,10 @@
                                                 <Separator />
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
                                                           Click="OnMenuSettings" />
-                                                <MenuItem Header="Show Database Entry" Click="OnMenuAppDatabaseEntry" />
+                                                <MenuItem Header="Database Entry" Click="OnMenuAppDatabaseEntry" />
+                                                <MenuItem Header="VirusTotal..."
+                                                          IsVisible="{Binding ShowVirusTotalActions}"
+                                                          Click="OnMenuVirusTotal" />
                                                 <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
                                                           Click="OnMenuVisitWebsite" />
                                             </ContextMenu>
@@ -632,7 +635,10 @@
                                                 <Separator />
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
                                                           Click="OnMenuSettings" />
-                                                <MenuItem Header="Show Database Entry" Click="OnMenuAppDatabaseEntry" />
+                                                <MenuItem Header="Database Entry" Click="OnMenuAppDatabaseEntry" />
+                                                <MenuItem Header="VirusTotal..."
+                                                          IsVisible="{Binding ShowVirusTotalActions}"
+                                                          Click="OnMenuVirusTotal" />
                                                 <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
                                                           Click="OnMenuVisitWebsite" />
                                             </ContextMenu>

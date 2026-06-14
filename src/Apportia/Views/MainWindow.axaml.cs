@@ -987,6 +987,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void OnMenuVirusTotal(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (NodeFromMenu(sender) is not { } node)
+                return;
+            var dialog = new VirusTotalDialog(node) { Icon = new WindowIcon(node.Icon) };
+            await dialog.ShowDialog(this);
+        }
+        catch
+        {
+            /* window may be closing or node data is invalid */
+        }
+    }
+
     private static AppNode? NodeFromMenu(object? sender)
     {
         return (sender as MenuItem)?.FindAncestorOfType<ContextMenu>()?.DataContext as AppNode;
@@ -2330,7 +2345,6 @@ public partial class MainWindow : Window
 
         var posX = Position.X - deltaX;
         var posY = Position.Y - deltaY;
-        Position = new PixelPoint(posX, posY);
 
         var screen = Screens.ScreenFromWindow(this);
         if (screen == null)
@@ -2342,8 +2356,8 @@ public partial class MainWindow : Window
         var physH = (int)(Height * scale);
         var x = Math.Clamp(posX, wa.X, wa.X + wa.Width - physW);
         var y = Math.Clamp(posY, wa.Y, wa.Y + wa.Height - physH);
-        if (x != Position.X || y != Position.Y)
-            Position = new PixelPoint(x, y);
+        var target = new PixelPoint(x, y);
+        Dispatcher.UIThread.Post(() => Position = target, DispatcherPriority.Background);
     }
 
     private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)

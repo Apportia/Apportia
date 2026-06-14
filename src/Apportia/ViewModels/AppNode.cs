@@ -157,6 +157,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public bool ShowInstallActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && !IsInstalled;
     public bool ShowUpdateActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && NeedsUpdate;
     public bool ShowRunActions => IsInstalled && !ShowCancelInstall && !IsPlugin;
+    public bool ShowVirusTotalActions => !IsPlugin && !ShowCancelInstall && (IsInstalled || !string.IsNullOrEmpty(Hash));
     public bool ShowUninstall => IsInstalled && !ShowCancelInstall;
 
     public string SectionName { get; }
@@ -276,6 +277,7 @@ public sealed class AppNode : INotifyPropertyChanged
         pc(this, new PropertyChangedEventArgs(nameof(ShowInstallActions)));
         pc(this, new PropertyChangedEventArgs(nameof(ShowUpdateActions)));
         pc(this, new PropertyChangedEventArgs(nameof(ShowRunActions)));
+        pc(this, new PropertyChangedEventArgs(nameof(ShowVirusTotalActions)));
         pc(this, new PropertyChangedEventArgs(nameof(ShowUninstall)));
     }
 
