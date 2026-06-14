@@ -81,6 +81,27 @@
                 </Animation>
             </Style.Animations>
         </Style>
+        <Style Selector="Border.appRow.searchFlashRow">
+            <Style.Animations>
+                <Animation Duration="0:0:1.6" FillMode="None">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Background" Value="#CC0090FF" />
+                    </KeyFrame>
+                    <KeyFrame Cue="25%">
+                        <Setter Property="Background" Value="#000090FF" />
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Background" Value="#CC0090FF" />
+                    </KeyFrame>
+                    <KeyFrame Cue="75%">
+                        <Setter Property="Background" Value="#000090FF" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Background" Value="#000090FF" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
         <Style Selector="Border.appRow:pointerover">
             <Setter Property="Background" Value="{DynamicResource AppHoverBrush}" />
         </Style>
@@ -389,6 +410,7 @@
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchingRow="{Binding IsLaunching}"
                                             Classes.indentedRow="{Binding IsIndented}"
+                                            Classes.searchFlashRow="{Binding IsSearchFlash}"
                                             PointerPressed="OnAppRowPointerPressed"
                                             Tapped="OnAppRowTapped">
                                         <Border.ContextMenu>
@@ -564,6 +586,7 @@
                                             Classes.queuedRow="{Binding IsQueued}"
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchingRow="{Binding IsLaunching}"
+                                            Classes.searchFlashRow="{Binding IsSearchFlash}"
                                             Width="{Binding Columns.TileWidth}"
                                             Padding="4,6"
                                             PointerPressed="OnAppRowPointerPressed"

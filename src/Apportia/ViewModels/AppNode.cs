@@ -13,6 +13,7 @@ public sealed class AppNode : INotifyPropertyChanged
     private Bitmap _icon;
     private bool _isInstalled;
     private bool _isLaunching;
+    private bool _isSearchFlash;
 
     public AppNode(
         AppEntry entry,
@@ -120,6 +121,18 @@ public sealed class AppNode : INotifyPropertyChanged
                 return;
             _isLaunching = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLaunching)));
+        }
+    }
+
+    public bool IsSearchFlash
+    {
+        get => _isSearchFlash;
+        set
+        {
+            if (_isSearchFlash == value)
+                return;
+            _isSearchFlash = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSearchFlash)));
         }
     }
 

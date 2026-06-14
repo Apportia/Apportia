@@ -2158,6 +2158,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        AppNode? found = null;
         for (var i = 0; i < vm.FlatRows.Count; i++)
         {
             if (vm.FlatRows[i] is not AppNode node ||
@@ -2171,8 +2172,19 @@ public partial class MainWindow : Window
             var pos = container.TranslatePoint(new Point(0, 0), MainList);
             if (pos.HasValue)
                 MainScroller.Offset = new Vector(0, pos.Value.Y - GetStickyOffset(vm));
+            found = node;
             break;
         }
+
+        if (found != null)
+            FlashNode(found);
+    }
+
+    private static void FlashNode(AppNode node)
+    {
+        node.IsSearchFlash = true;
+        Task.Delay(1600).ContinueWith(_ =>
+            Dispatcher.UIThread.Post(() => node.IsSearchFlash = false));
     }
 
     private void OnColumnResize(object? sender, VectorEventArgs e)
