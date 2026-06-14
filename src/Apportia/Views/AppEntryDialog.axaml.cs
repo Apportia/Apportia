@@ -1,4 +1,5 @@
 using Apportia.Platform;
+using Apportia.Services;
 using Apportia.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -18,17 +19,31 @@ public partial class AppEntryDialog : Window
 
     public AppEntryDialog(AppNode node) : this()
     {
-        Title = node.Name;
+        var updateDate = DateTime.TryParse(node.UpdateDate, out var dt)
+            ? dt.ToString("dddd, d MMMM yyyy")
+            : node.UpdateDate;
+        Title = $"{node.Name} ({updateDate})";
+
+        var appsBase = Path.Combine(AppContext.BaseDirectory, "Apps");
+        var installLocation = node.IsCustom
+            ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
+            : node.IsPlugin
+                ? Path.Combine(appsBase, "CommonFiles", node.SectionName)
+                : Path.Combine(appsBase, node.SectionName);
+
+        var prefix = node.Category + " \u2013 ";
 
         GeneralList.ItemsSource = Filter(
-            new EntryField("Name", node.Name),
             new EntryField("Section", node.SectionName),
+            new EntryField("Name", node.Name),
             new EntryField("Description", node.Description),
-            new EntryField("Category", node.Category),
-            new EntryField("Subcategory", node.SubCategory),
             new EntryField("Website", node.Website),
-            new EntryField("Joined Date", node.JoinedDate),
+            new EntryField("Category", node.Category),
+            new EntryField("Sub-Category", node.IsAdvanced || node.IsLegacy
+                               ? node.SubCategory.Replace(prefix, string.Empty)
+                               : node.SubCategory),
             new EntryField("Class", node.IsAdvanced ? "Advanced" : node.IsLegacy ? "Legacy" : ""),
+            new EntryField("Joined Date", node.JoinedDate),
             new EntryField("Requires Java", node.RequiresJava ? "Yes" : "")
         );
 
@@ -39,23 +54,25 @@ public partial class AppEntryDialog : Window
 
         DownloadList.ItemsSource = Filter(
             new EntryField("Download File", node.DownloadFile),
-            new EntryField("Download Path", node.DownloadPath),
-            new EntryField("Download Size", node.DownloadSize),
-            new EntryField("Install Size", node.InstallSize),
             new EntryField("Hash", node.Hash),
-            new EntryField("User Agent", node.UserAgent)
+            new EntryField("Download Path", node.DownloadPath),
+            new EntryField("User Agent", node.UserAgent),
+            new EntryField("Download Size", node.DownloadSize)
+        );
+
+        InstallList.ItemsSource = Filter(
+            new EntryField("Install Size", node.InstallSize),
+            new EntryField("Install Location", installLocation)
         );
 
         var langKeys = node.GetLanguageKeys();
         if (!(langKeys?.Count > 0))
             return;
-        LanguageList.ItemsSource = langKeys
-                                   .Select(lang =>
-                                   {
-                                       node.TryGetLanguageVariant(lang, out var file, out var hash);
-                                       return new LanguageRow(lang, file, hash);
-                                   })
-                                   .ToArray();
+        LanguageList.ItemsSource = langKeys.Select(lang =>
+        {
+            node.TryGetLanguageVariant(lang, out var file, out var hash);
+            return new LanguageRow(lang, file, hash);
+        }).ToArray();
         LanguagesSection.IsVisible = true;
     }
 
