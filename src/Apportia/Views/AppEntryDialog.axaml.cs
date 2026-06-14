@@ -3,6 +3,7 @@ using Apportia.Services;
 using Apportia.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
 
 namespace Apportia.Views;
 
@@ -32,6 +33,15 @@ public partial class AppEntryDialog : Window
                 : Path.Combine(appsBase, node.SectionName);
 
         var prefix = node.Category + " \u2013 ";
+
+        var iconPath = node.IsCustom
+            ? Path.Combine(CustomAppService.CustomAppImagesDir, node.SectionName + ".png")
+            : Path.Combine(AppContext.BaseDirectory, "Data", "AppImages", "128", node.SectionName.Replace("+", "Plus") + ".png");
+        if (File.Exists(iconPath))
+        {
+            GeneralIcon.Source = new Bitmap(iconPath);
+            GeneralIcon.IsVisible = true;
+        }
 
         GeneralList.ItemsSource = Filter(
             new EntryField("Section", node.SectionName),

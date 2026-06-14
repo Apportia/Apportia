@@ -39,25 +39,37 @@
             <StackPanel Spacing="0" Margin="0,0,20,0">
 
                 <!-- General -->
-                <Border Classes="sectionSep">
-                    <TextBlock Classes="sectionHeader" Text="GENERAL" />
-                </Border>
-                <ItemsControl x:Name="GeneralList" Margin="0,0,0,16">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="views:EntryField">
-                            <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
-                                <TextBlock Grid.Column="0" Text="{Binding Label}"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource AppSubTextBrush}"
-                                           VerticalAlignment="Top" />
-                                <TextBlock Grid.Column="1" Text="{Binding Value}"
-                                           TextWrapping="Wrap"
-                                           Foreground="{DynamicResource AppTextBrush}"
-                                           VerticalAlignment="Top" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <Panel>
+                    <Image x:Name="GeneralIcon"
+                           Width="128" Height="128"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Margin="0,30,0,0"
+                           Opacity="0.15"
+                           IsHitTestVisible="False"
+                           IsVisible="False" />
+                    <StackPanel>
+                        <Border Classes="sectionSep">
+                            <TextBlock Classes="sectionHeader" Text="GENERAL" />
+                        </Border>
+                        <ItemsControl x:Name="GeneralList" Margin="0,0,0,16">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="views:EntryField">
+                                    <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
+                                        <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource AppSubTextBrush}"
+                                                   VerticalAlignment="Top" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource AppTextBrush}"
+                                                   VerticalAlignment="Top" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Panel>
 
                 <!-- Version -->
                 <Border Classes="sectionSep">
