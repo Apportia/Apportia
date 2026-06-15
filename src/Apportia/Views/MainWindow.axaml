@@ -240,14 +240,12 @@
                            Grid.Column="1"
                            Margin="10,0"
                            VerticalAlignment="Center"
-                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
                            FontSize="12"
                            Foreground="{DynamicResource AppSubTextBrush}" />
                 <TextBlock x:Name="DownloadSpeedText"
                            Grid.Column="2"
                            TextAlignment="Right"
                            VerticalAlignment="Center"
-                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
                            FontSize="12"
                            Foreground="{DynamicResource AppSubTextBrush}" />
             </Grid>
@@ -425,6 +423,15 @@
                                                 <MenuItem Header="Remove from Queue"
                                                           IsVisible="{Binding ShowRemoveFromQueue}"
                                                           Click="OnMenuRemoveFromQueue" />
+                                                <Separator>
+                                                    <Separator.IsVisible>
+                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
+                                                            <Binding Path="ShowCancelInstall" />
+                                                            <Binding Path="ShowAddToQueue" />
+                                                            <Binding Path="ShowRemoveFromQueue" />
+                                                        </MultiBinding>
+                                                    </Separator.IsVisible>
+                                                </Separator>
                                                 <MenuItem Header="Install" IsVisible="{Binding ShowInstallActions}"
                                                           Click="OnMenuInstall" />
                                                 <MenuItem Header="Install &amp; Run"
@@ -450,12 +457,22 @@
                                                 </MenuItem>
                                                 <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
                                                           Click="OnMenuOpenFolder" />
-                                                <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
-                                                          Click="OnMenuUninstall" />
-                                                <Separator />
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
                                                           Click="OnMenuSettings" />
-                                                <MenuItem Header="Database Entry" Click="OnMenuAppDatabaseEntry" />
+                                                <Separator>
+                                                    <Separator.IsVisible>
+                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
+                                                            <Binding Path="ShowInstallActions" />
+                                                            <Binding Path="ShowUpdateActions" />
+                                                            <Binding Path="ShowRunActions" />
+                                                            <Binding Path="IsCustom" />
+                                                        </MultiBinding>
+                                                    </Separator.IsVisible>
+                                                </Separator>
+                                                <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
+                                                          Click="OnMenuUninstall" />
+                                                <Separator IsVisible="{Binding ShowUninstall}" />
+                                                <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry" />
                                                 <MenuItem Header="VirusTotal..."
                                                           IsVisible="{Binding ShowVirusTotalActions}"
                                                           Click="OnMenuVirusTotal" />
@@ -482,22 +499,19 @@
                                                        IsVisible="{Binding Columns.ShowUsedColumn}"
                                                        Text="{Binding UsedSize}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                       FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Install}"
                                                        IsVisible="{Binding Columns.ShowMetaColumns}"
                                                        Text="{Binding InstallSize}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                       FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Download}"
                                                        IsVisible="{Binding Columns.ShowMetaColumns}"
                                                        Text="{Binding DownloadSize}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                       FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Version}"
                                                        Text="{Binding PackageVersion}"
@@ -606,6 +620,15 @@
                                                 <MenuItem Header="Remove from Queue"
                                                           IsVisible="{Binding ShowRemoveFromQueue}"
                                                           Click="OnMenuRemoveFromQueue" />
+                                                <Separator>
+                                                    <Separator.IsVisible>
+                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
+                                                            <Binding Path="ShowCancelInstall" />
+                                                            <Binding Path="ShowAddToQueue" />
+                                                            <Binding Path="ShowRemoveFromQueue" />
+                                                        </MultiBinding>
+                                                    </Separator.IsVisible>
+                                                </Separator>
                                                 <MenuItem Header="Install" IsVisible="{Binding ShowInstallActions}"
                                                           Click="OnMenuInstall" />
                                                 <MenuItem Header="Install &amp; Run"
@@ -631,12 +654,22 @@
                                                 </MenuItem>
                                                 <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
                                                           Click="OnMenuOpenFolder" />
-                                                <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
-                                                          Click="OnMenuUninstall" />
-                                                <Separator />
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
                                                           Click="OnMenuSettings" />
-                                                <MenuItem Header="Database Entry" Click="OnMenuAppDatabaseEntry" />
+                                                <Separator>
+                                                    <Separator.IsVisible>
+                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
+                                                            <Binding Path="ShowInstallActions" />
+                                                            <Binding Path="ShowUpdateActions" />
+                                                            <Binding Path="ShowRunActions" />
+                                                            <Binding Path="IsCustom" />
+                                                        </MultiBinding>
+                                                    </Separator.IsVisible>
+                                                </Separator>
+                                                <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
+                                                          Click="OnMenuUninstall" />
+                                                <Separator IsVisible="{Binding ShowUninstall}" />
+                                                <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry" />
                                                 <MenuItem Header="VirusTotal..."
                                                           IsVisible="{Binding ShowVirusTotalActions}"
                                                           Click="OnMenuVirusTotal" />
