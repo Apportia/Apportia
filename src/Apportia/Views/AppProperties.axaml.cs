@@ -4,6 +4,7 @@ using Apportia.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 
 namespace Apportia.Views;
 
@@ -13,6 +14,10 @@ public sealed record LanguageRow(string Language, string File, string Hash);
 
 public partial class AppProperties : Window
 {
+    private readonly string? _installLocation;
+    private readonly AppNode? _node;
+    private readonly string? _selectedLanguage;
+
     public AppProperties()
     {
         InitializeComponent();
@@ -20,12 +25,14 @@ public partial class AppProperties : Window
 
     public AppProperties(AppNode node, IconManager iconManager) : this()
     {
+        _node = node;
+
         var updateDate = DateTime.TryParse(node.UpdateDate, out var dt)
             ? dt.ToString("dddd, d MMMM yyyy")
             : node.UpdateDate;
         Title = $"{node.Name} ({updateDate})";
 
-        var installLocation = node.IsCustom
+        _installLocation = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
             : node.IsPlugin
                 ? PluginService.GetInstallDir(node.SectionName)
@@ -69,27 +76,13 @@ public partial class AppProperties : Window
             new EntryField("Download Size", node.DownloadSize)
         );
 
-        var selectedLanguage = node is { HasLanguageVariants: true, IsInstalled: true }
+        _selectedLanguage = node is { HasLanguageVariants: true, IsInstalled: true }
             ? AppLanguageService.Load(node.SectionName) is { } savedLang
                 ? AppLanguageService.FormatLanguageName(savedLang)
                 : null
             : null;
 
-        var usedSizeValue = "";
-        if (node.IsInstalled)
-        {
-            var dataBytes = AppDiskUsageService.GetDirectorySize(Path.Combine(installLocation, "Data"));
-            usedSizeValue = dataBytes > 0 && node.UsedBytes > 0
-                ? $"{node.UsedSize} (App: {AppDiskUsageService.FormatSize(node.UsedBytes - dataBytes)}, Data: {AppDiskUsageService.FormatSize(dataBytes)})"
-                : node.UsedSize;
-        }
-
-        InstallList.ItemsSource = Filter(
-            new EntryField("Install Size", node.InstallSize),
-            new EntryField("Used Size", usedSizeValue),
-            new EntryField("Install Location", installLocation),
-            new EntryField("Language", selectedLanguage ?? "")
-        );
+        RefreshInstallList(node.UsedSize);
 
         var langKeys = node.GetLanguageKeys();
         if (!(langKeys?.Count > 0))
@@ -106,6 +99,27 @@ public partial class AppProperties : Window
     {
         base.OnOpened(e);
         Win32Window.ApplyDarkTitlebar(this);
+
+        if (_node is { IsInstalled: true } node && _installLocation is { } loc)
+            _ = Task.Run(() => AppDiskUsageService.GetDirectorySize(Path.Combine(loc, "Data")))
+                    .ContinueWith(t =>
+                    {
+                        var dataBytes = t.Result;
+                        var usedSize = dataBytes > 0 && node.UsedBytes > 0
+                            ? $"{node.UsedSize} (App: {AppDiskUsageService.FormatSize(node.UsedBytes - dataBytes)}, Data: {AppDiskUsageService.FormatSize(dataBytes)})"
+                            : node.UsedSize;
+                        Dispatcher.UIThread.Post(() => RefreshInstallList(usedSize));
+                    }, TaskContinuationOptions.OnlyOnRanToCompletion);
+    }
+
+    private void RefreshInstallList(string usedSizeValue)
+    {
+        InstallList.ItemsSource = Filter(
+            new EntryField("Install Size", _node?.InstallSize ?? ""),
+            new EntryField("Used Size", usedSizeValue),
+            new EntryField("Install Location", _installLocation ?? ""),
+            new EntryField("Language", _selectedLanguage ?? "")
+        );
     }
 
     private void OnClose(object? sender, RoutedEventArgs e)
