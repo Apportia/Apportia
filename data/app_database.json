@@ -7082,7 +7082,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "24",
-    "InstallSize": "4501"
+    "InstallSize": "75"
   },
   "LMarblesPortable": {
     "Name": "LMarbles",
