@@ -30,13 +30,15 @@ public static class PluginService
         return JavaSections.Contains(sectionName);
     }
 
-    public static string GetInstallDir(string appsBaseDir, string sectionName)
+    public static string GetInstallDir(string sectionName = "")
     {
-        return Path.Combine(appsBaseDir, "CommonFiles", sectionName);
+        return sectionName != string.Empty
+            ? Path.Combine(AppDownloadService.AppsDir, "CommonFiles", sectionName)
+            : Path.Combine(AppDownloadService.AppsDir, "CommonFiles");
     }
 
-    public static string GetMarkerFile(string appsBaseDir, string sectionName)
+    public static string GetMarkerFile(string sectionName)
     {
-        return Path.Combine(appsBaseDir, "CommonFiles", sectionName, "App", "AppInfo", "plugininstaller.ini");
+        return Path.Combine(AppDownloadService.AppsDir, "CommonFiles", sectionName, "App", "AppInfo", "plugininstaller.ini");
     }
 }

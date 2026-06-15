@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Apportia.ViewModels"
+        xmlns:views="using:Apportia.Views"
         xmlns:conv="using:Avalonia.Data.Converters"
         x:Class="Apportia.Views.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -443,7 +444,7 @@
                                                     <MenuItem.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
                                                             <Binding Path="ShowRunActions" />
-                                                            <Binding Path="IsWindows" />
+                                                            <Binding Source="{x:Static views:MainWindow.IsWindows}" />
                                                         </MultiBinding>
                                                     </MenuItem.IsVisible>
                                                 </MenuItem>
@@ -624,7 +625,7 @@
                                                     <MenuItem.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
                                                             <Binding Path="ShowRunActions" />
-                                                            <Binding Path="IsWindows" />
+                                                            <Binding Source="{x:Static views:MainWindow.IsWindows}" />
                                                         </MultiBinding>
                                                     </MenuItem.IsVisible>
                                                 </MenuItem>

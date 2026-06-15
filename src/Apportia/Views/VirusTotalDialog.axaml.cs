@@ -96,12 +96,11 @@ public partial class VirusTotalDialog : Window
             return;
         }
 
-        var appsBase = Path.Combine(AppContext.BaseDirectory, "Apps");
         _appDir = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
             : node.IsPlugin
-                ? Path.Combine(appsBase, "CommonFiles", node.SectionName)
-                : Path.Combine(appsBase, node.SectionName);
+                ? PluginService.GetInstallDir(node.SectionName)
+                : AppDownloadService.GetInstallDir(node.SectionName);
 
         foreach (var rel in VirusTotalService.GetTopLevelBinaries(_appDir))
             _entries.Add(BuildEntry(rel));

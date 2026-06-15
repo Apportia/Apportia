@@ -11,7 +11,6 @@ namespace Apportia.ViewModels;
 public sealed class MainViewModel : INotifyPropertyChanged
 {
     private readonly CategoryNode _advancedCategoryNode;
-    private readonly string _appsBaseDir = Path.Combine(AppContext.BaseDirectory, "Apps");
     private readonly List<CategoryNode> _grouped = [];
     private readonly CategoryNode _legacyCategoryNode;
     private CategoryDisplayMode _categoryDisplay = CategoryDisplayMode.Full;
@@ -24,8 +23,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public MainViewModel(IReadOnlyList<AppEntry> entries, IconManager iconManager, int iconSize = 24)
     {
         var visible = entries.Where(e => !string.Equals(e.Category, "None", StringComparison.OrdinalIgnoreCase)).ToList();
-        var appsBaseDir = _appsBaseDir;
-
         // Group by real category (advanced apps are only shown under "Advanced" when not installed)
         var byCategory =
             visible.GroupBy(e => e.Category, StringComparer.OrdinalIgnoreCase)
@@ -40,13 +37,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
                                  string currentDate;
                                  if (PluginService.IsPlugin(entry.SectionName))
                                  {
-                                     var marker = PluginService.GetMarkerFile(appsBaseDir, entry.SectionName);
+                                     var marker = PluginService.GetMarkerFile(entry.SectionName);
                                      exists = File.Exists(marker);
                                      currentDate = exists ? File.GetLastWriteTime(marker).ToString("yyyy-MM-dd") : string.Empty;
                                  }
                                  else
                                  {
-                                     var appDir = Path.Combine(appsBaseDir, entry.SectionName);
+                                     var appDir = AppDownloadService.GetInstallDir(entry.SectionName);
                                      var (resolvedExe, candidates) = AppExecutableService.Resolve(appDir, entry.SectionName);
                                      exists = resolvedExe != null || candidates.Length > 0;
                                      currentDate = resolvedExe != null
@@ -577,8 +574,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                                Dir: n.IsCustom
                                    ? Path.Combine(customDir, n.SectionName)
                                    : n.IsPlugin
-                                       ? PluginService.GetInstallDir(_appsBaseDir, n.SectionName)
-                                       : Path.Combine(_appsBaseDir, n.SectionName)))
+                                       ? PluginService.GetInstallDir(n.SectionName)
+                                       : AppDownloadService.GetInstallDir(n.SectionName)))
                    .ToList();
 
         await foreach (var (sectionName, bytes) in AppDiskUsageService.ScanAllAsync(apps))

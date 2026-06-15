@@ -130,7 +130,7 @@ public sealed class IconManager : IDisposable
         });
     }
 
-    private string LocalPath(string section, int size)
+    public string LocalPath(string section, int size)
     {
         return Path.Combine(_cacheDir, size.ToString(), $"{NormalizeSection(section)}.png");
     }

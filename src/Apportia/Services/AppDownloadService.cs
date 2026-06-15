@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace Apportia.Services;
@@ -16,7 +15,8 @@ public sealed class AppDownloadService : IDisposable
         _http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
     }
 
-    public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+    public static string AppsDir =>
+        Path.Combine(AppContext.BaseDirectory, "Apps");
 
     private static Process? ActiveInstaller { get; set; }
 
@@ -25,9 +25,14 @@ public sealed class AppDownloadService : IDisposable
         _http.Dispose();
     }
 
+    public static string GetInstallDir(string sectionName)
+    {
+        return Path.Combine(AppsDir, sectionName);
+    }
+
     public static bool IsWineAvailable()
     {
-        if (!IsLinux)
+        if (!OperatingSystem.IsLinux())
             return true;
         try
         {
@@ -52,7 +57,7 @@ public sealed class AppDownloadService : IDisposable
     /// Skips args that already carry a drive letter (Z:\, C:\, etc.).
     public static string[] ConvertArgsForWine(string[] args)
     {
-        return !IsLinux ? args : args.Select(ConvertArgForWine).ToArray();
+        return !OperatingSystem.IsLinux() ? args : args.Select(ConvertArgForWine).ToArray();
     }
 
     public async Task<string> DownloadAsync(
@@ -170,7 +175,7 @@ public sealed class AppDownloadService : IDisposable
         }
 
         // Build DESTINATION: Wine needs Z:\ prefix on Linux
-        var dest = IsLinux
+        var dest = OperatingSystem.IsLinux()
             ? "Z:" + appsBaseDir.Replace('/', '\\')
             : appsBaseDir;
 
@@ -293,7 +298,7 @@ public sealed class AppDownloadService : IDisposable
     /// On Linux the portable .exe requires Wine – it is only considered when Wine is available.
     public static string? FindSevenZip(string appsBaseDir)
     {
-        IEnumerable<string> paths = IsLinux
+        IEnumerable<string> paths = OperatingSystem.IsLinux()
             ?
             [
                 "/usr/bin/7zz",
@@ -311,7 +316,7 @@ public sealed class AppDownloadService : IDisposable
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "7-Zip", "7z.exe")
             ];
 
-        if (IsLinux && !IsWineAvailable())
+        if (OperatingSystem.IsLinux() && !IsWineAvailable())
             return paths.FirstOrDefault(File.Exists);
 
         var p = Path.Combine(appsBaseDir, "7-ZipPortable", "App");
@@ -330,7 +335,7 @@ public sealed class AppDownloadService : IDisposable
 
         // Portable .exe on Linux needs Wine; native Linux binaries run directly
         ProcessStartInfo psi;
-        if (IsLinux && sevenZipPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        if (OperatingSystem.IsLinux() && sevenZipPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
             var wineArchive = "Z:" + archivePath.Replace('/', '\\');
             var wineDest = "Z:" + destDir.Replace('/', '\\');
@@ -362,7 +367,7 @@ public sealed class AppDownloadService : IDisposable
     private static Process? StartProcess(string exePath, string? args = null)
     {
         ProcessStartInfo psi;
-        if (IsLinux)
+        if (OperatingSystem.IsLinux())
         {
             psi = new ProcessStartInfo("wine")
             {

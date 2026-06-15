@@ -18,25 +18,24 @@ public partial class AppEntryDialog : Window
         InitializeComponent();
     }
 
-    public AppEntryDialog(AppNode node) : this()
+    public AppEntryDialog(AppNode node, IconManager iconManager) : this()
     {
         var updateDate = DateTime.TryParse(node.UpdateDate, out var dt)
             ? dt.ToString("dddd, d MMMM yyyy")
             : node.UpdateDate;
         Title = $"{node.Name} ({updateDate})";
 
-        var appsBase = Path.Combine(AppContext.BaseDirectory, "Apps");
         var installLocation = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
             : node.IsPlugin
-                ? Path.Combine(appsBase, "CommonFiles", node.SectionName)
-                : Path.Combine(appsBase, node.SectionName);
+                ? PluginService.GetInstallDir(node.SectionName)
+                : AppDownloadService.GetInstallDir(node.SectionName);
 
         var prefix = node.Category + " \u2013 ";
 
         var iconPath = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppImagesDir, node.SectionName + ".png")
-            : Path.Combine(AppContext.BaseDirectory, "Data", "AppImages", "128", node.SectionName.Replace("+", "Plus") + ".png");
+            : iconManager.LocalPath(node.SectionName, 128);
         if (File.Exists(iconPath))
         {
             GeneralIcon.Source = new Bitmap(iconPath);

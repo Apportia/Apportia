@@ -62,7 +62,7 @@ public partial class MainWindow : Window
 
         _iconManager = new IconManager(iconCacheDir);
         _appDatabaseUpdater = new AppDatabaseUpdater();
-        _downloadService = new AppDownloadService(Path.Combine(AppContext.BaseDirectory, "Apps"));
+        _downloadService = new AppDownloadService(AppDownloadService.AppsDir);
 
         if (File.Exists(AppDatabaseUpdater.CachePath))
         {
@@ -80,6 +80,8 @@ public partial class MainWindow : Window
         // No cache: download first, then populate UI
         _ = StartFirstRunAsync();
     }
+
+    public static bool IsWindows => OperatingSystem.IsWindows();
 
     private ItemsControl ActiveList =>
         (DataContext as MainViewModel)?.Columns.IsGridView == true ? MainGridList : MainList;
@@ -224,11 +226,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        var appsBaseDir = Path.Combine(AppContext.BaseDirectory, "Apps");
+        var appsBaseDir = AppDownloadService.AppsDir;
 
         if (node.IsPlugin)
         {
-            var marker = PluginService.GetMarkerFile(appsBaseDir, node.SectionName);
+            var marker = PluginService.GetMarkerFile(node.SectionName);
 
             if (File.Exists(marker) && IsAppUpToDate(marker, node.UpdateDate))
                 return;
@@ -456,25 +458,25 @@ public partial class MainWindow : Window
     private void OnMenuInstallRun(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, Path.Combine(AppContext.BaseDirectory, "Apps"), true);
+            _ = InstallApp(node, AppDownloadService.AppsDir, true);
     }
 
     private void OnMenuInstall(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, Path.Combine(AppContext.BaseDirectory, "Apps"), false);
+            _ = InstallApp(node, AppDownloadService.AppsDir, false);
     }
 
     private void OnMenuUpdateRun(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, Path.Combine(AppContext.BaseDirectory, "Apps"), true);
+            _ = InstallApp(node, AppDownloadService.AppsDir, true);
     }
 
     private void OnMenuUpdate(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, Path.Combine(AppContext.BaseDirectory, "Apps"), false);
+            _ = InstallApp(node, AppDownloadService.AppsDir, false);
     }
 
     private void OnMenuAddToQueue(object? sender, RoutedEventArgs e)
@@ -486,7 +488,7 @@ public partial class MainWindow : Window
         if (_downloading || !_installQueue.TryDequeue(out var next))
             return;
         next.Node.IsQueued = false;
-        _ = InstallApp(next.Node, Path.Combine(AppContext.BaseDirectory, "Apps"), next.Launch);
+        _ = InstallApp(next.Node, AppDownloadService.AppsDir, next.Launch);
     }
 
     private void OnMenuRemoveFromQueue(object? sender, RoutedEventArgs e)
@@ -590,7 +592,7 @@ public partial class MainWindow : Window
             else if (node.IsCustom)
                 RunCustomApp(node, args);
             else
-                RunApp(node, Path.Combine(AppContext.BaseDirectory, "Apps"), args);
+                RunApp(node, AppDownloadService.AppsDir, args);
         }
         catch
         {
@@ -604,7 +606,7 @@ public partial class MainWindow : Window
         {
             if (NodeFromMenu(sender) is not { } node)
                 return;
-            var appsBaseDir = Path.Combine(AppContext.BaseDirectory, "Apps");
+            var appsBaseDir = AppDownloadService.AppsDir;
 
             // Check if Java plugins should be co-uninstalled
             List<AppNode> javaPluginsToRemove = [];
@@ -636,7 +638,7 @@ public partial class MainWindow : Window
             var appDir = node.IsCustom
                 ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
                 : node.IsPlugin
-                    ? PluginService.GetInstallDir(appsBaseDir, node.SectionName)
+                    ? PluginService.GetInstallDir(node.SectionName)
                     : Path.Combine(appsBaseDir, node.SectionName);
 
             var running = GetRunningProcessesInDir(appDir);
@@ -669,7 +671,7 @@ public partial class MainWindow : Window
 
                 if (node.IsPlugin)
                 {
-                    var commonDir = Path.Combine(appsBaseDir, "CommonFiles");
+                    var commonDir = PluginService.GetInstallDir();
                     if (Directory.Exists(commonDir) && !Directory.EnumerateFileSystemEntries(commonDir).Any())
                         Directory.Delete(commonDir);
                 }
@@ -688,7 +690,7 @@ public partial class MainWindow : Window
 
                 foreach (var javaNode in javaPluginsToRemove)
                 {
-                    var javaDir = PluginService.GetInstallDir(appsBaseDir, javaNode.SectionName);
+                    var javaDir = PluginService.GetInstallDir(javaNode.SectionName);
                     if (Directory.Exists(javaDir))
                         Directory.Delete(javaDir, true);
                     javaNode.IsInstalled = false;
@@ -697,7 +699,7 @@ public partial class MainWindow : Window
                 if (javaPluginsToRemove.Count <= 0)
                     return;
 
-                var commonFilesDir = Path.Combine(appsBaseDir, "CommonFiles");
+                var commonFilesDir = PluginService.GetInstallDir();
                 if (Directory.Exists(commonFilesDir) && !Directory.EnumerateFileSystemEntries(commonFilesDir).Any())
                     Directory.Delete(commonFilesDir);
             }
@@ -724,7 +726,7 @@ public partial class MainWindow : Window
             try
             {
                 bool matches;
-                if (AppDownloadService.IsLinux)
+                if (OperatingSystem.IsLinux())
                 {
                     var maps = File.ReadAllText($"/proc/{p.Id}/maps");
                     matches = maps.Contains(prefix, StringComparison.Ordinal);
@@ -753,7 +755,7 @@ public partial class MainWindow : Window
             return [];
 
         // On Linux, expand roots to include all descendant processes via PPID
-        if (AppDownloadService.IsLinux)
+        if (OperatingSystem.IsLinux())
         {
             var ppidMap = new Dictionary<int, int>(); // pid -> ppid
             foreach (var p in all)
@@ -793,7 +795,7 @@ public partial class MainWindow : Window
         try
         {
             var appDir = node.IsPlugin
-                ? PluginService.GetInstallDir(appsBaseDir, node.SectionName)
+                ? PluginService.GetInstallDir(node.SectionName)
                 : Path.Combine(appsBaseDir, node.SectionName);
 
             foreach (var p in GetRunningProcessesInDir(appDir))
@@ -915,7 +917,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            var appDir = Path.Combine(AppContext.BaseDirectory, "Apps", node.SectionName);
+            var appDir = AppDownloadService.GetInstallDir(node.SectionName);
             var (resolved, _) = AppExecutableService.Resolve(appDir, node.SectionName);
             if (resolved == null)
                 return;
@@ -945,7 +947,7 @@ public partial class MainWindow : Window
             return;
         var dir = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
-            : Path.Combine(AppContext.BaseDirectory, "Apps", node.SectionName);
+            : AppDownloadService.GetInstallDir(node.SectionName);
         if (!Directory.Exists(dir))
             return;
         try
@@ -980,7 +982,7 @@ public partial class MainWindow : Window
                 return;
             if (!node.IsCustom)
                 await _iconManager.EnsureIconAsync(node.SectionName, 128, _cts.Token);
-            var dialog = new AppEntryDialog(node) { Icon = new WindowIcon(node.Icon) };
+            var dialog = new AppEntryDialog(node, _iconManager) { Icon = new WindowIcon(node.Icon) };
             await dialog.ShowDialog(this);
         }
         catch
@@ -1047,14 +1049,14 @@ public partial class MainWindow : Window
             else if (node.IsCustom)
                 RunCustomApp(node, args);
             else
-                RunApp(node, Path.Combine(AppContext.BaseDirectory, "Apps"), args);
+                RunApp(node, AppDownloadService.AppsDir, args);
         }
         else
         {
             if (node.IsCustom)
                 RunCustomApp(node);
             else
-                RunApp(node, Path.Combine(AppContext.BaseDirectory, "Apps"));
+                RunApp(node, AppDownloadService.AppsDir);
         }
     }
 
@@ -1184,7 +1186,7 @@ public partial class MainWindow : Window
         if (string.IsNullOrEmpty(node.DownloadFile) || string.IsNullOrEmpty(node.DownloadPath))
             return;
 
-        if (AppDownloadService.IsLinux && !AppDownloadService.IsWineAvailable())
+        if (OperatingSystem.IsLinux() && !AppDownloadService.IsWineAvailable())
         {
             await ShowDialog(
                 node, "Wine Not Found",
@@ -1444,7 +1446,7 @@ public partial class MainWindow : Window
                     try
                     {
                         var installDir = node.IsPlugin
-                            ? PluginService.GetInstallDir(appsBaseDir, node.SectionName)
+                            ? PluginService.GetInstallDir(node.SectionName)
                             : Path.Combine(appsBaseDir, node.SectionName);
                         var licenseDir = Path.Combine(installDir, "Data", "PortableApps.comInstaller");
                         Directory.CreateDirectory(licenseDir);
@@ -1463,7 +1465,7 @@ public partial class MainWindow : Window
                     try
                     {
                         var baseDir = node.IsPlugin
-                            ? PluginService.GetInstallDir(appsBaseDir, node.SectionName)
+                            ? PluginService.GetInstallDir(node.SectionName)
                             : Path.Combine(appsBaseDir, node.SectionName);
                         var appInfoPath = Path.Combine(baseDir, "App", "AppInfo", "appinfo.ini");
                         var eulaInstallerDir = Path.Combine(baseDir, "Data", "PortableApps.comInstaller");
@@ -1479,7 +1481,7 @@ public partial class MainWindow : Window
                 string? appExeAfter;
                 if (node.IsPlugin)
                 {
-                    var m = PluginService.GetMarkerFile(appsBaseDir, node.SectionName);
+                    var m = PluginService.GetMarkerFile(node.SectionName);
                     appExeAfter = File.Exists(m) ? m : null;
                 }
                 else
@@ -1493,7 +1495,7 @@ public partial class MainWindow : Window
                         AppLanguageService.Save(node.SectionName, chosenLanguage);
                     node.IsInstalled = true;
                     var installDir = node.IsPlugin
-                        ? PluginService.GetInstallDir(appsBaseDir, node.SectionName)
+                        ? PluginService.GetInstallDir(node.SectionName)
                         : Path.Combine(appsBaseDir, node.SectionName);
                     _ = ScanAndCacheNodeSizeAsync(node, installDir);
                     if (DateTime.TryParse(node.UpdateDate, out var updateDate))
@@ -1536,7 +1538,7 @@ public partial class MainWindow : Window
                 if (!wasInstalled)
                 {
                     var appDir = node.IsPlugin
-                        ? PluginService.GetInstallDir(appsBaseDir, node.SectionName)
+                        ? PluginService.GetInstallDir(node.SectionName)
                         : Path.Combine(appsBaseDir, node.SectionName);
                     try
                     {
@@ -2388,7 +2390,7 @@ public partial class MainWindow : Window
                 AppDownloadService.KillActiveInstaller();
                 if (_activeDownloadFile is { } activeFile)
                 {
-                    var partialFile = Path.Combine(AppContext.BaseDirectory, "Apps", activeFile);
+                    var partialFile = Path.Combine(AppDownloadService.AppsDir, activeFile);
                     try
                     {
                         File.Delete(partialFile);
