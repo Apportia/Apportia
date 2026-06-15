@@ -67,6 +67,7 @@ jobs:
           DESCRIPTION_WORD_FIXES = [
               ("windows", "Windows"), ("linux",   "Linux"),
               ("aac",     "AAC"),     ("avi",     "AVI"),
+              ("cd",      "CD"),      ("bd",      "BD"),
               ("dvd",     "DVD"),     ("flac",    "FLAC"),
               ("ftp",     "FTP"),     ("gui",     "GUI"),
               ("html",    "HTML"),    ("id3",     "ID3"),
