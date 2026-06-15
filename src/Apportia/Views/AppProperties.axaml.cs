@@ -11,14 +11,14 @@ public sealed record EntryField(string Label, string Value);
 
 public sealed record LanguageRow(string Language, string File, string Hash);
 
-public partial class AppEntryDialog : Window
+public partial class AppProperties : Window
 {
-    public AppEntryDialog()
+    public AppProperties()
     {
         InitializeComponent();
     }
 
-    public AppEntryDialog(AppNode node, IconManager iconManager) : this()
+    public AppProperties(AppNode node, IconManager iconManager) : this()
     {
         var updateDate = DateTime.TryParse(node.UpdateDate, out var dt)
             ? dt.ToString("dddd, d MMMM yyyy")

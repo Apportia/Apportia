@@ -982,7 +982,7 @@ public partial class MainWindow : Window
                 return;
             if (!node.IsCustom)
                 await _iconManager.EnsureIconAsync(node.SectionName, 128, _cts.Token);
-            var dialog = new AppEntryDialog(node, _iconManager) { Icon = new WindowIcon(node.Icon) };
+            var dialog = new AppProperties(node, _iconManager) { Icon = new WindowIcon(node.Icon) };
             await dialog.ShowDialog(this);
         }
         catch
