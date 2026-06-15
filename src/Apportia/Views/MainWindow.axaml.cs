@@ -1373,13 +1373,25 @@ public partial class MainWindow : Window
             if (hash == HashResult.Invalid)
             {
                 ShowDownloadBar(false);
-                var proceed = await ShowDialog(
+                var choice = await ShowDialog(
                     node, "Hash Mismatch",
-                    "The downloaded file's hash does not match the expected value.\n" +
-                    "The file may be corrupted or tampered with.\n\n" +
-                    "Do you want to proceed anyway?",
-                    "Proceed Anyway", "Cancel");
-                if (proceed != "Proceed Anyway")
+                    "The downloaded file's hash does not match the expected value.\n\n" +
+                    "The file may be corrupted or tampered with.",
+                    "Scan with VirusTotal", "Proceed Anyway", "Cancel");
+                if (choice == "Scan with VirusTotal")
+                {
+                    await new VirusTotalDialog(node) { Icon = new WindowIcon(node.Icon) }.ShowDialog(this);
+                    choice = await ShowDialog(
+                        node, "Hash Mismatch",
+                        "Do you want to proceed with the installation?",
+                        "Proceed", "Cancel");
+                    if (choice != "Proceed")
+                    {
+                        File.Delete(localPath);
+                        return;
+                    }
+                }
+                else if (choice != "Proceed Anyway")
                 {
                     File.Delete(localPath);
                     return;
