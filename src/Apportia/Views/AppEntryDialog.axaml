@@ -15,7 +15,7 @@
     <Window.Styles>
         <Style Selector="TextBlock.sectionHeader">
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontSize" Value="11" />
             <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
             <Setter Property="Margin" Value="0,0,0,6" />
         </Style>
@@ -57,11 +57,11 @@
                                 <DataTemplate x:DataType="views:EntryField">
                                     <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
                                         <TextBlock Grid.Column="0" Text="{Binding Label}"
-                                                   FontWeight="SemiBold"
+                                                   FontSize="14" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource AppSubTextBrush}"
                                                    VerticalAlignment="Top" />
                                         <TextBlock Grid.Column="1" Text="{Binding Value}"
-                                                   TextWrapping="Wrap"
+                                                   FontSize="14" TextWrapping="Wrap"
                                                    Foreground="{DynamicResource AppTextBrush}"
                                                    VerticalAlignment="Top" />
                                     </Grid>
@@ -80,11 +80,11 @@
                         <DataTemplate x:DataType="views:EntryField">
                             <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
                                 <TextBlock Grid.Column="0" Text="{Binding Label}"
-                                           FontWeight="SemiBold"
+                                           FontSize="14" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AppSubTextBrush}"
                                            VerticalAlignment="Top" />
                                 <TextBlock Grid.Column="1" Text="{Binding Value}"
-                                           TextWrapping="Wrap"
+                                           FontSize="14" TextWrapping="Wrap"
                                            Foreground="{DynamicResource AppTextBrush}"
                                            VerticalAlignment="Top" />
                             </Grid>
@@ -101,11 +101,11 @@
                         <DataTemplate x:DataType="views:EntryField">
                             <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
                                 <TextBlock Grid.Column="0" Text="{Binding Label}"
-                                           FontWeight="SemiBold"
+                                           FontSize="14" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AppSubTextBrush}"
                                            VerticalAlignment="Top" />
                                 <TextBlock Grid.Column="1" Text="{Binding Value}"
-                                           TextWrapping="Wrap"
+                                           FontSize="14" TextWrapping="Wrap"
                                            Foreground="{DynamicResource AppTextBrush}"
                                            VerticalAlignment="Top" />
                             </Grid>
@@ -122,11 +122,11 @@
                         <DataTemplate x:DataType="views:EntryField">
                             <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
                                 <TextBlock Grid.Column="0" Text="{Binding Label}"
-                                           FontWeight="SemiBold"
+                                           FontSize="14" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AppSubTextBrush}"
                                            VerticalAlignment="Top" />
                                 <TextBlock Grid.Column="1" Text="{Binding Value}"
-                                           TextWrapping="Wrap"
+                                           FontSize="14" TextWrapping="Wrap"
                                            Foreground="{DynamicResource AppTextBrush}"
                                            VerticalAlignment="Top" />
                             </Grid>
