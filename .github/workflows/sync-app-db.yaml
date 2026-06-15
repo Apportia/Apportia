@@ -237,7 +237,7 @@ jobs:
                       hi = int(hi_s) if hi_s else lo
                   except ValueError:
                       hi = lo
-                  prefer_lower = section.startswith(("Bitcoin", "Dogecoin"))
+                  prefer_lower = section.startswith(("Bitcoin", "Dogecoin", "Litecoin"))
                   val = str(lo if prefer_lower else max(lo, hi))
               try:
                   n = max(1, int(val))
