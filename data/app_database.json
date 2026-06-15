@@ -186,7 +186,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "2",
-    "InstallSize": "6"
+    "InstallSize": "12"
   },
   "aMSNPortable": {
     "Name": "aMSN (Discontinued)",
@@ -479,7 +479,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "29",
-    "InstallSize": "85"
+    "InstallSize": "147"
   },
   "AudacityPortableLegacyWinXP": {
     "Name": "Audacity (Legacy WinXP)",
@@ -515,7 +515,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "19",
-    "InstallSize": "51"
+    "InstallSize": "87"
   },
   "AutoDrumPortable": {
     "Name": "AutoDrum",
@@ -1400,7 +1400,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "14",
-    "InstallSize": "47"
+    "InstallSize": "155"
   },
   "ClickyGonePortable": {
     "Name": "Clicky Gone",
@@ -1921,7 +1921,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/CudaTextPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "18",
-    "InstallSize": "29"
+    "InstallSize": "49"
   },
   "CuteMarkEdPortable": {
     "Name": "CuteMarkEd",
@@ -2145,7 +2145,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "15",
-    "InstallSize": "25"
+    "InstallSize": "52"
   },
   "DicomPortable": {
     "Name": "Dicom",
@@ -2712,7 +2712,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "28",
-    "InstallSize": "88"
+    "InstallSize": "151"
   },
   "Explorer++Portable": {
     "Name": "Explorer++",
@@ -2908,7 +2908,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/fdmPortableLegacyWin7",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "70",
-    "InstallSize": "153"
+    "InstallSize": "264"
   },
   "FeedNotifierPortable": {
     "Name": "Feed Notifier",
@@ -2959,7 +2959,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "193",
-    "InstallSize": "466"
+    "InstallSize": "835"
   },
   "FileAlyzerPortable": {
     "Name": "FileAlyzer",
@@ -2993,7 +2993,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "151",
-    "InstallSize": "311"
+    "InstallSize": "425"
   },
   "FileVoyagerPortable": {
     "Name": "FileVoyager",
@@ -3045,7 +3045,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "23",
-    "InstallSize": "45"
+    "InstallSize": "79"
   },
   "FileZillaPortableLegacyWinVista": {
     "Name": "FileZilla Client (Legacy WinVista)",
@@ -3115,7 +3115,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "173",
-    "InstallSize": "333",
+    "InstallSize": "618",
     "DownloadFile_Arabic": "FirefoxPortable_151.0.4_Arabic.paf.exe",
     "Hash_Arabic": "43f5800ec135270f0b5311bc5c7d50b4cac5ca603d3e386f005c97a6dcbbaa5a",
     "DownloadFile_Bulgarian": "FirefoxPortable_151.0.4_Bulgarian.paf.exe",
@@ -3747,7 +3747,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "120",
-    "InstallSize": "222",
+    "InstallSize": "430",
     "DownloadFile_Arabic": "FirefoxPortableLegacy115_115.36.0_Arabic.paf.exe",
     "Hash_Arabic": "8057e281202fab1d6fe25b43ca07adb1ffe2ad1c560247535444fa43aa5d4a5d",
     "DownloadFile_Bulgarian": "FirefoxPortableLegacy115_115.36.0_Bulgarian.paf.exe",
@@ -4196,7 +4196,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "52",
-    "InstallSize": "167"
+    "InstallSize": "194"
   },
   "FreecivPortableLegacy32bit": {
     "Name": "Freeciv (Legacy 32-bit)",
@@ -4214,7 +4214,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "61",
-    "InstallSize": "204"
+    "InstallSize": "230"
   },
   "FreecivPortableLegacyWinXP": {
     "Name": "Freeciv (Legacy XP/Vista)",
@@ -4232,7 +4232,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "35",
-    "InstallSize": "110"
+    "InstallSize": "134"
   },
   "FreeCommanderPortable": {
     "Name": "FreeCommander XE",
@@ -4491,7 +4491,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "94",
-    "InstallSize": "409"
+    "InstallSize": "492"
   },
   "GIMPPortableLegacy32bit": {
     "Name": "GIMP (Legacy Win10 32-bit)",
@@ -4509,7 +4509,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "93",
-    "InstallSize": "373"
+    "InstallSize": "455"
   },
   "GIMPPortableLegacyWin7": {
     "Name": "GIMP (Legacy Win7)",
@@ -4527,7 +4527,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "241",
-    "InstallSize": "992"
+    "InstallSize": "1101"
   },
   "GIMPPortableLegacyWinXP": {
     "Name": "GIMP (Legacy XP/Vista)",
@@ -4545,7 +4545,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "59",
-    "InstallSize": "920"
+    "InstallSize": "1101"
   },
   "gMKVExtractGUIPortable": {
     "Name": "gMKVExtractGUI",
@@ -4632,7 +4632,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "21",
-    "InstallSize": "26"
+    "InstallSize": "50"
   },
   "GoldenDictPortable": {
     "Name": "GoldenDict",
@@ -4878,7 +4878,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "36",
-    "InstallSize": "130"
+    "InstallSize": "139"
   },
   "gPodderPortableLegacyWinXP": {
     "Name": "gPodder (Legacy XP/Vista)",
@@ -4896,7 +4896,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "23",
-    "InstallSize": "86"
+    "InstallSize": "115"
   },
   "GPU-ZPortable": {
     "Name": "GPU-Z",
@@ -4930,7 +4930,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "112",
-    "InstallSize": "272"
+    "InstallSize": "479"
   },
   "GrampsPortableLegacyWin7": {
     "Name": "Gramps (Legacy Win7)",
@@ -4948,7 +4948,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "66",
-    "InstallSize": "133"
+    "InstallSize": "208"
   },
   "GrampsPortableLegacyWin8": {
     "Name": "Gramps (Legacy Win8)",
@@ -4966,7 +4966,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "100",
-    "InstallSize": "268"
+    "InstallSize": "471"
   },
   "GrampsPortableLegacyx86": {
     "Name": "Gramps (Legacy 32-bit)",
@@ -4984,7 +4984,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "65",
-    "InstallSize": "124"
+    "InstallSize": "199"
   },
   "GrampsPortableLegacy3": {
     "Name": "Gramps Legacy 3.x (XP/Vista)",
@@ -5002,7 +5002,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "28",
-    "InstallSize": "63"
+    "InstallSize": "108"
   },
   "GreenfishIconEditorProPortable": {
     "Name": "Greenfish Icon Editor Pro",
@@ -5555,7 +5555,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "65",
-    "InstallSize": "268"
+    "InstallSize": "355"
   },
   "InnoUnpackerPortable": {
     "Name": "InnoUnpacker",
@@ -5665,7 +5665,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/IrfanViewPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "39",
-    "InstallSize": "82"
+    "InstallSize": "132"
   },
   "IronPortable": {
     "Name": "Iron",
@@ -5894,7 +5894,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "189",
-    "InstallSize": "439"
+    "InstallSize": "638"
   },
   "jPortableBrowserSwitch": {
     "Name": "JRE Browser Switch (Discontinued)",
@@ -5930,7 +5930,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "7",
-    "InstallSize": "13"
+    "InstallSize": "22"
   },
   "JPEGViewPortableLegacyWinXP": {
     "Name": "JPEGView (Legacy WinXP)",
@@ -5948,7 +5948,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "4",
-    "InstallSize": "11"
+    "InstallSize": "15"
   },
   "JuicePortable": {
     "Name": "Juice",
@@ -6137,7 +6137,7 @@
     "DownloadFile": "KeePassXCPortable_2.7.12.paf.exe",
     "Hash": "c6b6307c01a35dc4756c25ecd2401da8206a12ad0b4d64882f10c2deeb5c93ca",
     "DownloadSize": "68",
-    "InstallSize": "93"
+    "InstallSize": "241"
   },
   "KeepNotePortable": {
     "Name": "KeepNote",
@@ -6329,7 +6329,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "115",
-    "InstallSize": "401"
+    "InstallSize": "446"
   },
   "KVIrcPortable": {
     "Name": "KVIrc",
@@ -6432,7 +6432,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "14",
-    "InstallSize": "25"
+    "InstallSize": "53"
   },
   "LBreakout2Portable": {
     "Name": "LBreakout2",
@@ -6500,8 +6500,8 @@
     "Hash": "93ab521584f06c08398b1f753c7cac268865c632c5ed038d8cb9d29372c53763",
     "DownloadPath": "https://download.documentfoundation.org/libreoffice/portable/26.2.1",
     "UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
-    "DownloadSize": "213",
-    "InstallSize": "682",
+    "DownloadSize": "281",
+    "InstallSize": "1401",
     "DownloadFile_Afrikaans": "LibreOfficePortable_26.2.1_MultilingualAll.paf.exe",
     "Hash_Afrikaans": "3409f75e56916214afa745fa2cd1bd64103cb02c85fbc50d306997c41690a294",
     "DownloadFile_Albanian": "LibreOfficePortable_26.2.1_MultilingualAll.paf.exe",
@@ -6596,8 +6596,8 @@
     "Hash": "61acbf6ebcdbda6684b77fdb0e3dfb924c832b41a01aa51578d2a4327a53dab1",
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
-    "DownloadSize": "119",
-    "InstallSize": "461",
+    "DownloadSize": "161",
+    "InstallSize": "941",
     "DownloadFile_Afrikaans": "LibreOfficePortableLegacy54_5.4.7_MultilingualAll.paf.exe",
     "Hash_Afrikaans": "87af87e98f5933c559b34dafff30c0e31c721c6d167a3efac9002ad3705ddc2e",
     "DownloadFile_Albanian": "LibreOfficePortableLegacy54_5.4.7_MultilingualAll.paf.exe",
@@ -6692,8 +6692,8 @@
     "Hash": "4879c28f736b5574fa3623d8a951cbe32dc6f9d025aec83158774d974b457e86",
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
-    "DownloadSize": "196",
-    "InstallSize": "646",
+    "DownloadSize": "255",
+    "InstallSize": "1301",
     "DownloadFile_Afrikaans": "LibreOfficePortableLegacy75_7.5.9_MultilingualAll.paf.exe",
     "Hash_Afrikaans": "6a3c10aeed81e3ad9d521d780954c7983d37713132959bff0cf6b682c4714c90",
     "DownloadFile_Albanian": "LibreOfficePortableLegacy75_7.5.9_MultilingualAll.paf.exe",
@@ -6786,8 +6786,8 @@
     "UpdateDate": "2026-02-17",
     "DownloadFile": "LibreOfficePortableLegacyWin7_25.2.7_MultilingualStandard.paf.exe",
     "Hash": "4a835dc8817e20a75e2b4446b128a8fd245db66edf4f2e17cdaf33aa57fcd2a7",
-    "DownloadSize": "195",
-    "InstallSize": "651",
+    "DownloadSize": "262",
+    "InstallSize": "1301",
     "DownloadFile_Afrikaans": "LibreOfficePortableLegacyWin7_25.2.7_MultilingualAll.paf.exe",
     "Hash_Afrikaans": "e8b0c382db028bca830a1f2af2a6133b57ad0bd353bd4d4ca91717eb5137d49c",
     "DownloadFile_Albanian": "LibreOfficePortableLegacyWin7_25.2.7_MultilingualAll.paf.exe",
@@ -6882,8 +6882,8 @@
     "Hash": "26535139b5efad121312298be46a4d7db3de6ab09e791124e7a4d576b26e8586",
     "DownloadPath": "https://download.documentfoundation.org/libreoffice/portable/25.8.5",
     "UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
-    "DownloadSize": "193",
-    "InstallSize": "651",
+    "DownloadSize": "262",
+    "InstallSize": "1301",
     "DownloadFile_Afrikaans": "LibreOfficePortablePrevious_25.8.5_MultilingualAll.paf.exe",
     "Hash_Afrikaans": "693c07276e23a6e2abbd5aa4648527b7712c27ca71a0d3d36176bd22d0b26d8f",
     "DownloadFile_Albanian": "LibreOfficePortablePrevious_25.8.5_MultilingualAll.paf.exe",
@@ -7082,7 +7082,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "24",
-    "InstallSize": "75"
+    "InstallSize": "4501"
   },
   "LMarblesPortable": {
     "Name": "LMarbles",
@@ -7307,7 +7307,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/MaxthonPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "237",
-    "InstallSize": "448"
+    "InstallSize": "705"
   },
   "MaxthonPortableLegacyWin7": {
     "Name": "Maxthon (Legacy Win7)",
@@ -7325,7 +7325,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/MaxthonPortableLegacyWin7",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "200",
-    "InstallSize": "363"
+    "InstallSize": "590"
   },
   "MBoxViewerPortable": {
     "Name": "MBox Viewer",
@@ -7517,7 +7517,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "7",
-    "InstallSize": "14"
+    "InstallSize": "25"
   },
   "MixxxPortable": {
     "Name": "Mixxx",
@@ -7587,7 +7587,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "115",
-    "InstallSize": "217"
+    "InstallSize": "407"
   },
   "MKVToolNixPortableLegacyWin7": {
     "Name": "MKVToolNix (Legacy Win7)",
@@ -7605,7 +7605,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "86",
-    "InstallSize": "147"
+    "InstallSize": "272"
   },
   "MnemosynePortable": {
     "Name": "Mnemosyne",
@@ -7675,7 +7675,7 @@
     "DownloadPath": "https://github.com/PortableApps/Downloads/releases/download",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "93",
-    "InstallSize": "281"
+    "InstallSize": "441"
   },
   "MoneyManagerExPortable": {
     "Name": "Money Manager Ex",
@@ -7692,7 +7692,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "29",
-    "InstallSize": "53"
+    "InstallSize": "90"
   },
   "MoneyManagerExPortableLegacyWinVista": {
     "Name": "Money Manager Ex (Legacy WinVista)",
@@ -8110,7 +8110,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/Notepad++Portable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "11",
-    "InstallSize": "24"
+    "InstallSize": "37"
   },
   "Notepad++PortableLegacyWinXP": {
     "Name": "Notepad++ (Legacy WinXP)",
@@ -8163,7 +8163,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "47",
-    "InstallSize": "98"
+    "InstallSize": "172"
   },
   "NSISPortable": {
     "Name": "NSIS",
@@ -8322,7 +8322,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "171",
-    "InstallSize": "324"
+    "InstallSize": "578"
   },
   "On-ScreenKeyboardPortable": {
     "Name": "On-Screen Keyboard",
@@ -8389,8 +8389,8 @@
     "Hash": "d14396ef01ebc6dfbe38b81ec11822728d6b45cf8df218a6ab2e2b362431435b",
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
-    "DownloadSize": "184",
-    "InstallSize": "644",
+    "DownloadSize": "334",
+    "InstallSize": "1401",
     "DownloadFile_Afrikaans": "OpenOfficePortable_4.1.16_MultilingualAll.paf.exe",
     "Hash_Afrikaans": "58b1225ffb2022d020c37a6e96065489395ceee836131250f07e48f0df73e692",
     "DownloadFile_Albanian": "OpenOfficePortable_4.1.16_MultilingualAll.paf.exe",
@@ -8592,7 +8592,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "267",
-    "InstallSize": "713"
+    "InstallSize": "1151"
   },
   "OpenTTDPortable": {
     "Name": "OpenTTD",
@@ -9044,7 +9044,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "14",
-    "InstallSize": "40"
+    "InstallSize": "60"
   },
   "PeerBlockPortable": {
     "Name": "PeerBlock Plus",
@@ -9269,7 +9269,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "15",
-    "InstallSize": "29"
+    "InstallSize": "71"
   },
   "PingusPortable": {
     "Name": "Pingus",
@@ -9511,7 +9511,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/PotPlayerPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "107",
-    "InstallSize": "201"
+    "InstallSize": "435"
   },
   "PotPlayerPortableLegacyWinVista": {
     "Name": "PotPlayer (Legacy Vista)",
@@ -9876,7 +9876,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "72",
-    "InstallSize": "155"
+    "InstallSize": "268"
   },
   "qBittorrentPortable": {
     "Name": "qBittorrent",
@@ -9929,7 +9929,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "29",
-    "InstallSize": "34"
+    "InstallSize": "58"
   },
   "qBittorrentPortableLegacyWin7": {
     "Name": "qBittorrent (Legacy Win7 64-bit)",
@@ -10329,7 +10329,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "155",
-    "InstallSize": "293"
+    "InstallSize": "564"
   },
   "RAMMapPortable": {
     "Name": "RAMMap",
@@ -10621,7 +10621,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "246",
-    "InstallSize": "588"
+    "InstallSize": "807"
   },
   "RufusPortable": {
     "Name": "Rufus",
@@ -10741,7 +10741,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "132",
-    "InstallSize": "343"
+    "InstallSize": "498"
   },
   "ScribusPortableTest": {
     "Name": "Scribus Test",
@@ -11208,7 +11208,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "46",
-    "InstallSize": "136"
+    "InstallSize": "150"
   },
   "SnapTimerPortable": {
     "Name": "SnapTimer",
@@ -11382,7 +11382,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "26",
-    "InstallSize": "49"
+    "InstallSize": "91"
   },
   "SQLiteDatabaseBrowserPortableLegacyWinXP": {
     "Name": "DB Browser for SQLite (Legacy XP/Vista)",
@@ -11520,7 +11520,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "536",
-    "InstallSize": "1001"
+    "InstallSize": "1361"
   },
   "StellariumPortableLegacy32bit": {
     "Name": "Stellarium (Legacy 32-bit)",
@@ -11774,7 +11774,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "217",
-    "InstallSize": "378"
+    "InstallSize": "681"
   },
   "SuperTuxPortable": {
     "Name": "SuperTux",
@@ -12258,7 +12258,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "147",
-    "InstallSize": "292",
+    "InstallSize": "561",
     "DownloadFile_Arabic": "ThunderbirdPortable_151.0.1_Arabic.paf.exe",
     "Hash_Arabic": "e7cbeefabec65f956c2434d78021d931d57c48efebc6c82628731c8e4054fbac",
     "DownloadFile_Bulgarian": "ThunderbirdPortable_151.0.1_Bulgarian.paf.exe",
@@ -12688,7 +12688,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "121",
-    "InstallSize": "242",
+    "InstallSize": "469",
     "DownloadFile_Arabic": "ThunderbirdPortableLegacy115_115.18.0_Arabic.paf.exe",
     "Hash_Arabic": "c383410d1c8c71cc48480653da2f0518af30761768ae258df15ac61fc39c6cd7",
     "DownloadFile_Bulgarian": "ThunderbirdPortableLegacy115_115.18.0_Bulgarian.paf.exe",
@@ -13040,7 +13040,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "16",
-    "InstallSize": "37"
+    "InstallSize": "74"
   },
   "UltraDefragPortable": {
     "Name": "UltraDefrag",
@@ -13315,7 +13315,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "43",
-    "InstallSize": "139"
+    "InstallSize": "181"
   },
   "VMMapPortable": {
     "Name": "VMMap",
@@ -13798,7 +13798,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "18",
-    "InstallSize": "39"
+    "InstallSize": "69"
   },
   "WinMerge2011Portable": {
     "Name": "WinMerge 2011",
@@ -13884,7 +13884,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "9",
-    "InstallSize": "28"
+    "InstallSize": "88"
   },
   "WinWGetPortable": {
     "Name": "WinWGet+",
@@ -13918,7 +13918,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/WiseDataRecoveryPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "10",
-    "InstallSize": "23"
+    "InstallSize": "41"
   },
   "WiseDiskCleanerPortable": {
     "Name": "Wise Disk Cleaner",
@@ -13935,7 +13935,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/WiseDiskCleanerPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "12",
-    "InstallSize": "25"
+    "InstallSize": "39"
   },
   "WiseDiskCleanerPortableLegacyWinXP": {
     "Name": "Wise Disk Cleaner (Legacy WinXP)",
@@ -14074,7 +14074,7 @@
     "DownloadPath": "http://downloads.portableapps.com/portableapps/WiseRegistryCleanerPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "10",
-    "InstallSize": "20"
+    "InstallSize": "32"
   },
   "WiseRegistryCleanerPortableLegacyWinXP": {
     "Name": "Wise Registry Cleaner (Legacy WinXP)",
@@ -14752,7 +14752,7 @@
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "154",
-    "InstallSize": "236"
+    "InstallSize": "407"
   },
   "ZSoftUninstallerPortable": {
     "Name": "ZSoft Uninstaller",
