@@ -14,7 +14,7 @@
 <a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/Apportia/Apportia?logo=github&logoColor=silver&style=for-the-badge" title="Check the latest release" alt="Release"></a>
 </p>
 
-**Apportia** is a cross-platform manager for portable Windows applications. It lets you browse, install, and launch hundreds of portable apps on both Windows and Linux — with Wine handling execution on Linux transparently.
+**Apportia** is a cross-platform manager for portable Windows applications. It lets you browse, install, and launch thousands of portable apps on both Windows and Linux — with Wine handling execution on Linux transparently.
 
 > Apportia derives from *apport* — to bring forth — with a nod to *aporia*, the philosophical state of contradiction. Because that's exactly what portable apps are: software that was never meant to be portable, forced into harmony.
 
@@ -27,17 +27,26 @@
 
 ## Features
 
+- Runs natively on Linux and Windows; portable apps are executed via Wine on Linux
 - Browse and search the full [PortableApps.com](https://portableapps.com) catalogue — support for additional app sources planned
+- Filter by category and subcategory; sort by name, version, release date, last update, disk usage, and more
 - Apps install and update silently in the background — no wizards, no popups
 - Passive update detection without interruptions
-- Runs natively on Linux and Windows; portable apps are executed via Wine on Linux
-- Configurable UI — switch between detailed list and compact tile view, adjust icon size and font size
-- Sort by name, version, release date, last update, disk usage, and more
-- Disk usage displayed per installed app
-- Custom app import — select a local folder containing a portable app and register it as a managed entry
+- Custom app import — select a local folder containing a portable app and fully integrate it: files are copied into the managed custom apps directory and the entry is registered like any catalogue app
+- App data backup and restore — app data is preserved across uninstall and reinstall
+- Actual disk usage per installed app — see exactly how much space each portable app occupies on your drive, sortable alongside all other columns
 - CLI argument support — pass arguments to any app at launch via an interactive parameter editor
 - File and folder picker integration for building argument lists
 - Automatic Linux path conversion for Wine (e.g. `/home/user/file.txt` becomes `Z:\home\user\file.txt`)
+- Configurable UI — switch between detailed list and compact tile view, adjust icon size, font size, and more; save and restore view configurations as presets
+- App details dialog — inspect full metadata for any catalogue entry via context menu
+- Full [VirusTotal](https://www.virustotal.com/) integration — scan apps by hash or upload files directly; results are shown inline without leaving the app; a scan is automatically suggested when a downloaded file fails integrity verification
+
+---
+
+## Download
+
+The latest release is available on the [Releases](https://github.com/Apportia/Apportia/releases/latest) page as a single ZIP archive — no installation required, just extract and run the executable — *Apportia.exe* on Windows, *Apportia* on Linux.
 
 ---
 
