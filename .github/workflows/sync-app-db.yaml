@@ -223,6 +223,20 @@ jobs:
               return None
 
 
+          def normalize_size(val, add_one_if_over_100=False):
+              val = val.strip()
+              dash = val.find('-')
+              if dash > 0:
+                  val = val[:dash].strip()
+              try:
+                  n = max(1, int(val))
+              except ValueError:
+                  n = 1
+              if add_one_if_over_100 and n > 100:
+                  n += 1
+              return str(n)
+
+
           def normalize_date(raw):
               if not raw or not raw.strip():
                   return ""
@@ -377,6 +391,10 @@ jobs:
                       current_fields["UserAgent"]    = ua_for(resolved, wget_ua, chrome_ua)
                   elif key in DATE_KEY_MAP:
                       current_fields[DATE_KEY_MAP[key]] = normalize_date(val)
+                  elif key == "downloadsize":
+                      current_fields["DownloadSize"] = normalize_size(val)
+                  elif key == "installsize":
+                      current_fields["InstallSize"] = normalize_size(val, add_one_if_over_100=True)
                   else:
                       current_fields[raw_key] = val
 
