@@ -36,7 +36,7 @@ public sealed record VtEngineRow(string Engine, string? Result, string Category)
     public bool IsTimeout => Category == "timeout";
     public bool IsConfirmedTimeout => Category == "confirmed-timeout";
     public bool HasResult => !string.IsNullOrEmpty(Result);
-    public string DisplayResult => Result ?? string.Empty;
+    public string DisplayResult => string.IsNullOrEmpty(Result) ? "\u2014" : Result;
 
     public string DisplayCategory => Category switch
     {
@@ -513,8 +513,18 @@ public partial class VirusTotalDialog : Window
         try
         {
             var subdirFiles = await Task.Run(() => VirusTotalService.GetSubdirBinaries(_appDir));
-            foreach (var rel in subdirFiles)
-                _entries.Add(BuildEntry(rel));
+            var sorted = _entries.Select(e => e.RelativePath)
+                                 .Concat(subdirFiles)
+                                 .OrderBy(p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                                 .ThenBy(p => p.Count(c => c == Path.DirectorySeparatorChar || c == '/'))
+                                 .ThenBy(p => p, StringComparer.OrdinalIgnoreCase)
+                                 .Select(BuildEntry)
+                                 .ToList();
+            _entries.Clear();
+            foreach (var entry in sorted)
+                _entries.Add(entry);
+            if (_entries.Count > 0)
+                FileCombo.SelectedIndex = 0;
         }
         catch (Exception ex)
         {
