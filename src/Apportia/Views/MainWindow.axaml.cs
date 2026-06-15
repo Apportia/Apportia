@@ -664,6 +664,39 @@ public partial class MainWindow : Window
                 await Task.Delay(500);
             }
 
+            if (node is { IsCustom: false, IsPlugin: false })
+            {
+                var sourceDataDir = Path.Combine(appDir, "Data");
+                if (Directory.Exists(sourceDataDir))
+                {
+                    var doBackup = await ShowDialog(
+                        node, "Backup User Data",
+                        $"Do you want to save a backup of your {node.Name} data before uninstalling?",
+                        "Save Backup", "Skip");
+
+                    if (doBackup == "Save Backup")
+                    {
+                        if (AppBackupService.HasBackup(node.SectionName))
+                        {
+                            var choice = await ShowDialog(
+                                node, "Backup Already Exists",
+                                $"A backup of {node.Name}'s data already exists.\n\nWhich backup do you want to keep?",
+                                "Keep New", "Keep Existing");
+
+                            if (choice == "Keep New")
+                            {
+                                AppBackupService.DeleteBackup(node.SectionName);
+                                AppBackupService.MoveToBackup(sourceDataDir, node.SectionName);
+                            }
+                        }
+                        else
+                        {
+                            AppBackupService.MoveToBackup(sourceDataDir, node.SectionName);
+                        }
+                    }
+                }
+            }
+
             try
             {
                 if (Directory.Exists(appDir))
@@ -1510,6 +1543,16 @@ public partial class MainWindow : Window
                         ? PluginService.GetInstallDir(node.SectionName)
                         : Path.Combine(appsBaseDir, node.SectionName);
                     _ = ScanAndCacheNodeSizeAsync(node, installDir);
+                    if (!node.IsPlugin && AppBackupService.HasBackup(node.SectionName))
+                        try
+                        {
+                            AppBackupService.RestoreBackup(node.SectionName, installDir);
+                        }
+                        catch (Exception ex)
+                        {
+                            SettingsService.Log($"Failed to restore backup for '{node.SectionName}': {ex.Message}");
+                        }
+
                     if (DateTime.TryParse(node.UpdateDate, out var updateDate))
                     {
                         File.SetLastWriteTime(appExeAfter, updateDate);
