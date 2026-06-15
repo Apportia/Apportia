@@ -89,7 +89,7 @@ public partial class MainWindow : Window
     private MainViewModel BuildViewModel()
     {
         var settings = SettingsService.Load();
-        _defaultView = settings.ViewPresets.TryGetValue("Default", out var dv) ? dv : new FilterViewSettings();
+        _defaultView = FilterViewSettings.Default;
 
         Width = _defaultView.WindowWidth;
         Height = _defaultView.WindowHeight;
@@ -2234,21 +2234,7 @@ public partial class MainWindow : Window
             return;
         var theme = Application.Current?.RequestedThemeVariant;
         var existing = SettingsService.Load();
-        if (!existing.ViewPresets.ContainsKey(vm.InstallFilter.ToString()))
-        {
-            _defaultView = new FilterViewSettings
-            {
-                CategoryDisplay = vm.CategoryDisplay,
-                CategoryScope = vm.CategoryScope,
-                FontSize = vm.Columns.FontSize,
-                IconSize = vm.Columns.IconSize,
-                IsGridView = vm.Columns.IsGridView,
-                WindowWidth = Width,
-                WindowHeight = Height
-            };
-        }
-
-        existing.ViewPresets["Default"] = _defaultView;
+        existing.ViewPresets.Remove("Default");
         SettingsService.Save(new AppSettings
         {
             InstallFilter = vm.InstallFilter,

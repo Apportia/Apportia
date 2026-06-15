@@ -26,6 +26,8 @@ public enum InstallFilter
 
 public sealed class FilterViewSettings
 {
+    public static readonly FilterViewSettings Default = new();
+
     public CategoryDisplayMode CategoryDisplay { get; set; } = CategoryDisplayMode.Full;
     public CategoryScope CategoryScope { get; set; } = CategoryScope.Standard;
     public int FontSize { get; set; } = 13;
