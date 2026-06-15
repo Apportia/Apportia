@@ -38,10 +38,19 @@ public sealed class AppNode : INotifyPropertyChanged
         PackageVersion = entry.PackageVersion;
         DownloadFile = entry.DownloadFile;
         DownloadPath = entry.DownloadPath;
-        DownloadSize = FormatMb(entry.DownloadSize);
-        DownloadSizeBytes = ParseMbToBytes(entry.DownloadSize);
-        InstallSize = FormatMb(entry.InstallSize);
-        InstallSizeBytes = ParseMbToBytes(entry.InstallSize);
+        if (isCustom)
+        {
+            DownloadSize = "\u2014";
+            InstallSize = "\u2014";
+        }
+        else
+        {
+            DownloadSizeMb = long.TryParse(entry.DownloadSize, out var dlMb) ? dlMb : 1;
+            DownloadSize = AppDiskUsageService.FormatSize(dlMb, true);
+            InstallSizeMb = long.TryParse(entry.InstallSize, out var instMb) ? instMb : 1;
+            InstallSize = AppDiskUsageService.FormatSize(instMb, true);
+        }
+
         Hash = entry.Hash;
         JoinedDate = entry.JoinedDate;
         UpdateDate = entry.UpdateDate;
@@ -61,8 +70,6 @@ public sealed class AppNode : INotifyPropertyChanged
             }
         };
     }
-
-    public static bool IsWindows => OperatingSystem.IsWindows();
 
     public ColumnWidths Columns { get; }
 
@@ -173,8 +180,8 @@ public sealed class AppNode : INotifyPropertyChanged
     public string PackageVersion { get; }
     public string DownloadSize { get; }
     public string InstallSize { get; }
-    public long DownloadSizeBytes { get; }
-    public long InstallSizeBytes { get; }
+    public long DownloadSizeMb { get; }
+    public long InstallSizeMb { get; }
     public string DownloadFile { get; }
     public string DownloadPath { get; }
     public string Hash { get; }
@@ -240,7 +247,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public void SetUsedBytes(long bytes)
     {
         UsedBytes = bytes;
-        UsedSize = AppDiskUsageService.FormatBytes(bytes);
+        UsedSize = AppDiskUsageService.FormatSize(bytes);
     }
 
     public IReadOnlyList<string>? GetLanguageKeys()
@@ -279,29 +286,5 @@ public sealed class AppNode : INotifyPropertyChanged
         pc(this, new PropertyChangedEventArgs(nameof(ShowRunActions)));
         pc(this, new PropertyChangedEventArgs(nameof(ShowVirusTotalActions)));
         pc(this, new PropertyChangedEventArgs(nameof(ShowUninstall)));
-    }
-
-    private static long ParseMbToBytes(string raw)
-    {
-        if (string.IsNullOrEmpty(raw))
-            return 0;
-        var dash = raw.IndexOf('-');
-        if (dash > 0 &&
-            int.TryParse(raw.AsSpan(0, dash), out var lo) &&
-            int.TryParse(raw.AsSpan(dash + 1), out var hi))
-            return (long)Math.Max(lo, hi) * 1_048_576;
-        return long.TryParse(raw, out var mb) ? mb * 1_048_576 : 0;
-    }
-
-    private static string FormatMb(string raw)
-    {
-        if (string.IsNullOrEmpty(raw))
-            return raw;
-        var dash = raw.IndexOf('-');
-        if (dash > 0 &&
-            int.TryParse(raw.AsSpan(0, dash), out var lo) &&
-            int.TryParse(raw.AsSpan(dash + 1), out var hi))
-            return $"{Math.Max(lo, hi)} MB";
-        return int.TryParse(raw, out var mb) ? $"{mb} MB" : raw;
     }
 }

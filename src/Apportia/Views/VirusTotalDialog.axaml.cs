@@ -416,7 +416,7 @@ public partial class VirusTotalDialog : Window
             new EntryRow("Name", attrs.MeaningfulName),
             new EntryRow("Type", attrs.TypeDescription),
             new EntryRow("Magic", attrs.Magic),
-            new EntryRow("Size", attrs.Size > 0 ? FormatSize(attrs.Size) : null),
+            new EntryRow("Size", attrs.Size > 0 ? AppDiskUsageService.FormatSize(attrs.Size) : null),
             new EntryRow("Tags", attrs.Tags is { Count: > 0 } ? string.Join(", ", attrs.Tags) : null),
             new EntryRow("Type Tags", attrs.TypeTags is { Count: > 0 } ? string.Join(", ", attrs.TypeTags) : null),
             new EntryRow("Known As", attrs.Names is { Count: > 0 } ? string.Join(", ", attrs.Names) : null)
@@ -686,16 +686,6 @@ public partial class VirusTotalDialog : Window
     private static string FormatUnixDate(long unixSeconds)
     {
         return DateTimeOffset.FromUnixTimeSeconds(unixSeconds).LocalDateTime.ToString("yyyy-MM-dd HH:mm");
-    }
-
-    private static string FormatSize(long bytes)
-    {
-        return bytes switch
-        {
-            < 1_024 => $"{bytes} B",
-            < 1_048_576 => $"{bytes / 1024.0:0.#} KB",
-            _ => $"{bytes / 1_048_576.0:0.##} MB"
-        };
     }
 
     private static EntryRow[] Filter(EntryRow[] rows)

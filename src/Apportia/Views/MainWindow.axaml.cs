@@ -1263,7 +1263,7 @@ public partial class MainWindow : Window
             }
         }
 
-        var requiredBytes = node.DownloadSizeBytes + node.InstallSizeBytes;
+        var requiredBytes = (node.DownloadSizeMb + node.InstallSizeMb) * 1_048_576;
         if (requiredBytes > 0)
         {
             while (true)
@@ -1671,8 +1671,8 @@ public partial class MainWindow : Window
     private Task<string?> ShowDiskSpaceDialog(AppNode? node, string appName, long required, long available)
     {
         var msg = $"Not enough disk space to install {appName}.\n\n" +
-                  $"Required:   {AppDiskUsageService.FormatBytes(required)}\n" +
-                  $"Available:  {AppDiskUsageService.FormatBytes(available)}\n\n" +
+                  $"Required:   {AppDiskUsageService.FormatSize(required)}\n" +
+                  $"Available:  {AppDiskUsageService.FormatSize(available)}\n\n" +
                   "Free up disk space and click Retry, or Cancel to abort.";
         return node != null
             ? ShowDialog(node, $"{appName} \u2014 Not Enough Space", msg, "Retry", "Cancel")

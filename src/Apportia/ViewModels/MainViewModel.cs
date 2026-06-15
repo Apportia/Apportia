@@ -543,8 +543,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             "Name" => nodes.OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase),
             "Version" => nodes.OrderBy(n => n.PackageVersion, StringComparer.OrdinalIgnoreCase),
-            "Download" => nodes.OrderBy(n => ParseMb(n.DownloadSize)),
-            "Install" => nodes.OrderBy(n => ParseMb(n.InstallSize)),
+            "Download" => nodes.OrderBy(n => n.DownloadSizeMb),
+            "Install" => nodes.OrderBy(n => n.InstallSizeMb),
             "Joined" => nodes.OrderBy(n => ParseDate(n.JoinedDate)),
             "Updated" => nodes.OrderBy(n => ParseDate(n.UpdateDate)),
             "Used" => nodes.OrderBy(n => n.UsedBytes),
@@ -553,11 +553,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return Columns.SortDescending ? sorted.Reverse() : sorted;
     }
 
-    private static double ParseMb(string s)
-    {
-        var space = s.IndexOf(' ');
-        return space > 0 && double.TryParse(s.AsSpan(0, space), out var v) ? v : 0;
-    }
 
     private static DateTime ParseDate(string s)
     {

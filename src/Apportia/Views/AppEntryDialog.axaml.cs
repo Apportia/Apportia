@@ -69,9 +69,26 @@ public partial class AppEntryDialog : Window
             new EntryField("Download Size", node.DownloadSize)
         );
 
+        var selectedLanguage = node is { HasLanguageVariants: true, IsInstalled: true }
+            ? AppLanguageService.Load(node.SectionName) is { } savedLang
+                ? AppLanguageService.FormatLanguageName(savedLang)
+                : null
+            : null;
+
+        var usedSizeValue = "";
+        if (node.IsInstalled)
+        {
+            var dataBytes = AppDiskUsageService.GetDirectorySize(Path.Combine(installLocation, "Data"));
+            usedSizeValue = dataBytes > 0 && node.UsedBytes > 0
+                ? $"{node.UsedSize} (App: {AppDiskUsageService.FormatSize(node.UsedBytes - dataBytes)}, Data: {AppDiskUsageService.FormatSize(dataBytes)})"
+                : node.UsedSize;
+        }
+
         InstallList.ItemsSource = Filter(
             new EntryField("Install Size", node.InstallSize),
-            new EntryField("Install Location", installLocation)
+            new EntryField("Used Size", usedSizeValue),
+            new EntryField("Install Location", installLocation),
+            new EntryField("Language", selectedLanguage ?? "")
         );
 
         var langKeys = node.GetLanguageKeys();

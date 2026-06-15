@@ -41,9 +41,22 @@ public static class AppDiskUsageService
         }
     }
 
-    public static string FormatBytes(long bytes)
+    public static string FormatSize(long value, bool fromMb = false)
     {
-        return bytes >= 1_073_741_824L ? $"{bytes / 1_073_741_824.0:F1} GB" : $"{bytes / 1_048_576.0:F1} MB";
+        var bytes = fromMb ? value * 1_048_576 : value;
+        var linux = OperatingSystem.IsLinux();
+        return bytes switch
+        {
+            >= 1_073_741_824L => $"{Fmt(bytes / 1_073_741_824.0)} {(linux ? "GiB" : "GB")}",
+            >= 1_048_576L => $"{Fmt(bytes / 1_048_576.0)} {(linux ? "MiB" : "MB")}",
+            >= 1_024L => $"{Fmt(bytes / 1_024.0)} {(linux ? "KiB" : "KB")}",
+            _ => $"{bytes} B"
+        };
+
+        static string Fmt(double v)
+        {
+            return v % 1 == 0 ? $"{v:F0}" : $"{v:F1}";
+        }
     }
 
     public static long GetAvailableFreeSpace(string path)
