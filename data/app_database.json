@@ -12003,7 +12003,7 @@
   },
   "TAudioConverterPortable": {
     "Name": "TAudioConverter",
-    "Description": "Audio converter and cd extractor",
+    "Description": "Audio converter and CD extractor",
     "Website": "https://portableapps.com/apps/music_video/taudioconverter-portable",
     "Category": "Music & Video",
     "SubCategory": "Audio Editors & Converters",
@@ -13647,7 +13647,7 @@
   },
   "WinCDEmuPortable": {
     "Name": "WinCDEmu",
-    "Description": "Cd/DVD/bd emulator and ISO mounter",
+    "Description": "CD/DVD/BD emulator and ISO mounter",
     "Website": "https://portableapps.com/apps/utilities/wincdemu-portable",
     "Category": "Utilities",
     "SubCategory": "Disk Tools",
