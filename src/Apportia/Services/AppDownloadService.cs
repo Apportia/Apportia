@@ -404,10 +404,11 @@ public readonly record struct DownloadProgress(long BytesReceived, long TotalByt
 
     public string FormatSpeed()
     {
+        var linux = OperatingSystem.IsLinux();
         return BytesPerSecond switch
         {
-            >= 1_048_576 => $"{BytesPerSecond / 1_048_576.0:F1} MB/s",
-            >= 1_024 => $"{BytesPerSecond / 1_024.0:F0} KB/s",
+            >= 1_048_576 => $"{BytesPerSecond / 1_048_576.0:F1} {(linux ? "MiB" : "MB")}/s",
+            >= 1_024 => $"{BytesPerSecond / 1_024.0:F0} {(linux ? "KiB" : "KB")}/s",
             _ => $"{BytesPerSecond} B/s"
         };
     }
@@ -420,8 +421,9 @@ public readonly record struct DownloadProgress(long BytesReceived, long TotalByt
 
         static string Fmt(long b)
         {
-            return b >= 1_048_576 ? $"{b / 1_048_576.0:F1} MB"
-                : b >= 1_024 ? $"{b / 1_024.0:F0} KB"
+            var linux = OperatingSystem.IsLinux();
+            return b >= 1_048_576 ? $"{b / 1_048_576.0:F1} {(linux ? "MiB" : "MB")}"
+                : b >= 1_024 ? $"{b / 1_024.0:F0} {(linux ? "KiB" : "KB")}"
                 : $"{b} B";
         }
     }
