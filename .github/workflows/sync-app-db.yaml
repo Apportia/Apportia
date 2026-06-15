@@ -223,11 +223,22 @@ jobs:
               return None
 
 
-          def normalize_size(val, add_one_if_over_100=False):
+          def normalize_size(val, section="", add_one_if_over_100=False):
               val = val.strip()
               dash = val.find('-')
               if dash > 0:
-                  val = val[:dash].strip()
+                  lo_s = val[:dash].strip()
+                  hi_s = val[dash + 1:].strip()
+                  try:
+                      lo = int(lo_s)
+                  except ValueError:
+                      lo = 0
+                  try:
+                      hi = int(hi_s) if hi_s else lo
+                  except ValueError:
+                      hi = lo
+                  prefer_lower = section.startswith(("Bitcoin", "Dogecoin"))
+                  val = str(lo if prefer_lower else max(lo, hi))
               try:
                   n = max(1, int(val))
               except ValueError:
@@ -392,9 +403,9 @@ jobs:
                   elif key in DATE_KEY_MAP:
                       current_fields[DATE_KEY_MAP[key]] = normalize_date(val)
                   elif key == "downloadsize":
-                      current_fields["DownloadSize"] = normalize_size(val)
+                      current_fields["DownloadSize"] = normalize_size(val, section=current_name)
                   elif key == "installsize":
-                      current_fields["InstallSize"] = normalize_size(val, add_one_if_over_100=True)
+                      current_fields["InstallSize"] = normalize_size(val, section=current_name, add_one_if_over_100=True)
                   else:
                       current_fields[raw_key] = val
 
