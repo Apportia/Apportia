@@ -23,6 +23,12 @@
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <FileVersion>$(Version)</FileVersion>
         <TrimmerRootDescriptor>TrimmerRoots.xml</TrimmerRootDescriptor>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <OutputPath Condition="'$(Configuration)' == 'Release'">../../bin/Release/</OutputPath>
+        <OutputPath Condition="'$(Configuration)' == 'Debug'">../../bin/Debug/</OutputPath>
+        <RuntimeIdentifier Condition="'$(OS)' == 'Windows_NT'">win-x64</RuntimeIdentifier>
+        <RuntimeIdentifier Condition="'$(OS)' != 'Windows_NT'">linux-x64</RuntimeIdentifier>
     </PropertyGroup>
 
     <ItemGroup>
