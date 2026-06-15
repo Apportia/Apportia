@@ -1784,6 +1784,46 @@ public partial class MainWindow : Window
     {
         base.OnOpened(e);
         ApplyDarkTitlebar(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
+        _ = CheckOrphanedFilesAsync();
+    }
+
+    private async Task CheckOrphanedFilesAsync()
+    {
+        var appsDir = AppDownloadService.AppsDir;
+        if (!Directory.Exists(appsDir))
+            return;
+
+        var orphans = await Task.Run(() =>
+        {
+            var badFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "App", "Data", "Other" };
+            var found = new List<string>();
+            foreach (var entry in Directory.EnumerateFileSystemEntries(appsDir, "*", SearchOption.TopDirectoryOnly))
+            {
+                if (Directory.Exists(entry))
+                {
+                    if (badFolders.Contains(Path.GetFileName(entry)))
+                        found.Add(entry);
+                }
+                else
+                {
+                    found.Add(entry);
+                }
+            }
+
+            return found
+                   .OrderBy(p => Directory.Exists(p) ? 0 : 1)
+                   .ThenBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase)
+                   .ToList();
+        });
+
+        if (orphans.Count == 0)
+            return;
+
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            var dlg = new LeftoverFilesDialog(orphans) { Icon = Icon };
+            await dlg.ShowDialog(this);
+        }, DispatcherPriority.Background);
     }
 
     private void OnIconSizeCycle(object? sender, RoutedEventArgs e)
