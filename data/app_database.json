@@ -14479,6 +14479,7 @@
     "Website": "https://portableapps.com/apps/utilities/yumi-uefi-portable",
     "Category": "Utilities",
     "SubCategory": "Disk Tools",
+    "Class": "Legacy",
     "JoinedDate": "2018-01-20",
     "DisplayVersion": "0.0.4.6",
     "PackageVersion": "0.0.4.6",
