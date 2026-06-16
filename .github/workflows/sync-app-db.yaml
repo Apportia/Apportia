@@ -149,7 +149,7 @@ jobs:
           ]
 
           LEGACY_KEYWORDS = [
-              " Retro", "Discontinued", "Legacy",
+              " Retro", "Discontinued", "Discontinuted", "Legacy",
               "FirefoxPortableNightly64", "PrivateBrowsingByPortableApps",
           ]
 
