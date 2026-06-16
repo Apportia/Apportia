@@ -519,10 +519,9 @@
                                                        FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Updated}"
-                                                       Text="{Binding UpdateDate}"
+                                                       Text="{Binding UpdateDateDisplay}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                       FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Current}"
                                                        IsVisible="{Binding Columns.ShowCurrentColumn}"
@@ -533,10 +532,9 @@
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Joined}"
                                                        IsVisible="{Binding Columns.ShowJoinedColumn}"
-                                                       Text="{Binding JoinedDate}"
+                                                       Text="{Binding JoinedDateDisplay}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                       FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock Text="{Binding Description}" Margin="4,0,0,0"
                                                        FontSize="{Binding Columns.FontSize}"
                                                        ToolTip.Tip="{Binding Description}" />

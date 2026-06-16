@@ -28,7 +28,7 @@ public partial class AppProperties : Window
         _node = node;
 
         var updateDate = DateTime.TryParse(node.UpdateDate, out var dt)
-            ? dt.ToString("dddd, d MMMM yyyy")
+            ? dt.ToString("dddd, MMMM d, yyyy")
             : node.UpdateDate;
         Title = $"{node.Name} ({updateDate})";
 
@@ -59,14 +59,14 @@ public partial class AppProperties : Window
                                ? node.SubCategory.Replace(prefix, string.Empty)
                                : node.SubCategory),
             new EntryField("Class", node.IsAdvanced ? "Advanced" : node.IsLegacy ? "Legacy" : ""),
-            new EntryField("Joined Date", node.JoinedDate),
+            new EntryField("Joined Date", RelativeDate(node.JoinedDate)),
             new EntryField("Requires Java", node.RequiresJava ? "Yes" : "")
         );
 
         VersionList.ItemsSource = Filter(
             new EntryField("Display Version", node.DisplayVersion),
             new EntryField("Package Version", node.PackageVersion),
-            new EntryField("Update Date", node.UpdateDate)
+            new EntryField("Update Date", RelativeDate(node.UpdateDate))
         );
 
         DownloadList.ItemsSource = Filter(
@@ -126,6 +126,24 @@ public partial class AppProperties : Window
     private void OnClose(object? sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private static string RelativeDate(string? raw)
+    {
+        if (!DateTime.TryParse(raw, out var date))
+            return raw ?? string.Empty;
+        var days = (DateTime.Today - date.Date).Days;
+        var dayName = date.ToString("dddd");
+        if (days < 0)
+            return date.ToString("dddd, MMMM d, yyyy");
+        return days switch
+        {
+            0 => $"{dayName}, Today",
+            1 => $"{dayName}, Yesterday",
+            <= 6 => $"{dayName}, {days} days ago",
+            7 => $"{dayName}, 1 week ago",
+            _ => date.ToString("dddd, MMMM d, yyyy")
+        };
     }
 
     private static EntryField[] Filter(params EntryField[] fields)
