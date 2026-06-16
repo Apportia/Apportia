@@ -19,6 +19,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _hasInstalledApps;
     private InstallFilter _installFilter = InstallFilter.All;
     private CancellationTokenSource _rebuildCts = new();
+    private bool _rebuildInProgress;
     private List<AppNode> _visibleNodes = [];
 
     public MainViewModel(IReadOnlyList<AppEntry> entries, IconManager iconManager, int iconSize = 24)
@@ -185,7 +186,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _categoryScope = value;
             Notify();
-            RebuildRows();
+            if (_categoryDisplay == CategoryDisplayMode.None)
+                RebuildRows();
+            else
+                UpdateScopeTailInPlace();
         }
     }
 
@@ -324,6 +328,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void ToggleSubCategoryInPlace(SubCategoryNode subNode)
     {
+        if (_rebuildInProgress)
+        {
+            RebuildRows();
+            return;
+        }
+
+        _rebuildCts.Cancel();
+        _rebuildCts = new CancellationTokenSource();
         var idx = -1;
         for (var i = 0; i < FlatRows.Count; i++)
         {
@@ -383,6 +395,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void ToggleCategoryInPlace(CategoryNode catNode)
     {
+        if (_rebuildInProgress)
+        {
+            RebuildRows();
+            return;
+        }
+
+        _rebuildCts.Cancel();
+        _rebuildCts = new CancellationTokenSource();
         var idx = -1;
         for (var i = 0; i < FlatRows.Count; i++)
         {
@@ -406,6 +426,89 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var items = BuildCategoryItems(catNode);
             if (items.Count > 0)
                 FlatRows.InsertRange(idx + 1, items);
+        }
+
+        RowsFullyLoaded?.Invoke();
+    }
+
+    private void UpdateScopeTailInPlace()
+    {
+        if (_rebuildInProgress)
+        {
+            RebuildRows();
+            return;
+        }
+
+        _rebuildCts.Cancel();
+        _rebuildCts = new CancellationTokenSource();
+        RebuildAppNames();
+
+        var tailStart = FlatRows.Count;
+        for (var i = 0; i < FlatRows.Count; i++)
+        {
+            if (FlatRows[i] is not CategoryNode cat) continue;
+            if (!string.Equals(cat.Category, "Games", StringComparison.OrdinalIgnoreCase) &&
+                cat != _advancedCategoryNode && cat != _legacyCategoryNode)
+                continue;
+            tailStart = i;
+            break;
+        }
+
+        FlatRows.RemoveRange(tailStart, FlatRows.Count - tailStart);
+
+        var withSubs = _categoryDisplay == CategoryDisplayMode.Full;
+        var hideGames = _categoryScope == CategoryScope.Standard;
+
+        var gamesNode = _grouped.LastOrDefault(g => string.Equals(g.Category, "Games", StringComparison.OrdinalIgnoreCase));
+        if (gamesNode != null)
+        {
+            var visible = Filter(gamesNode.Nodes.Where(n =>
+                                                           n.IsInstalled || n is { IsAdvanced: false, IsLegacy: false } && !hideGames).ToList());
+            if (visible.Count > 0)
+            {
+                var rows = new List<object> { gamesNode };
+                if (gamesNode.IsExpanded)
+                {
+                    if (withSubs) AddWithSubCategories(rows, gamesNode, Sort(visible));
+                    else AddFlat(rows, Sort(visible));
+                }
+
+                FlatRows.AddRange(rows);
+            }
+        }
+
+        if (_categoryScope != CategoryScope.Standard)
+        {
+            var advanced = Filter(_grouped.SelectMany(g => g.Nodes)
+                                          .Where(n => n is { IsAdvanced: true, IsInstalled: false }).ToList());
+            if (advanced.Count > 0)
+            {
+                var rows = new List<object> { _advancedCategoryNode };
+                if (_advancedCategoryNode.IsExpanded)
+                {
+                    if (withSubs) AddWithSubCategories(rows, _advancedCategoryNode, Sort(advanced));
+                    else AddFlat(rows, Sort(advanced));
+                }
+
+                FlatRows.AddRange(rows);
+            }
+        }
+
+        if (_categoryScope == CategoryScope.Full)
+        {
+            var legacy = Filter(_grouped.SelectMany(g => g.Nodes)
+                                        .Where(n => n is { IsLegacy: true, IsInstalled: false }).ToList());
+            if (legacy.Count > 0)
+            {
+                var rows = new List<object> { _legacyCategoryNode };
+                if (_legacyCategoryNode.IsExpanded)
+                {
+                    if (withSubs) AddWithSubCategories(rows, _legacyCategoryNode, Sort(legacy));
+                    else AddFlat(rows, Sort(legacy));
+                }
+
+                FlatRows.AddRange(rows);
+            }
         }
 
         RowsFullyLoaded?.Invoke();
@@ -550,9 +653,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         FlatRows.AddRange(rows[..Math.Min(firstBatch, rows.Count)]);
 
         if (rows.Count > firstBatch)
+        {
+            _rebuildInProgress = true;
             _ = AddRemainingRowsAsync(rows, firstBatch, ct);
+        }
         else
+        {
             RowsFullyLoaded?.Invoke();
+        }
     }
 
     private async Task AddRemainingRowsAsync(List<object> rows, int startIndex, CancellationToken ct)
@@ -561,13 +669,22 @@ public sealed class MainViewModel : INotifyPropertyChanged
         for (var i = startIndex; i < rows.Count; i += batchSize)
         {
             if (ct.IsCancellationRequested)
+            {
+                _rebuildInProgress = false;
                 return;
+            }
+
             await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background, ct);
             if (ct.IsCancellationRequested)
+            {
+                _rebuildInProgress = false;
                 return;
+            }
+
             FlatRows.AddRange(rows[i..Math.Min(i + batchSize, rows.Count)]);
         }
 
+        _rebuildInProgress = false;
         if (!ct.IsCancellationRequested)
         {
             // One extra yield so layout (higher priority) runs before signalling
