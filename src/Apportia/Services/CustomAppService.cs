@@ -56,8 +56,10 @@ public static class CustomAppService
 
                     if (actualDate != info.UpdateDate || string.IsNullOrEmpty(version))
                     {
-                        version = ReadExeVersion(versionExePath);
-                        info.PackageVersion = version;
+                        var rawVersion = ReadExeVersion(versionExePath);
+                        info.DisplayVersion = rawVersion;
+                        info.PackageVersion = NormalizePackageVersion(rawVersion);
+                        version = info.PackageVersion;
                         info.UpdateDate = actualDate;
                         SaveInfo(jsonPath, info);
                     }
@@ -71,7 +73,7 @@ public static class CustomAppService
                                string.IsNullOrWhiteSpace(info.Category) ? "Advanced" : info.Category,
                                info.SubCategory,
                                string.Empty,
-                               version,
+                               string.IsNullOrEmpty(info.DisplayVersion) ? version : info.DisplayVersion,
                                version,
                                info.UpdateDate,
                                info.ExeFile,
@@ -101,7 +103,8 @@ public static class CustomAppService
         string category = "Advanced",
         string subCategory = "",
         string version = "",
-        string versionSource = "")
+        string versionSource = "",
+        string displayVersion = "")
     {
         var baseFolderName = Path.GetFileNameWithoutExtension(exeFile);
         var folderName = baseFolderName;
@@ -134,6 +137,7 @@ public static class CustomAppService
             Website = website,
             Category = category,
             SubCategory = subCategory,
+            DisplayVersion = displayVersion,
             PackageVersion = version,
             VersionSource = versionSource,
             UpdateDate = updateDate
@@ -155,7 +159,8 @@ public static class CustomAppService
         string category = "Advanced",
         string subCategory = "",
         string version = "",
-        string versionSource = "")
+        string versionSource = "",
+        string displayVersion = "")
     {
         if (!string.IsNullOrEmpty(iconSourcePath))
         {
@@ -178,6 +183,7 @@ public static class CustomAppService
             SubCategory = subCategory,
             ExeFile = exeFile,
             Website = website,
+            DisplayVersion = displayVersion,
             PackageVersion = version,
             VersionSource = versionSource,
             UpdateDate = updateDate
@@ -188,22 +194,22 @@ public static class CustomAppService
             JsonSerializer.Serialize(info, CustomAppJsonContext.Default.CustomAppInfo));
     }
 
-    public static (string Version, string VersionSource) LoadVersionInfo(string sectionName)
+    public static (string Version, string VersionSource, string DisplayVersion) LoadVersionInfo(string sectionName)
     {
         var jsonPath = Path.Combine(DataCustomAppsDir, sectionName + ".json");
         if (!File.Exists(jsonPath))
-            return (string.Empty, string.Empty);
+            return (string.Empty, string.Empty, string.Empty);
         try
         {
             var info = JsonSerializer.Deserialize(
                 File.ReadAllText(jsonPath),
                 CustomAppJsonContext.Default.CustomAppInfo);
-            return (info?.PackageVersion ?? string.Empty, info?.VersionSource ?? string.Empty);
+            return (info?.PackageVersion ?? string.Empty, info?.VersionSource ?? string.Empty, info?.DisplayVersion ?? string.Empty);
         }
         catch
         {
             /* corrupt json */
-            return (string.Empty, string.Empty);
+            return (string.Empty, string.Empty, string.Empty);
         }
     }
 
@@ -259,6 +265,29 @@ public static class CustomAppService
         }
 
         return PeReader.ReadManifestVersion(exePath);
+    }
+
+    internal static string NormalizePackageVersion(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return string.Empty;
+        var parts = raw.Trim().Split('.');
+        var result = new List<string>(4);
+        foreach (var part in parts)
+        {
+            if (result.Count == 4)
+                break;
+            var digits = new string(part.TakeWhile(char.IsDigit).ToArray());
+            if (digits.Length == 0)
+                break;
+            result.Add(digits);
+        }
+
+        if (result.Count == 0)
+            return string.Empty;
+        while (result.Count < 4)
+            result.Add("0");
+        return string.Join('.', result);
     }
 
     private static void SaveInfo(string jsonPath, CustomAppInfo info)

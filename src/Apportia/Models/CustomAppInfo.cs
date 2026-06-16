@@ -10,6 +10,7 @@ public sealed class CustomAppInfo
     public string Website { get; set; } = string.Empty;
     public string Category { get; set; } = "Advanced";
     public string SubCategory { get; set; } = string.Empty;
+    public string DisplayVersion { get; set; } = string.Empty;
     public string PackageVersion { get; set; } = string.Empty;
     public string VersionSource { get; set; } = string.Empty;
     public string UpdateDate { get; set; } = string.Empty;

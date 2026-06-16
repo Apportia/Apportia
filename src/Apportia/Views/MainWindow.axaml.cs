@@ -880,7 +880,8 @@ public partial class MainWindow : Window
                     win.Category,
                     win.SubCategory,
                     win.Version,
-                    win.VersionSourceExe);
+                    win.VersionSourceExe,
+                    win.DisplayVersion);
 
                 if (iconChanged && win.IconSourcePath.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase))
                 {
@@ -902,7 +903,7 @@ public partial class MainWindow : Window
                     win.Category,
                     win.SubCategory,
                     string.Empty,
-                    win.Version,
+                    win.DisplayVersion,
                     win.Version,
                     win.UpdateDate,
                     win.ExeFile,
@@ -1162,7 +1163,8 @@ public partial class MainWindow : Window
                     win.Category,
                     win.SubCategory,
                     win.Version,
-                    win.VersionSourceExe);
+                    win.VersionSourceExe,
+                    win.DisplayVersion);
 
                 // Remove temp icon file created by the gallery picker
                 var iconPath = win.IconSourcePath;

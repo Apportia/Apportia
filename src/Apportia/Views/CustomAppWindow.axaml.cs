@@ -29,6 +29,7 @@ public partial class CustomAppWindow : Window
     private int _galleryShift;
     private bool _galleryShifted;
     private bool _iconManuallySelected;
+    private string _rawVersion = string.Empty;
     private Border? _selectedThumb;
     private string? _tempIconPath;
 
@@ -77,7 +78,7 @@ public partial class CustomAppWindow : Window
         DescriptionBox.Text = node.Description;
         WebsiteBox.Text = node.Website;
 
-        var (storedVersion, storedVersionSource) = CustomAppService.LoadVersionInfo(node.SectionName);
+        var (storedVersion, storedVersionSource, storedDisplayVersion) = CustomAppService.LoadVersionInfo(node.SectionName);
 
         _initializing = true;
 
@@ -108,7 +109,24 @@ public partial class CustomAppWindow : Window
 
         _initializing = false;
 
+        _rawVersion = string.IsNullOrEmpty(storedDisplayVersion) ? storedVersion : storedDisplayVersion;
         VersionBox.Text = NormalizeVersion(storedVersion);
+
+        if (VersionExeCombo.SelectedItem is SourceItem versionItem && File.Exists(versionItem.FullPath))
+        {
+            var liveRaw = CustomAppService.ReadExeVersion(versionItem.FullPath);
+            var liveNormalized = NormalizeVersion(liveRaw);
+            if (!string.IsNullOrEmpty(liveNormalized) && liveNormalized != NormalizeVersion(storedVersion))
+            {
+                var previousText = string.IsNullOrEmpty(storedVersion) ? "none" : NormalizeVersion(storedVersion);
+                _rawVersion = liveRaw;
+                VersionBox.Text = liveNormalized;
+                VersionChangedText.Text = $"Updated from stored version: {previousText}";
+                VersionChangedText.IsVisible = true;
+                ActionButton.Foreground = new SolidColorBrush(Color.Parse("#e0a020"));
+            }
+        }
+
         RefreshIconGallery();
     }
 
@@ -118,6 +136,7 @@ public partial class CustomAppWindow : Window
     public string Website { get; private set; } = string.Empty;
     public string Category { get; private set; } = string.Empty;
     public string SubCategory { get; private set; } = string.Empty;
+    public string DisplayVersion { get; private set; } = string.Empty;
     public string Version { get; private set; } = string.Empty;
     public string UpdateDate { get; private set; } = string.Empty;
     public string ExeFile { get; private set; } = string.Empty;
@@ -183,7 +202,10 @@ public partial class CustomAppWindow : Window
             if (!string.IsNullOrEmpty(details.Homepage))
                 WebsiteBox.Text = details.Homepage;
             if (!string.IsNullOrEmpty(details.PackageVersion))
+            {
+                _rawVersion = details.PackageVersion;
                 VersionBox.Text = NormalizeVersion(details.PackageVersion);
+            }
         }
         catch
         {
@@ -242,7 +264,9 @@ public partial class CustomAppWindow : Window
             return;
         if (VersionExeCombo.SelectedItem is not SourceItem item || !File.Exists(item.FullPath))
             return;
-        VersionBox.Text = NormalizeVersion(CustomAppService.ReadExeVersion(item.FullPath));
+        var raw = CustomAppService.ReadExeVersion(item.FullPath);
+        _rawVersion = raw;
+        VersionBox.Text = NormalizeVersion(raw);
     }
 
     private void OnIconExeSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -494,6 +518,7 @@ public partial class CustomAppWindow : Window
         UpdateDate = File.Exists(versionPath)
             ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
             : string.Empty;
+        DisplayVersion = string.IsNullOrEmpty(_rawVersion) ? Version : _rawVersion;
         IconSourcePath = effectiveIconPath;
         Success = true;
         Close();
@@ -530,6 +555,7 @@ public partial class CustomAppWindow : Window
         UpdateDate = File.Exists(versionPath)
             ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
             : string.Empty;
+        DisplayVersion = string.IsNullOrEmpty(_rawVersion) ? Version : _rawVersion;
         IconSourcePath = effectiveIconPath ?? string.Empty;
         Success = true;
         Close();
