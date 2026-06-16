@@ -65,6 +65,10 @@ public static class CustomAppService
                     }
                 }
 
+                var joinedDate = string.IsNullOrEmpty(info.JoinedDate)
+                    ? File.GetCreationTime(jsonPath).ToString("yyyy-MM-dd")
+                    : info.JoinedDate;
+
                 result.Add(new AppEntry(
                                folderName,
                                info.Name,
@@ -72,7 +76,7 @@ public static class CustomAppService
                                info.Website,
                                string.IsNullOrWhiteSpace(info.Category) ? "Advanced" : info.Category,
                                info.SubCategory,
-                               string.Empty,
+                               joinedDate,
                                string.IsNullOrEmpty(info.DisplayVersion) ? version : info.DisplayVersion,
                                version,
                                info.UpdateDate,
@@ -137,6 +141,7 @@ public static class CustomAppService
             Website = website,
             Category = category,
             SubCategory = subCategory,
+            JoinedDate = DateTime.Today.ToString("yyyy-MM-dd"),
             DisplayVersion = displayVersion,
             PackageVersion = version,
             VersionSource = versionSource,
@@ -169,6 +174,21 @@ public static class CustomAppService
             await Task.Run(() => SaveIcon(iconSourcePath, iconDest));
         }
 
+        var jsonPath = Path.Combine(DataCustomAppsDir, sectionName + ".json");
+        var joinedDate = string.Empty;
+        try
+        {
+            var existing = JsonSerializer.Deserialize(await File.ReadAllTextAsync(jsonPath), CustomAppJsonContext.Default.CustomAppInfo);
+            joinedDate = existing?.JoinedDate ?? string.Empty;
+        }
+        catch
+        {
+            /* use birthtime fallback */
+        }
+
+        if (string.IsNullOrEmpty(joinedDate) && File.Exists(jsonPath))
+            joinedDate = File.GetCreationTime(jsonPath).ToString("yyyy-MM-dd");
+
         var versionExeRelPath = string.IsNullOrEmpty(versionSource) ? exeFile : versionSource;
         var versionExePath = Path.Combine(CustomAppsDir, sectionName, versionExeRelPath);
         var updateDate = File.Exists(versionExePath)
@@ -183,6 +203,7 @@ public static class CustomAppService
             SubCategory = subCategory,
             ExeFile = exeFile,
             Website = website,
+            JoinedDate = joinedDate,
             DisplayVersion = displayVersion,
             PackageVersion = version,
             VersionSource = versionSource,

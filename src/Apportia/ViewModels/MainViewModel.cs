@@ -168,7 +168,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _installFilter = value;
             Columns.HighlightInstalled = value == InstallFilter.All;
-            Columns.ShowJoinedColumn = value != InstallFilter.Installed;
             Columns.ShowUsedColumn = value == InstallFilter.Installed;
             UpdateShowMetaColumns();
             Notify();
