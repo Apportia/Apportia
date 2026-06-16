@@ -2,6 +2,8 @@ using Apportia.Platform;
 using Apportia.Services;
 using Apportia.ViewModels;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -21,6 +23,7 @@ public partial class AppProperties : Window
     public AppProperties()
     {
         InitializeComponent();
+        AddHandler(ContextRequestedEvent, OnContextRequested);
     }
 
     public AppProperties(AppNode node, IconManager iconManager) : this()
@@ -121,6 +124,22 @@ public partial class AppProperties : Window
             new EntryField("Install Location", _installLocation ?? ""),
             new EntryField("Language", _selectedLanguage ?? "")
         );
+    }
+
+    private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        if (e.Source is not TextBlock tb || !tb.Classes.Contains("value") || string.IsNullOrEmpty(tb.Text))
+            return;
+        var text = tb.Text;
+        var copyItem = new MenuItem { Header = "Copy" };
+        copyItem.Click += async (_, _) =>
+        {
+            if (GetTopLevel(this)?.Clipboard is { } clipboard)
+                await clipboard.SetValueAsync(DataFormat.Text, text);
+        };
+        var menu = new ContextMenu { Items = { copyItem } };
+        e.Handled = true;
+        menu.Open(tb);
     }
 
     private void OnClose(object? sender, RoutedEventArgs e)

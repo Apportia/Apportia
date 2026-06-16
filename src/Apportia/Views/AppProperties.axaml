@@ -19,6 +19,7 @@
             <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
             <Setter Property="Margin" Value="0,0,0,6" />
         </Style>
+        <Style Selector="TextBlock.value" />
         <Style Selector="Border.sectionSep">
             <Setter Property="BorderBrush" Value="{DynamicResource AppSeparatorBrush}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
@@ -60,7 +61,7 @@
                                                    FontSize="14" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource AppSubTextBrush}"
                                                    VerticalAlignment="Top" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                        <TextBlock Grid.Column="1" Classes="value" Text="{Binding Value}"
                                                    FontSize="14" TextWrapping="Wrap"
                                                    Foreground="{DynamicResource AppTextBrush}"
                                                    VerticalAlignment="Top" />
@@ -83,7 +84,7 @@
                                            FontSize="14" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AppSubTextBrush}"
                                            VerticalAlignment="Top" />
-                                <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                <TextBlock Grid.Column="1" Classes="value" Text="{Binding Value}"
                                            FontSize="14" TextWrapping="Wrap"
                                            Foreground="{DynamicResource AppTextBrush}"
                                            VerticalAlignment="Top" />
@@ -104,7 +105,7 @@
                                            FontSize="14" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AppSubTextBrush}"
                                            VerticalAlignment="Top" />
-                                <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                <TextBlock Grid.Column="1" Classes="value" Text="{Binding Value}"
                                            FontSize="14" TextWrapping="Wrap"
                                            Foreground="{DynamicResource AppTextBrush}"
                                            VerticalAlignment="Top" />
@@ -125,7 +126,7 @@
                                            FontSize="14" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AppSubTextBrush}"
                                            VerticalAlignment="Top" />
-                                <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                <TextBlock Grid.Column="1" Classes="value" Text="{Binding Value}"
                                            FontSize="14" TextWrapping="Wrap"
                                            Foreground="{DynamicResource AppTextBrush}"
                                            VerticalAlignment="Top" />
@@ -163,14 +164,15 @@
                                             <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                                                     BorderThickness="0,0,0,1">
                                                 <Grid ColumnDefinitions="110,*,*">
-                                                    <TextBlock Grid.Column="0" Text="{Binding Language}"
+                                                    <TextBlock Grid.Column="0" Classes="value"
+                                                               Text="{Binding Language}"
                                                                Padding="8,5"
                                                                Foreground="{DynamicResource AppTextBrush}" />
-                                                    <TextBlock Grid.Column="1" Text="{Binding File}"
+                                                    <TextBlock Grid.Column="1" Classes="value" Text="{Binding File}"
                                                                Padding="8,5"
                                                                TextTrimming="CharacterEllipsis"
                                                                Foreground="{DynamicResource AppTextBrush}" />
-                                                    <TextBlock Grid.Column="2" Text="{Binding Hash}"
+                                                    <TextBlock Grid.Column="2" Classes="value" Text="{Binding Hash}"
                                                                Padding="8,5"
                                                                TextTrimming="CharacterEllipsis"
                                                                Foreground="{DynamicResource AppSubTextBrush}" />
