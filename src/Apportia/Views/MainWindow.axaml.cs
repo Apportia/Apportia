@@ -2514,10 +2514,10 @@ public partial class MainWindow : Window
         preset ??= _defaultView;
 
         vm.CategoryDisplay = preset.CategoryDisplay;
-        vm.CategoryScope = preset.CategoryScope;
         vm.Columns.FontSize = preset.FontSize;
         vm.Columns.IconSize = preset.IconSize;
         vm.Columns.IsGridView = preset.IsGridView;
+        vm.CategoryScope = preset.CategoryScope;
 
         var deltaX = (int)((preset.WindowWidth - Width) / 2);
         var deltaY = (int)((preset.WindowHeight - Height) / 2);
