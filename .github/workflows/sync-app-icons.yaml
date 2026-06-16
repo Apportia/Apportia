@@ -22,6 +22,7 @@ jobs:
       - name: Download and resize icons
         run: |
           python3 - <<'PYEOF'
+          import json
           from pathlib import Path
           from concurrent.futures import ThreadPoolExecutor, as_completed
           from urllib.request import urlopen, Request
@@ -64,14 +65,9 @@ jobs:
                   return CDN_ALIASES[section]
               return local_name(section)
 
-          def read_sections(ini_path):
-              sections = []
-              with open(ini_path, encoding="utf-8", errors="replace") as f:
-                  for line in f:
-                      s = line.strip()
-                      if s.startswith('[') and s.endswith(']') and len(s) > 2:
-                          sections.append(s[1:-1])
-              return sections
+          def read_sections(json_path):
+              with open(json_path, encoding="utf-8") as f:
+                  return list(json.load(f).keys())
 
           def fetch(url):
               req = Request(url, headers={"User-Agent": UA})
@@ -142,7 +138,7 @@ jobs:
 
               return log
 
-          sections = read_sections("data/app_database.ini")
+          sections = read_sections("data/app_database.json")
           print(f"Sections: {len(sections)}")
 
           with ThreadPoolExecutor(max_workers=8) as ex:
