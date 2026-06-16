@@ -61,7 +61,6 @@ Categories=Utility;Network;FileTransfer;
 Keywords=Windows;Wine;Portable;Launcher;Download;Sources;Repositories;Program;Software;App;Store;
 MimeType=inode/directory;application/x-ms-dos-executable;application/zip;application/x-zip-compressed;application/x-7z-compressed;application/x-tar;application/x-bzip2;application/x-xz;application/gzip;application/pdf;audio/mpeg;audio/ogg;audio/flac;audio/wav;audio/aac;audio/x-m4a;video/mp4;video/x-matroska;video/x-msvideo;video/mpeg;video/webm;video/quicktime;image/jpeg;image/png;image/gif;image/webp;image/svg+xml;image/bmp;image/tiff;text/plain;text/html;text/css;text/javascript;text/xml;text/csv;text/markdown;
 StartupNotify=true
-StartupWMClass=Apportia
 TryExec=$BINARY
 EOF
 
