@@ -10,7 +10,7 @@ using SharpCompress.Archives.Zip;
 
 namespace Apportia.Services;
 
-public sealed class AppUpdateInfo(Version version, string downloadUrl)
+public sealed class SelfUpdateInfo(Version version, string downloadUrl)
 {
     public Version Version { get; } = version;
     public string DownloadUrl { get; } = downloadUrl;
@@ -29,15 +29,11 @@ internal sealed class GitHubRelease
     [JsonPropertyName("assets")] public List<GitHubAsset> Assets { get; set; } = [];
 }
 
-[JsonSerializable(typeof(GitHubRelease))]
-[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
-internal partial class UpdateJsonContext : JsonSerializerContext;
-
-public static partial class AppSelfUpdater
+public static partial class SelfUpdater
 {
     private const string ApiUrl = "https://api.github.com/repos/Apportia/Apportia/releases/latest";
 
-    public static async Task<AppUpdateInfo?> CheckAsync(CancellationToken ct)
+    public static async Task<SelfUpdateInfo?> CheckAsync(CancellationToken ct)
     {
         var current = Assembly.GetEntryAssembly()?.GetName().Version;
         if (current == null)
@@ -53,7 +49,7 @@ public static partial class AppSelfUpdater
             if (latest <= current)
                 return null;
             var asset = release.Assets.FirstOrDefault(a => a.BrowserDownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
-            return asset == null ? null : new AppUpdateInfo(latest, asset.BrowserDownloadUrl);
+            return asset == null ? null : new SelfUpdateInfo(latest, asset.BrowserDownloadUrl);
         }
         catch
         {
@@ -62,7 +58,7 @@ public static partial class AppSelfUpdater
         }
     }
 
-    public static async Task ApplyAsync(AppUpdateInfo info, IProgress<int>? progress, CancellationToken ct)
+    public static async Task ApplyAsync(SelfUpdateInfo info, IProgress<int>? progress, CancellationToken ct)
     {
         var tempDir = Path.Combine(Path.GetTempPath(), $"Apportia-{info.Version}");
         Directory.CreateDirectory(tempDir);
@@ -193,3 +189,7 @@ public static partial class AppSelfUpdater
         return client;
     }
 }
+
+[JsonSerializable(typeof(GitHubRelease))]
+[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
+internal partial class UpdateJsonContext : JsonSerializerContext;

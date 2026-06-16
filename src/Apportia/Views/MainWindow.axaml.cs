@@ -41,7 +41,7 @@ public partial class MainWindow : Window
     private bool _pendingScrollTop;
     private double? _pendingScrollY;
 
-    private AppUpdateInfo? _pendingUpdate;
+    private SelfUpdateInfo? _pendingUpdate;
     private ThemeVariant? _prevTheme;
     private List<string> _searchHistory = [];
     private bool _systemIsDark;
@@ -2200,7 +2200,7 @@ public partial class MainWindow : Window
 
     private async Task CheckForUpdateAsync()
     {
-        var info = await AppSelfUpdater.CheckAsync(_cts.Token);
+        var info = await SelfUpdater.CheckAsync(_cts.Token);
         if (info == null)
             return;
         _pendingUpdate = info;
@@ -2228,7 +2228,7 @@ public partial class MainWindow : Window
                     DownloadProgressBar.Value = p;
                     DownloadSizeText.Text = $"Downloading update {info.Version}... {p}%";
                 });
-                await AppSelfUpdater.ApplyAsync(info, progress, _cts.Token);
+                await SelfUpdater.ApplyAsync(info, progress, _cts.Token);
             }
             catch (Exception ex)
             {
