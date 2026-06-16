@@ -108,7 +108,7 @@ public partial class CustomAppWindow : Window
 
         _initializing = false;
 
-        VersionBox.Text = storedVersion;
+        VersionBox.Text = NormalizeVersion(storedVersion);
         RefreshIconGallery();
     }
 
@@ -183,7 +183,7 @@ public partial class CustomAppWindow : Window
             if (!string.IsNullOrEmpty(details.Homepage))
                 WebsiteBox.Text = details.Homepage;
             if (!string.IsNullOrEmpty(details.PackageVersion))
-                VersionBox.Text = details.PackageVersion;
+                VersionBox.Text = NormalizeVersion(details.PackageVersion);
         }
         catch
         {
@@ -242,7 +242,7 @@ public partial class CustomAppWindow : Window
             return;
         if (VersionExeCombo.SelectedItem is not SourceItem item || !File.Exists(item.FullPath))
             return;
-        VersionBox.Text = CustomAppService.ReadExeVersion(item.FullPath);
+        VersionBox.Text = NormalizeVersion(CustomAppService.ReadExeVersion(item.FullPath));
     }
 
     private void OnIconExeSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -300,8 +300,10 @@ public partial class CustomAppWindow : Window
             return [];
 
         return Directory.GetFiles(rootDir, "*.exe", SearchOption.AllDirectories)
+                        .Concat(Directory.GetFiles(rootDir, "*.dll", SearchOption.AllDirectories))
                         .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
-                        .OrderBy(s => s.Display)
+                        .OrderBy(s => Path.GetExtension(s.FullPath).Equals(".dll", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                        .ThenBy(s => s.Display)
                         .ToList();
     }
 
@@ -386,8 +388,7 @@ public partial class CustomAppWindow : Window
 
     private void SelectGalleryThumb(int index, Border thumb)
     {
-        if (_selectedThumb is not null)
-            _selectedThumb.Classes.Remove("selected");
+        _selectedThumb?.Classes.Remove("selected");
 
         _selectedThumb = thumb;
         thumb.Classes.Add("selected");
@@ -537,6 +538,32 @@ public partial class CustomAppWindow : Window
     private void OnCancel(object? sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private static string NormalizeVersion(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return string.Empty;
+
+        var parts = raw.Trim().Split('.');
+        var result = new List<string>(4);
+        foreach (var part in parts)
+        {
+            if (result.Count == 4)
+                break;
+            var digits = new string(part.TakeWhile(char.IsDigit).ToArray());
+            if (digits.Length == 0)
+                break;
+            result.Add(digits);
+        }
+
+        if (result.Count == 0)
+            return string.Empty;
+
+        while (result.Count < 4)
+            result.Add("0");
+
+        return string.Join('.', result);
     }
 
     private void ShowError(string message)
