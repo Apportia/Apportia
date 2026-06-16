@@ -193,10 +193,16 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel vm)
             return;
         var name = StickyHeaderText.Text;
-        var node = vm.FlatRows
-                     .OfType<CategoryNode>()
-                     .FirstOrDefault(n => n.Category == name);
-        node?.IsExpanded = !node.IsExpanded;
+        for (var i = 0; i < vm.FlatRows.Count; i++)
+        {
+            if (vm.FlatRows[i] is not CategoryNode node || node.Category != name)
+                continue;
+            var container = ActiveList.ContainerFromIndex(i);
+            var pos = container?.TranslatePoint(new Point(0, 0), MainList);
+            if (pos.HasValue)
+                MainScroller.Offset = new Vector(0, pos.Value.Y - GetStickyOffset(vm));
+            return;
+        }
     }
 
     private void OnAppRowPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -2262,13 +2268,8 @@ public partial class MainWindow : Window
 
     private void OnSearchDropDownClosed(object? sender, EventArgs e)
     {
-        if (sender is not AutoCompleteBox box || box.SelectedItem is not string name)
-        {
-            _activateOnSearchClose = false;
-            return;
-        }
-
-        if (!string.Equals(box.Text, name, StringComparison.OrdinalIgnoreCase))
+        if (sender is not AutoCompleteBox { SelectedItem: string name } box ||
+            !string.Equals(box.Text, name, StringComparison.OrdinalIgnoreCase))
         {
             _activateOnSearchClose = false;
             return;
