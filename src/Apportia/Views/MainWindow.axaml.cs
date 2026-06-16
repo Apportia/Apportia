@@ -166,7 +166,7 @@ public partial class MainWindow : Window
 
         await _iconManager.DownloadAllAsync(
             nodeMap.Keys,
-            vm.Columns.IconSize,
+            vm.Columns.IconLoadSize,
             (section, bitmap) =>
             {
                 if (!nodeMap.TryGetValue(section, out var node))

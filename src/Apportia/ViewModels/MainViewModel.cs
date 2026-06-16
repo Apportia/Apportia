@@ -55,7 +55,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
                                  var node = new AppNode(
                                      entry,
-                                     iconManager.GetIcon(entry.SectionName, iconSize),
+                                     iconManager.GetIcon(entry.SectionName, Math.Max(16, iconSize)),
                                      Columns,
                                      exists,
                                      false,

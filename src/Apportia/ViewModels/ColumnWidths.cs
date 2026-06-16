@@ -5,8 +5,8 @@ namespace Apportia.ViewModels;
 
 public sealed class ColumnWidths : INotifyPropertyChanged
 {
-    private static readonly int[] IconSizes = [16, 24, 32, 48, 64, 96, 128];
-    private static readonly int[] FontSizes = [11, 13, 15];
+    private static readonly int[] IconSizes = [12, 16, 24, 32, 48, 64, 96, 128];
+    private static readonly int[] FontSizes = [7, 9, 11, 13, 15];
 
     private int _fontSize = 13;
     private int _iconSize = 24;
@@ -38,9 +38,12 @@ public sealed class ColumnWidths : INotifyPropertyChanged
                 return;
             _iconSize = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IconSize)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IconLoadSize)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TileWidth)));
         }
     }
+
+    public int IconLoadSize => _iconSize < 16 ? 16 : _iconSize;
 
     public bool IsGridView
     {

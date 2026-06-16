@@ -132,7 +132,12 @@ public sealed class IconManager : IDisposable
 
     public string LocalPath(string section, int size)
     {
-        return Path.Combine(_cacheDir, size.ToString(), $"{NormalizeSection(section)}.png");
+        return Path.Combine(_cacheDir, ResolveSize(size).ToString(), $"{NormalizeSection(section)}.png");
+    }
+
+    private static int ResolveSize(int size)
+    {
+        return size < 16 ? 16 : size;
     }
 
     private static string NormalizeSection(string section)
