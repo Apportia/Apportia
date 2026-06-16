@@ -123,7 +123,7 @@ public partial class CustomAppWindow : Window
                 VersionBox.Text = liveNormalized;
                 VersionChangedText.Text = $"Updated from stored version: {previousText}";
                 VersionChangedText.IsVisible = true;
-                ActionButton.Foreground = new SolidColorBrush(Color.Parse("#e0a020"));
+                ActionButton.Foreground = new SolidColorBrush(Color.Parse("#E0A020"));
             }
         }
 
