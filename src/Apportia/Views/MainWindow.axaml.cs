@@ -37,9 +37,9 @@ public partial class MainWindow : Window
     private bool _inSetupPhase;
     private CancellationTokenSource? _installCts;
     private string? _pendingScrollApp;
-
     private string? _pendingScrollTarget;
     private bool _pendingScrollTop;
+    private double? _pendingScrollY;
 
     private AppUpdateInfo? _pendingUpdate;
     private ThemeVariant? _prevTheme;
@@ -1913,24 +1913,33 @@ public partial class MainWindow : Window
                     break;
             }
         };
+        vm.BeforeRebuildRows += () => _pendingScrollY = MainScroller.Offset.Y;
         vm.RowsFullyLoaded += () =>
         {
             if (_pendingScrollTop)
             {
                 _pendingScrollTop = false;
+                _pendingScrollY = null;
                 MainScroller.Offset = new Vector(0, 0);
             }
             else if (_pendingScrollApp != null)
             {
                 var app = _pendingScrollApp;
                 _pendingScrollApp = null;
+                _pendingScrollY = null;
                 ScrollToApp(app);
             }
             else if (_pendingScrollTarget != null)
             {
                 var target = _pendingScrollTarget;
                 _pendingScrollTarget = null;
+                _pendingScrollY = null;
                 ScrollToSectionName(target);
+            }
+            else if (_pendingScrollY is { } y)
+            {
+                _pendingScrollY = null;
+                Dispatcher.UIThread.Post(() => MainScroller.Offset = new Vector(0, y), DispatcherPriority.Background);
             }
 
             UpdateStickyHeader();

@@ -299,10 +299,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (e.PropertyName != nameof(AppNode.IsInstalled))
             return;
         UpdateHasInstalledApps();
-        if (_installFilter != InstallFilter.All ||
-            sender is AppNode { IsAdvanced: true } or AppNode { IsLegacy: true } ||
-            _categoryScope == CategoryScope.Standard && sender is AppNode { Category: "Games" })
-            RebuildRows();
+        if (_installFilter == InstallFilter.All &&
+            sender is not (AppNode { IsAdvanced: true } or AppNode { IsLegacy: true }) &&
+            !(_categoryScope == CategoryScope.Standard && sender is AppNode { Category: "Games" }))
+            return;
+        BeforeRebuildRows?.Invoke();
+        RebuildRows();
     }
 
     private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -357,6 +359,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         AppNames = visible.Select(n => n.Name).Order().ToList();
     }
 
+    public event Action? BeforeRebuildRows;
     public event Action? RowsFullyLoaded;
 
     private void RebuildRows()
