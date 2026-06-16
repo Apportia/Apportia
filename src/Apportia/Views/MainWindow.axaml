@@ -478,6 +478,8 @@
                                                 <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
                                                           Click="OnMenuUninstall" />
                                                 <Separator IsVisible="{Binding ShowUninstall}" />
+                                                <MenuItem Header="Preview" IsVisible="{Binding ShowPreview}"
+                                                          Click="OnMenuPreview" />
                                                 <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry" />
                                                 <MenuItem Header="VirusTotal..."
                                                           IsVisible="{Binding ShowVirusTotalActions}"
@@ -673,6 +675,8 @@
                                                 <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
                                                           Click="OnMenuUninstall" />
                                                 <Separator IsVisible="{Binding ShowUninstall}" />
+                                                <MenuItem Header="Preview" IsVisible="{Binding ShowPreview}"
+                                                          Click="OnMenuPreview" />
                                                 <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry" />
                                                 <MenuItem Header="VirusTotal..."
                                                           IsVisible="{Binding ShowVirusTotalActions}"

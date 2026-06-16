@@ -26,7 +26,7 @@ public partial class AppProperties : Window
         AddHandler(ContextRequestedEvent, OnContextRequested);
     }
 
-    public AppProperties(AppNode node, IconManager iconManager) : this()
+    public AppProperties(AppNode node, AppImageManager iconManager) : this()
     {
         _node = node;
 

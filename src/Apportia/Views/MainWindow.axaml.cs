@@ -21,7 +21,7 @@ public partial class MainWindow : Window
     private readonly string[] _cliAppArgs;
     private readonly CancellationTokenSource _cts = new();
     private readonly AppDownloadService _downloadService;
-    private readonly IconManager _iconManager;
+    private readonly AppImageManager _iconManager;
     private readonly Queue<(AppNode Node, bool Launch)> _installQueue = new();
 
     private bool _activateOnSearchClose;
@@ -60,7 +60,7 @@ public partial class MainWindow : Window
 
         var iconCacheDir = Path.Combine(AppContext.BaseDirectory, "Data", "AppImages");
 
-        _iconManager = new IconManager(iconCacheDir);
+        _iconManager = new AppImageManager(iconCacheDir);
         _appDatabaseUpdater = new AppDatabaseUpdater();
         _downloadService = new AppDownloadService(AppDownloadService.AppsDir);
 
@@ -1011,6 +1011,29 @@ public partial class MainWindow : Window
         catch
         {
             /* default browser may not be configured */
+        }
+    }
+
+    private async void OnMenuPreview(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (NodeFromMenu(sender) is not { } node)
+                return;
+            var preview = await _iconManager.GetPreviewAsync(node.SectionName, _cts.Token);
+            if (preview is null)
+            {
+                var msg = new AppDialog("No Preview", $"No preview available for {node.Name}.", "OK");
+                await msg.ShowDialog(this);
+                return;
+            }
+
+            var dialog = new AppPreviewDialog(node.Name, preview) { Icon = new WindowIcon(node.Icon) };
+            await dialog.ShowDialog(this);
+        }
+        catch
+        {
+            /* preview image unavailable or window is closing */
         }
     }
 

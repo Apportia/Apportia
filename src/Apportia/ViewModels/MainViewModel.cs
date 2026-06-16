@@ -22,7 +22,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _rebuildInProgress;
     private List<AppNode> _visibleNodes = [];
 
-    public MainViewModel(IReadOnlyList<AppEntry> entries, IconManager iconManager, int iconSize = 24)
+    public MainViewModel(IReadOnlyList<AppEntry> entries, AppImageManager iconManager, int iconSize = 24)
     {
         var visible = entries.Where(e => !string.Equals(e.Category, "None", StringComparison.OrdinalIgnoreCase)).ToList();
         // Group by real category (advanced apps are only shown under "Advanced" when not installed)

@@ -166,6 +166,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public bool ShowUpdateActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && NeedsUpdate;
     public bool ShowRunActions => IsInstalled && !ShowCancelInstall && !IsPlugin;
     public bool ShowVirusTotalActions => !IsPlugin && !ShowCancelInstall && (IsInstalled || !string.IsNullOrEmpty(Hash));
+    public bool ShowPreview => !IsLegacy && !IsCustom && !IsPlugin;
     public bool ShowUninstall => IsInstalled && !ShowCancelInstall;
 
     public string SectionName { get; }

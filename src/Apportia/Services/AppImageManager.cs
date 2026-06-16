@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Apportia.Services;
 
-public sealed class IconManager : IDisposable
+public sealed class AppImageManager : IDisposable
 {
     private const string RawBase = "https://raw.githubusercontent.com/Apportia/Apportia/main/data/AppImages/";
     private const int MaxConcurrentDownloads = 4;
@@ -16,7 +16,7 @@ public sealed class IconManager : IDisposable
     private readonly HttpClient _http;
     private bool _disposed;
 
-    public IconManager(string cacheDir)
+    public AppImageManager(string cacheDir)
     {
         _cacheDir = cacheDir;
 
@@ -57,6 +57,27 @@ public sealed class IconManager : IDisposable
         if (_cache.TryRemove(key, out var old))
             old.Dispose();
         return GetCustomIcon(folderName);
+    }
+
+    public async Task<Bitmap?> GetPreviewAsync(string sectionName, CancellationToken ct = default)
+    {
+        var localPath = Path.Combine(_cacheDir, "Previews", $"{NormalizeSection(sectionName)}.png");
+        if (File.Exists(localPath))
+            return new Bitmap(localPath);
+
+        var url = $"{RawBase}Previews/{NormalizeSection(sectionName)}.png";
+        try
+        {
+            var bytes = await _http.GetByteArrayAsync(url, ct);
+            Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
+            await File.WriteAllBytesAsync(localPath, bytes, ct);
+            return new Bitmap(new MemoryStream(bytes));
+        }
+        catch (Exception ex)
+        {
+            Log($"Preview not found: {sectionName} ({url}) – {ex.Message}");
+            return null;
+        }
     }
 
     public async Task EnsureIconAsync(string sectionName, int size, CancellationToken ct = default)
