@@ -23,6 +23,7 @@ jobs:
         run: |
           python3 - <<'PYEOF'
           import json
+          import os
           import re
           import subprocess
           import sys
@@ -366,7 +367,7 @@ jobs:
               return val.replace("%WINDOWSVERSION%", "11")
 
 
-          def process_ini(src, wget_ua, chrome_ua):
+          def process_ini(src, wget_ua, chrome_ua, ini_date):
               raw = src.read_text(encoding="utf-8", errors="replace")
               raw = raw.replace("\r\n", "\n").replace("\r", "\n")
               result         = {}
@@ -423,7 +424,10 @@ jobs:
                   elif key == "packageversion":
                       current_fields["PackageVersion"] = normalize_package_version(val)
                   elif key in DATE_KEY_MAP:
-                      current_fields[DATE_KEY_MAP[key]] = normalize_date(val)
+                      normalized = normalize_date(val)
+                      if normalized > date.today().isoformat():
+                          normalized = ini_date
+                      current_fields[DATE_KEY_MAP[key]] = normalized
                   elif key == "downloadsize":
                       current_fields["DownloadSize"] = normalize_size(val, section=current_name)
                   elif key == "installsize":
@@ -470,7 +474,8 @@ jobs:
                   archive  = download_archive(tmp)
                   ini_path = extract_ini(archive, tmp)
                   print(f"Extracted:  {ini_path.name}")
-                  data = process_ini(ini_path, wget_ua, chrome_ua)
+                  ini_date = date.fromtimestamp(os.stat(ini_path).st_mtime).isoformat()
+                  data = process_ini(ini_path, wget_ua, chrome_ua, ini_date)
               print(f"Validating: {_count_valid(data):,} complete entries...")
               if not is_valid(data):
                   print("Aborted: result did not pass validation.")
