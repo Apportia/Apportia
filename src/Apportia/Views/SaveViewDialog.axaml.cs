@@ -18,6 +18,13 @@ public partial class SaveViewDialog : Window
         InitializeComponent();
     }
 
+    public SaveViewDialog(InstallFilter activeFilter) : this()
+    {
+        AllAppsCheck.IsChecked = activeFilter == InstallFilter.All;
+        InstalledCheck.IsChecked = activeFilter == InstallFilter.Installed;
+        NotInstalledCheck.IsChecked = activeFilter == InstallFilter.NotInstalled;
+    }
+
     public Action DialogAction { get; private set; } = Action.Save;
     public IReadOnlyList<InstallFilter> SelectedFilters { get; private set; } = [];
 

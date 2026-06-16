@@ -2444,7 +2444,7 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel vm)
             return;
 
-        var dialog = new SaveViewDialog();
+        var dialog = new SaveViewDialog(vm.InstallFilter);
         await dialog.ShowDialog(this);
 
         if (dialog.SelectedFilters.Count == 0)

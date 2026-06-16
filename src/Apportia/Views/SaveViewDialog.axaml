@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Apportia.Views.SaveViewDialog"
+        Title="Save View"
         SizeToContent="Height"
         Width="300"
         WindowStartupLocation="CenterOwner"
