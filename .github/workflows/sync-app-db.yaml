@@ -249,6 +249,25 @@ jobs:
               return str(n)
 
 
+          def normalize_package_version(raw):
+              if not raw or not raw.strip():
+                  return "0.0.0.0"
+              parts = raw.strip().split(".")
+              result = []
+              for part in parts:
+                  if len(result) == 4:
+                      break
+                  digits = "".join(c for c in part if c.isdigit())
+                  if not digits:
+                      break
+                  result.append(digits)
+              if not result:
+                  return "0.0.0.0"
+              while len(result) < 4:
+                  result.append("0")
+              return ".".join(result)
+
+
           def normalize_date(raw):
               if not raw or not raw.strip():
                   return ""
@@ -401,6 +420,8 @@ jobs:
                       resolved = _resolve_download_path(val, current_name)
                       current_fields["DownloadPath"] = resolved
                       current_fields["UserAgent"]    = ua_for(resolved, wget_ua, chrome_ua)
+                  elif key == "packageversion":
+                      current_fields["PackageVersion"] = normalize_package_version(val)
                   elif key in DATE_KEY_MAP:
                       current_fields[DATE_KEY_MAP[key]] = normalize_date(val)
                   elif key == "downloadsize":
