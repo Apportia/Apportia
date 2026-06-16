@@ -145,16 +145,16 @@ public sealed class ColumnWidths : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public void CycleFontSize()
+    public void CycleFontSize(bool reverse = false)
     {
         var idx = Array.IndexOf(FontSizes, _fontSize);
-        FontSize = FontSizes[(idx + 1) % FontSizes.Length];
+        FontSize = FontSizes[(idx + (reverse ? -1 : 1) + FontSizes.Length) % FontSizes.Length];
     }
 
-    public void CycleIconSize()
+    public void CycleIconSize(bool reverse = false)
     {
         var idx = Array.IndexOf(IconSizes, _iconSize);
-        IconSize = IconSizes[(idx + 1) % IconSizes.Length];
+        IconSize = IconSizes[(idx + (reverse ? -1 : 1) + IconSizes.Length) % IconSizes.Length];
     }
 
     public void SetSort(string column, bool descending)

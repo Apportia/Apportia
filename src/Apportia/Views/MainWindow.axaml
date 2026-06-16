@@ -154,7 +154,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Click="OnIconSizeCycle" />
+                            Click="OnIconSizeCycle"
+                            PointerReleased="OnIconSizePointerReleased" />
                     <Button x:Name="ViewModeButton"
                             VerticalAlignment="Center"
                             Padding="6,3"
@@ -162,7 +163,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Click="OnViewModeToggle" />
+                            Click="OnViewModeToggle"
+                            PointerReleased="OnViewModePointerReleased" />
                     <Button x:Name="FontSizeButton"
                             VerticalAlignment="Center"
                             Padding="6,3"
@@ -170,7 +172,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Click="OnFontSizeCycle" />
+                            Click="OnFontSizeCycle"
+                            PointerReleased="OnFontSizePointerReleased" />
                     <Button x:Name="CategoryScopeButton"
                             VerticalAlignment="Center"
                             Padding="6,3"
@@ -178,7 +181,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Click="OnCategoryScopeCycle" />
+                            Click="OnCategoryScopeCycle"
+                            PointerReleased="OnCategoryScopePointerReleased" />
                     <Button x:Name="CategoryDisplayButton"
                             VerticalAlignment="Center"
                             Padding="6,3"
@@ -186,7 +190,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Click="OnCategoryDisplayCycle" />
+                            Click="OnCategoryDisplayCycle"
+                            PointerReleased="OnCategoryDisplayPointerReleased" />
                     <Button x:Name="InstallFilterButton"
                             VerticalAlignment="Center"
                             Padding="6,3"
@@ -194,7 +199,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Click="OnInstallFilterCycle" />
+                            Click="OnInstallFilterCycle"
+                            PointerReleased="OnInstallFilterPointerReleased" />
                 </StackPanel>
                 <AutoCompleteBox x:Name="SearchBox"
                                  Grid.Column="1"
@@ -218,7 +224,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Click="OnThemeToggle" />
+                            Click="OnThemeToggle"
+                            PointerReleased="OnThemePointerReleased" />
                 </StackPanel>
             </Grid>
         </Border>

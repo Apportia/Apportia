@@ -1789,6 +1789,12 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    private void OnThemePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton == MouseButton.Right)
+            OnThemeToggle(sender, e);
+    }
+
     private void OnThemeToggle(object? sender, RoutedEventArgs e)
     {
         var current = Application.Current!.RequestedThemeVariant;
@@ -1876,6 +1882,15 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel vm)
             return;
         vm.Columns.CycleIconSize();
+        UpdateIconSizeButton();
+        _ = ReloadIconsForSizeAsync(vm);
+    }
+
+    private void OnIconSizePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right || DataContext is not MainViewModel vm)
+            return;
+        vm.Columns.CycleIconSize(true);
         UpdateIconSizeButton();
         _ = ReloadIconsForSizeAsync(vm);
     }
@@ -2044,6 +2059,19 @@ public partial class MainWindow : Window
         UpdateCategoryScopeButton();
     }
 
+    private void OnCategoryScopePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right || DataContext is not MainViewModel vm)
+            return;
+        vm.CategoryScope = vm.CategoryScope switch
+        {
+            CategoryScope.Standard => CategoryScope.Full,
+            CategoryScope.Extended => CategoryScope.Standard,
+            _ => CategoryScope.Extended
+        };
+        UpdateCategoryScopeButton();
+    }
+
     private void UpdateCategoryScopeButton()
     {
         if (DataContext is not MainViewModel vm)
@@ -2069,6 +2097,19 @@ public partial class MainWindow : Window
         UpdateCategoryDisplayButton();
     }
 
+    private void OnCategoryDisplayPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right || DataContext is not MainViewModel vm)
+            return;
+        vm.CategoryDisplay = vm.CategoryDisplay switch
+        {
+            CategoryDisplayMode.Full => CategoryDisplayMode.None,
+            CategoryDisplayMode.Categories => CategoryDisplayMode.Full,
+            _ => CategoryDisplayMode.Categories
+        };
+        UpdateCategoryDisplayButton();
+    }
+
     private void UpdateCategoryDisplayButton()
     {
         if (DataContext is not MainViewModel vm)
@@ -2090,6 +2131,19 @@ public partial class MainWindow : Window
             InstallFilter.All => InstallFilter.Installed,
             InstallFilter.Installed => InstallFilter.NotInstalled,
             _ => InstallFilter.All
+        };
+        UpdateInstallFilterButton();
+    }
+
+    private void OnInstallFilterPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right || DataContext is not MainViewModel vm)
+            return;
+        vm.InstallFilter = vm.InstallFilter switch
+        {
+            InstallFilter.All => InstallFilter.NotInstalled,
+            InstallFilter.Installed => InstallFilter.All,
+            _ => InstallFilter.Installed
         };
         UpdateInstallFilterButton();
     }
@@ -2159,6 +2213,12 @@ public partial class MainWindow : Window
         UpdateViewModeButton();
     }
 
+    private void OnViewModePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton == MouseButton.Right)
+            OnViewModeToggle(sender, e);
+    }
+
     private void UpdateViewModeButton()
     {
         if (DataContext is not MainViewModel vm)
@@ -2171,6 +2231,14 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel vm)
             return;
         vm.Columns.CycleFontSize();
+        UpdateFontSizeButton();
+    }
+
+    private void OnFontSizePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right || DataContext is not MainViewModel vm)
+            return;
+        vm.Columns.CycleFontSize(true);
         UpdateFontSizeButton();
     }
 
