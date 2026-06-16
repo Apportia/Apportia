@@ -1928,6 +1928,8 @@ public partial class MainWindow : Window
                     break;
             }
         };
+        SearchBox.AsyncPopulator = (text, _) =>
+            Task.FromResult(vm.SearchAppNames(text ?? string.Empty).Cast<object>());
         vm.BeforeRebuildRows += () => _pendingScrollY = MainScroller.Offset.Y;
         vm.RowsFullyLoaded += () =>
         {

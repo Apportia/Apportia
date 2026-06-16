@@ -19,6 +19,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _hasInstalledApps;
     private InstallFilter _installFilter = InstallFilter.All;
     private CancellationTokenSource _rebuildCts = new();
+    private List<AppNode> _visibleNodes = [];
 
     public MainViewModel(IReadOnlyList<AppEntry> entries, IconManager iconManager, int iconSize = 24)
     {
@@ -356,7 +357,46 @@ public sealed class MainViewModel : INotifyPropertyChanged
         else if (_installFilter == InstallFilter.NotInstalled)
             visible.RemoveAll(n => n.IsInstalled);
 
+        _visibleNodes = visible;
         AppNames = visible.Select(n => n.Name).Order().ToList();
+    }
+
+    public IEnumerable<string> SearchAppNames(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return AppNames;
+        var q = query.Trim();
+        return _visibleNodes
+               .Select(n => (n.Name, Score: MatchScore(n, q)))
+               .Where(x => x.Score.match < int.MaxValue)
+               .OrderBy(x => x.Score.match)
+               .ThenBy(x => x.Score.cls)
+               .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+               .Select(x => x.Name);
+    }
+
+    private static (int match, int cls) MatchScore(AppNode n, string q)
+    {
+        var cls = n.IsLegacy ? 2 : n.IsAdvanced ? 1 : 0;
+        var match =
+            n.Name.Equals(q, StringComparison.OrdinalIgnoreCase) ? 0 :
+            n.Name.StartsWith(q, StringComparison.OrdinalIgnoreCase) ? 1 :
+            n.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ? 2 :
+            n.Category.Equals(q, StringComparison.OrdinalIgnoreCase) ? 3 :
+            n.Category.StartsWith(q, StringComparison.OrdinalIgnoreCase) ? 4 :
+            n.Category.Contains(q, StringComparison.OrdinalIgnoreCase) ? 5 :
+            n.SubCategory.Equals(q, StringComparison.OrdinalIgnoreCase) ? 6 :
+            n.SubCategory.StartsWith(q, StringComparison.OrdinalIgnoreCase) ? 7 :
+            n.SubCategory.Contains(q, StringComparison.OrdinalIgnoreCase) ? 8 :
+            n.Description.Equals(q, StringComparison.OrdinalIgnoreCase) ? 9 :
+            n.Description.StartsWith(q, StringComparison.OrdinalIgnoreCase) ? 10 :
+            n.Description.Contains(q, StringComparison.OrdinalIgnoreCase) ? 11 :
+            n.IsAdvanced && "Advanced".Equals(q, StringComparison.OrdinalIgnoreCase) ? 12 :
+            n.IsAdvanced && "Advanced".StartsWith(q, StringComparison.OrdinalIgnoreCase) ? 13 :
+            n.IsLegacy && "Legacy".Equals(q, StringComparison.OrdinalIgnoreCase) ? 14 :
+            n.IsLegacy && "Legacy".StartsWith(q, StringComparison.OrdinalIgnoreCase) ? 15 :
+            int.MaxValue;
+        return (match, cls);
     }
 
     public event Action? BeforeRebuildRows;

@@ -208,8 +208,7 @@
                                  MinWidth="280"
                                  MaxWidth="480"
                                  PlaceholderText="{Binding SearchPlaceholder}"
-                                 FilterMode="ContainsOrdinal"
-                                 ItemsSource="{Binding AppNames}"
+                                 FilterMode="None"
                                  DropDownClosed="OnSearchDropDownClosed"
                                  KeyDown="OnSearchKeyDown" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
