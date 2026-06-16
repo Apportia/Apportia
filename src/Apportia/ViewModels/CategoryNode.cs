@@ -32,16 +32,17 @@ public sealed class CategoryNode : INotifyPropertyChanged
     } = true;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+    public event EventHandler<SubCategoryNode>? SubCategoryExpansionChanged;
 
     internal SubCategoryNode GetOrCreateSubCategory(string name)
     {
         if (_subCategories.TryGetValue(name, out var node))
             return node;
         node = new SubCategoryNode(name, Columns);
-        node.PropertyChanged += (_, e) =>
+        node.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(SubCategoryNode.IsExpanded))
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
+            if (e.PropertyName == nameof(SubCategoryNode.IsExpanded) && s is SubCategoryNode sub)
+                SubCategoryExpansionChanged?.Invoke(this, sub);
         };
         _subCategories[name] = node;
         return node;

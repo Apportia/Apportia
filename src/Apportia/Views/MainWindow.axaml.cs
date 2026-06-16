@@ -1936,13 +1936,18 @@ public partial class MainWindow : Window
         };
         SearchBox.AsyncPopulator = (text, _) =>
             Task.FromResult(vm.SearchAppNames(text ?? string.Empty).Cast<object>());
-        vm.BeforeRebuildRows += () => _pendingScrollY = MainScroller.Offset.Y;
+        vm.BeforeRebuildRows += () =>
+        {
+            _pendingScrollY = MainScroller.Offset.Y;
+            _pendingScrollTarget ??= FindTopVisibleSectionName();
+        };
         vm.RowsFullyLoaded += () =>
         {
             if (_pendingScrollTop)
             {
                 _pendingScrollTop = false;
                 _pendingScrollY = null;
+                _pendingScrollTarget = null;
                 MainScroller.Offset = new Vector(0, 0);
             }
             else if (_pendingScrollApp != null)
@@ -1950,14 +1955,20 @@ public partial class MainWindow : Window
                 var app = _pendingScrollApp;
                 _pendingScrollApp = null;
                 _pendingScrollY = null;
+                _pendingScrollTarget = null;
                 ScrollToApp(app);
             }
             else if (_pendingScrollTarget != null)
             {
                 var target = _pendingScrollTarget;
+                var fallbackY = _pendingScrollY;
                 _pendingScrollTarget = null;
                 _pendingScrollY = null;
-                ScrollToSectionName(target);
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (!TryScrollToSectionName(target) && fallbackY is { } y)
+                        MainScroller.Offset = new Vector(0, y);
+                }, DispatcherPriority.Background);
             }
             else if (_pendingScrollY is { } y)
             {
@@ -1987,28 +1998,24 @@ public partial class MainWindow : Window
         return null;
     }
 
-    private void ScrollToSectionName(string sectionName)
+    private bool TryScrollToSectionName(string sectionName)
     {
         if (DataContext is not MainViewModel vm)
-            return;
+            return false;
         for (var i = 0; i < vm.FlatRows.Count; i++)
         {
             if (vm.FlatRows[i] is not AppNode node || node.SectionName != sectionName)
                 continue;
             var container = ActiveList.ContainerFromIndex(i);
             if (container is null)
-            {
-                MainScroller.Offset = new Vector(0, MainScroller.Extent.Height);
-                return;
-            }
-
+                return false;
             var pos = container.TranslatePoint(new Point(0, 0), MainList);
             if (pos.HasValue)
                 MainScroller.Offset = new Vector(0, pos.Value.Y - GetStickyOffset(vm));
-            return;
+            return true;
         }
 
-        MainScroller.Offset = new Vector(0, MainScroller.Extent.Height);
+        return false;
     }
 
     private double GetStickyOffset(MainViewModel vm)
@@ -2032,7 +2039,7 @@ public partial class MainWindow : Window
 
         for (var i = 0; i < vm.FlatRows.Count; i++)
         {
-            if (vm.FlatRows[i] is not CategoryNode catHeader || !catHeader.HasCategory)
+            if (vm.FlatRows[i] is not CategoryNode { HasCategory: true } catHeader)
                 continue;
             var container = ActiveList.ContainerFromIndex(i);
             if (container is null)
@@ -2295,26 +2302,21 @@ public partial class MainWindow : Window
 
     private void OnSearchPreviewKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Control) && SearchBox.IsDropDownOpen)
+        switch (e.Key)
         {
-            _activateOnSearchClose = true;
-            return;
-        }
-
-        if (e.Key == Key.Up && !SearchBox.IsDropDownOpen && _searchHistory.Count > 0)
-        {
-            _historyIndex = Math.Min(_historyIndex + 1, _searchHistory.Count - 1);
-            SearchBox.Text = _searchHistory[_historyIndex];
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.Down && !SearchBox.IsDropDownOpen && _historyIndex >= 0)
-        {
-            _historyIndex--;
-            SearchBox.Text = _historyIndex >= 0 ? _searchHistory[_historyIndex] : string.Empty;
-            e.Handled = true;
-            return;
+            case Key.Enter when e.KeyModifiers.HasFlag(KeyModifiers.Control) && SearchBox.IsDropDownOpen:
+                _activateOnSearchClose = true;
+                return;
+            case Key.Up when !SearchBox.IsDropDownOpen && _searchHistory.Count > 0:
+                _historyIndex = Math.Min(_historyIndex + 1, _searchHistory.Count - 1);
+                SearchBox.Text = _searchHistory[_historyIndex];
+                e.Handled = true;
+                return;
+            case Key.Down when !SearchBox.IsDropDownOpen && _historyIndex >= 0:
+                _historyIndex--;
+                SearchBox.Text = _historyIndex >= 0 ? _searchHistory[_historyIndex] : string.Empty;
+                e.Handled = true;
+                return;
         }
 
         if (e.Key != Key.Up && e.Key != Key.Down && e.Key != Key.Enter)

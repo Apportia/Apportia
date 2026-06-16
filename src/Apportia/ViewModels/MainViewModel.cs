@@ -67,6 +67,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
             var catNode = new CategoryNode(group.Key, Columns);
             catNode.PropertyChanged += OnCategoryPropertyChanged;
+            catNode.SubCategoryExpansionChanged += OnSubCategoryExpansionChanged;
             foreach (var n in nodes)
                 catNode.Nodes.Add(n);
             _grouped.Add(catNode);
@@ -81,6 +82,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 var catNode = new CategoryNode(entry.Category, Columns);
                 catNode.PropertyChanged += OnCategoryPropertyChanged;
+                catNode.SubCategoryExpansionChanged += OnSubCategoryExpansionChanged;
                 catNode.Nodes.Add(node);
                 _grouped.Add(catNode);
             }
@@ -210,6 +212,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             var catNode = new CategoryNode(category, Columns);
             catNode.PropertyChanged += OnCategoryPropertyChanged;
+            catNode.SubCategoryExpansionChanged += OnSubCategoryExpansionChanged;
             catNode.Nodes.Add(node);
             _grouped.Add(catNode);
         }
@@ -310,8 +313,136 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(CategoryNode.IsExpanded))
-            RebuildRows();
+        if (e.PropertyName == nameof(CategoryNode.IsExpanded) && sender is CategoryNode catNode)
+            ToggleCategoryInPlace(catNode);
+    }
+
+    private void OnSubCategoryExpansionChanged(object? _, SubCategoryNode subNode)
+    {
+        ToggleSubCategoryInPlace(subNode);
+    }
+
+    private void ToggleSubCategoryInPlace(SubCategoryNode subNode)
+    {
+        var idx = -1;
+        for (var i = 0; i < FlatRows.Count; i++)
+        {
+            if (FlatRows[i] != subNode) continue;
+            idx = i;
+            break;
+        }
+
+        if (idx < 0)
+            return;
+
+        if (!subNode.IsExpanded)
+        {
+            var end = idx + 1;
+            while (end < FlatRows.Count && FlatRows[end] is not (CategoryNode or SubCategoryNode))
+                end++;
+            FlatRows.RemoveRange(idx + 1, end - idx - 1);
+        }
+        else
+        {
+            var items = new List<object>();
+            var end = idx + 1;
+            while (end < FlatRows.Count && FlatRows[end] is not (CategoryNode or SubCategoryNode))
+                end++;
+            // Rebuild only matters if items differ — but since expand means they were removed, insert fresh
+            // Find which CategoryNode owns this SubCategoryNode by scanning backwards
+            CategoryNode? owner = null;
+            for (var i = idx - 1; i >= 0; i--)
+            {
+                if (FlatRows[i] is not CategoryNode cat) continue;
+                owner = cat;
+                break;
+            }
+
+            if (owner == null)
+                return;
+            var allItems = BuildCategoryItems(owner);
+            var inSub = false;
+            foreach (var item in allItems)
+            {
+                if (item == subNode)
+                {
+                    inSub = true;
+                    continue;
+                }
+
+                if (inSub && item is SubCategoryNode) break;
+                if (inSub) items.Add(item);
+            }
+
+            if (items.Count > 0)
+                FlatRows.InsertRange(idx + 1, items);
+        }
+
+        RowsFullyLoaded?.Invoke();
+    }
+
+    private void ToggleCategoryInPlace(CategoryNode catNode)
+    {
+        var idx = -1;
+        for (var i = 0; i < FlatRows.Count; i++)
+        {
+            if (FlatRows[i] != catNode) continue;
+            idx = i;
+            break;
+        }
+
+        if (idx < 0)
+            return;
+
+        if (!catNode.IsExpanded)
+        {
+            var end = idx + 1;
+            while (end < FlatRows.Count && FlatRows[end] is not CategoryNode)
+                end++;
+            FlatRows.RemoveRange(idx + 1, end - idx - 1);
+        }
+        else
+        {
+            var items = BuildCategoryItems(catNode);
+            if (items.Count > 0)
+                FlatRows.InsertRange(idx + 1, items);
+        }
+
+        RowsFullyLoaded?.Invoke();
+    }
+
+    private List<object> BuildCategoryItems(CategoryNode catNode)
+    {
+        var items = new List<object>();
+        var hideGames = _categoryScope == CategoryScope.Standard;
+        var withSubs = _categoryDisplay == CategoryDisplayMode.Full;
+
+        List<AppNode> visible;
+        if (catNode == _advancedCategoryNode)
+        {
+            visible = Filter(_grouped.SelectMany(g => g.Nodes)
+                                     .Where(n => n is { IsAdvanced: true, IsInstalled: false })
+                                     .ToList());
+        }
+        else if (catNode == _legacyCategoryNode)
+        {
+            visible = Filter(_grouped.SelectMany(g => g.Nodes)
+                                     .Where(n => n is { IsLegacy: true, IsInstalled: false })
+                                     .ToList());
+        }
+        else
+        {
+            var isGames = string.Equals(catNode.Category, "Games", StringComparison.OrdinalIgnoreCase);
+            visible = Filter(catNode.Nodes.Where(n =>
+                                                     n.IsInstalled || n is { IsAdvanced: false, IsLegacy: false } && !(isGames && hideGames)).ToList());
+        }
+
+        if (withSubs)
+            AddWithSubCategories(items, catNode, Sort(visible));
+        else
+            AddFlat(items, Sort(visible));
+
+        return items;
     }
 
     private void UpdateHasInstalledApps()
