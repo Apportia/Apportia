@@ -35,6 +35,7 @@ public sealed class AppNode : INotifyPropertyChanged
         IsAdvanced = string.Equals(entry.Class, "Advanced", StringComparison.OrdinalIgnoreCase);
         IsLegacy = string.Equals(entry.Class, "Legacy", StringComparison.OrdinalIgnoreCase);
         RequiresJava = entry.RequiresJava;
+        DisplayVersion = entry.DisplayVersion;
         PackageVersion = entry.PackageVersion;
         DownloadFile = entry.DownloadFile;
         DownloadPath = entry.DownloadPath;
@@ -177,6 +178,7 @@ public sealed class AppNode : INotifyPropertyChanged
             ? $"{Category} \u2013 {field}"
             : field;
 
+    public string DisplayVersion { get; }
     public string PackageVersion { get; }
     public string DownloadSize { get; }
     public string InstallSize { get; }

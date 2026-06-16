@@ -64,7 +64,8 @@ public partial class AppProperties : Window
         );
 
         VersionList.ItemsSource = Filter(
-            new EntryField("Version", node.PackageVersion),
+            new EntryField("Display Version", node.DisplayVersion),
+            new EntryField("Package Version", node.PackageVersion),
             new EntryField("Update Date", node.UpdateDate)
         );
 
