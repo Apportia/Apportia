@@ -78,7 +78,7 @@ jobs:
               ("ssh",     "SSH"),     ("url",     "URL"),
               ("usb",     "USB"),     ("vpn",     "VPN"),
               ("wav",     "WAV"),     ("xml",     "XML"),
-              (".chm",    "CHM"),
+              (".chm",    "CHM"),     ("mbox",    "MBOX"),
           ]
 
           CATEGORY_REPLACEMENTS = {
@@ -151,6 +151,7 @@ jobs:
           LEGACY_KEYWORDS = [
               " Retro", "Discontinued", "Discontinuted", "Legacy",
               "FirefoxPortableNightly64", "PrivateBrowsingByPortableApps",
+              "ProcessHackerPortable", "WinMerge2011Portable", "xpyPortable",
           ]
 
           MIN_ENTRY_COUNT = 100
