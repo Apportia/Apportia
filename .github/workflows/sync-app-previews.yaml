@@ -1,0 +1,121 @@
+name: Sync App Previews
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download previews
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          from pathlib import Path
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          from urllib.request import urlopen, Request
+          from urllib.error import URLError, HTTPError
+
+          CDN  = "https://cdn2.portableapps.com/"
+          BASE = Path("data/AppImages/Previews")
+          UA   = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.0 Safari/537.36"
+
+          NAME_FIXES = [
+              ("+", "Plus"),
+          ]
+
+          NO_PREVIEW = {
+              "2XClient",
+              "EraserPortable",
+              "Ghostscript",
+              "GPG",
+              "Java64",
+              "Java",
+              "JDK",
+              "JDK64",
+              "OpenJDK64",
+              "OpenJDKJRE64",
+              "TaskCoachPortable",
+          }
+
+          CDN_ALIASES = {
+              "FirefoxPortable2ndProfile":      "FirefoxPortable",
+              "FirefoxPortablePrivateWindow":   "FirefoxPortable",
+              "GoogleChromePortableIncognito":  "GoogleChromePortable",
+              "SeaMonkeyPortable2ndProfile":    "SeaMonkeyPortable",
+              "SunbirdPortable2ndProfile":      "SunbirdPortable",
+              "ThunderbirdPortable2ndProfile":  "ThunderbirdPortable",
+              "ThunderbirdPortableAddressBook": "ThunderbirdPortable",
+          }
+
+          def local_name(section):
+              s = section
+              for old, new in NAME_FIXES:
+                  s = s.replace(old, new)
+              return s
+
+          def cdn_name(section):
+              if section in CDN_ALIASES:
+                  return CDN_ALIASES[section]
+              return local_name(section)
+
+          def read_sections(json_path):
+              with open(json_path, encoding="utf-8") as f:
+                  db = json.load(f)
+              return [k for k, v in db.items() if v.get("Class", "").lower() != "legacy"]
+
+          def fetch(url):
+              req = Request(url, headers={"User-Agent": UA})
+              with urlopen(req, timeout=15) as r:
+                  return r.read()
+
+          def process(section):
+              if section in NO_PREVIEW:
+                  return None
+              cdn = cdn_name(section)
+              loc = local_name(section)
+              dest = BASE / f"{loc}.png"
+              if dest.exists():
+                  return None
+              try:
+                  data = fetch(f"{CDN}{cdn}.png")
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  dest.write_bytes(data)
+                  return f"Downloaded: {loc}.png"
+              except (URLError, HTTPError, OSError) as e:
+                  return f"ERROR: {section}: {e}"
+
+          sections = read_sections("data/app_database.json")
+          print(f"Sections: {len(sections)}")
+
+          with ThreadPoolExecutor(max_workers=8) as ex:
+              for future in as_completed(ex.submit(process, s) for s in sections):
+                  if result := future.result():
+                      print(result)
+
+          print("Done.")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/AppImages/Previews/
+          if git diff --cached --quiet; then
+            echo "No preview changes."
+          else
+            git commit -m "chore: sync app previews"
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase
+            done
+          fi
