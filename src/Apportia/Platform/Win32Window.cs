@@ -40,9 +40,37 @@ public static partial class Win32Window
         }, DispatcherPriority.Background);
     }
 
+    public static void BringToForeground(Window window)
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        var hwnd = window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+        if (hwnd == IntPtr.Zero)
+            return;
+        _ = ShowWindow(hwnd, 9 /* SW_RESTORE */);
+        _ = SetForegroundWindow(hwnd);
+    }
+
+    public static void AllowAnyForeground()
+    {
+        if (OperatingSystem.IsWindows())
+            _ = AllowSetForegroundWindow(unchecked((uint)-1) /* ASFW_ANY */);
+    }
+
     [LibraryImport("dwmapi.dll")]
     private static partial void DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
     [LibraryImport("user32.dll", EntryPoint = "SendMessageA")]
     private static partial void SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetForegroundWindow(IntPtr hWnd);
+
+    [LibraryImport("user32.dll")]
+    private static partial int ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool AllowSetForegroundWindow(uint dwProcessId);
 }

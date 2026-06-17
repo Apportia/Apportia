@@ -1,4 +1,5 @@
 using System.IO.Pipes;
+using Apportia.Platform;
 using Avalonia;
 
 namespace Apportia;
@@ -36,6 +37,7 @@ internal static class Program
     {
         try
         {
+            Win32Window.AllowAnyForeground();
             using var pipe = new NamedPipeClientStream(".", "Apportia", PipeDirection.Out);
             pipe.Connect(2000);
             using var writer = new StreamWriter(pipe);

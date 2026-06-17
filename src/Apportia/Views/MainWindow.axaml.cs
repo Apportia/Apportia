@@ -1888,6 +1888,7 @@ public partial class MainWindow : Window
             _ipcArgBatch.Clear();
             _cliAppArgs = args;
             Activate();
+            Win32Window.BringToForeground(this);
             const int maxDisplay = 5;
             var preview = args.Length <= maxDisplay
                 ? string.Join("\n", args)
