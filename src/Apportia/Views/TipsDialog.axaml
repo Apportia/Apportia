@@ -1,8 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:svg="using:Avalonia.Svg.Skia"
         x:Class="Apportia.Views.TipsDialog"
         Title="Tips &amp; Shortcuts"
-        Width="740"
+        Width="760"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
@@ -14,12 +15,12 @@
         <!-- Header -->
         <StackPanel Spacing="4">
             <TextBlock Text="Tips &amp; Shortcuts"
-                       FontSize="18"
+                       FontSize="20"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource AppTextBrush}" />
             <TextBlock Text="Everything you need to get the most out of Apportia."
                        Foreground="{DynamicResource AppSubTextBrush}"
-                       FontSize="12" />
+                       FontSize="13" />
         </StackPanel>
 
         <!-- Cards -->
@@ -30,19 +31,20 @@
                 </Transitions>
             </Grid.Transitions>
 
-            <!-- Left column -->
+            <!-- Left column: 1–6 -->
             <StackPanel Grid.Column="0" Spacing="6">
 
                 <Border Background="{DynamicResource AppColHeaderBrush}"
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128269;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f50d.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="Ctrl+F — Jump to Search" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock Text="Press Ctrl+F from anywhere to focus the search box instantly."
-                                       TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                       TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -51,13 +53,30 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#9000;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f50e.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="Ctrl+Enter — Install Without Dialog" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AppTextBrush}" />
+                            <TextBlock
+                                Text="Select an uninstalled app and press Ctrl+Enter to install it immediately, skipping any confirmation dialog."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Background="{DynamicResource AppColHeaderBrush}"
+                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                        CornerRadius="0,6,6,0" Padding="12,10">
+                    <Grid ColumnDefinitions="32,*">
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/2328.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="Ctrl+Click — Install Without Dialog" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="Hold Ctrl while clicking an uninstalled app to install it directly or add it to the queue — no prompts. Perfect for installing multiple apps in quick succession."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="Hold Ctrl while clicking an uninstalled app to install it directly or add it to the queue without any prompts. Perfect for installing multiple apps in quick succession."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -66,13 +85,14 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128444;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f680.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock Text="Preview — See a Screenshot" FontWeight="SemiBold"
+                            <TextBlock Text="CLI Arguments — Open Files with Any App" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="Right-click any app and choose Preview to view a screenshot before installing."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="Pass command-line arguments to apps via Run with Parameters... in the context menu. You can also launch Apportia with a file path to open it directly with a supported app."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -81,13 +101,14 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128737;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f6e1.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="VirusTotal — Scan Before You Run" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="Right-click any app and choose VirusTotal... to scan it by hash or upload it directly. Results appear inline — no browser needed. Requires a free API key."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="Right-click any app and choose VirusTotal... to scan it by hash or upload it directly. Results appear inline without opening a browser."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -96,48 +117,35 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128229;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4be.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock Text="Custom App Import" FontWeight="SemiBold"
+                            <TextBlock Text="View Presets — Save Your Layout" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="Use the Import App button to integrate portable apps from any source into Apportia. Apps are added as-is — Apportia does not make them portable."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
-                        CornerRadius="0,6,6,0" Padding="12,10">
-                    <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128202;" FontSize="18" VerticalAlignment="Center" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock Text="Sortable Columns — Including Disk Usage" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource AppTextBrush}" />
-                            <TextBlock
-                                Text="Click any column header to sort. The disk usage column shows actual space used per installed app — great for finding what's taking up space."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="Save your current view settings as a preset via the save button. Presets are restored automatically when switching between All, Installed, and Not Installed."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
             </StackPanel>
 
-            <!-- Right column -->
+            <!-- Right column: 7–12 -->
             <StackPanel Grid.Column="2" Spacing="6">
 
                 <Border Background="{DynamicResource AppColHeaderBrush}"
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128269;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f5bc.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock Text="Ctrl+Enter — Install Without Dialog" FontWeight="SemiBold"
+                            <TextBlock Text="Preview — See a Screenshot" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="Select an uninstalled app and press Ctrl+Enter to install it immediately, skipping any confirmation dialog."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="Right-click any app and choose Preview to view a screenshot before installing."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -146,13 +154,14 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128640;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4ca.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock Text="CLI Arguments — Open Files with Any App" FontWeight="SemiBold"
+                            <TextBlock Text="Sortable Columns — Including Disk Usage" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="Pass command-line arguments to apps via Run with Parameters... in the context menu. You can also launch Apportia with a file path to open it directly with a supported app."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="Click any column header to sort. The disk usage column shows actual space used per installed app, great for finding what's taking up space."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -161,28 +170,14 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128190;" FontSize="18" VerticalAlignment="Center" />
-                        <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock Text="View Presets — Save Your Layout" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource AppTextBrush}" />
-                            <TextBlock
-                                Text="Save your current view settings as a preset via the save button. Presets are restored automatically when switching between All, Installed, and Not Installed."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
-                        CornerRadius="0,6,6,0" Padding="12,10">
-                    <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128203;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4cb.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="Properties — Full App Metadata" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
                                 Text="Right-click any app and choose Properties to inspect metadata not shown in the list: download URL, file hash, install path, and more."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -191,13 +186,30 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#128451;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4e5.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="Custom App Import" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AppTextBrush}" />
+                            <TextBlock
+                                Text="Use the Import App button to integrate portable apps from any source into Apportia. Apps are added as-is; Apportia does not make them portable."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Background="{DynamicResource AppColHeaderBrush}"
+                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                        CornerRadius="0,6,6,0" Padding="12,10">
+                    <Grid ColumnDefinitions="32,*">
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f5c3.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="Backup &amp; Restore App Data" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="Before uninstalling, you can optionally back up an app's data. Reinstall and restore it later with everything intact — perfect for using apps on demand without losing your settings."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="Before uninstalling, you can optionally back up an app's data. Reinstall and restore it later with everything intact, perfect for using apps on demand without losing your settings."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -206,13 +218,14 @@
                         BorderBrush="#0090FF" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <TextBlock Grid.Column="0" Text="&#9881;" FontSize="18" VerticalAlignment="Center" />
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/2699.svg" Width="20" Height="20"
+                                 VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="System Integration — Context Menu" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AppTextBrush}" />
                             <TextBlock
-                                Text="If Apportia lives at a fixed location, use the included setup scripts to integrate it into your system. This adds Apportia to context menus so you can open files directly from your file manager."
-                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="12" />
+                                Text="If Apportia lives at a fixed location, use the included setup scripts to add it to your file manager's context menu and open files directly from there."
+                                TextWrapping="Wrap" Foreground="{DynamicResource AppSubTextBrush}" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </Border>

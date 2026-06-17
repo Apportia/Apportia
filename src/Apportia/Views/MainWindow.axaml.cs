@@ -1818,12 +1818,6 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
-    private void OnThemePointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (e.InitialPressMouseButton == MouseButton.Right)
-            OnThemeToggle(sender, e);
-    }
-
     private async void OnTipsButton(object? sender, RoutedEventArgs e)
     {
         try
@@ -1834,6 +1828,12 @@ public partial class MainWindow : Window
         {
             /* window may be closing */
         }
+    }
+
+    private void OnThemePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton == MouseButton.Right)
+            OnThemeToggle(sender, e);
     }
 
     private void OnThemeToggle(object? sender, RoutedEventArgs e)
@@ -1859,13 +1859,12 @@ public partial class MainWindow : Window
     {
         var requested = Application.Current!.RequestedThemeVariant;
         var isDark = Application.Current.ActualThemeVariant == ThemeVariant.Dark;
-        var icon =
-            requested == ThemeVariant.Light ? "🌞" :
-            requested == ThemeVariant.Dark ? "🌚" :
-            showAutoIcon ? "🌗" :
-            isDark ? "🌚" : "🌞";
-        ThemeToggleButton.Content = icon;
-        ThemeToggleButton.Padding = icon == "🌞" ? new Thickness(6, 4) : new Thickness(6, 3);
+        var svgName =
+            requested == ThemeVariant.Light ? "1f31e" :
+            requested == ThemeVariant.Dark ? "1f31a" :
+            showAutoIcon ? "1f317" :
+            isDark ? "1f31a" : "1f31e";
+        ThemeToggleIcon.Path = $"avares://Apportia/Assets/Emoji/{svgName}.svg";
         ApplyDarkTitlebar(isDark);
     }
 

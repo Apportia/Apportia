@@ -3,6 +3,7 @@
         xmlns:vm="using:Apportia.ViewModels"
         xmlns:views="using:Apportia.Views"
         xmlns:conv="using:Avalonia.Data.Converters"
+        xmlns:svg="using:Avalonia.Svg.Skia"
         x:Class="Apportia.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="Apportia"
@@ -141,13 +142,13 @@
                     <Button x:Name="SaveViewButton"
                             VerticalAlignment="Center"
                             Height="28"
-                            Padding="6,4"
-                            FontSize="14"
+                            Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Content="&#128190;"
-                            Click="OnSaveView" />
+                            Click="OnSaveView">
+                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4be.svg" Width="18" Height="18" />
+                    </Button>
                     <Button x:Name="IconSizeButton"
                             VerticalAlignment="Center"
                             Padding="6,3"
@@ -222,33 +223,35 @@
                     <Button x:Name="ImportApp"
                             VerticalAlignment="Center"
                             Height="28"
-                            Padding="6,4"
-                            FontSize="14"
+                            Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Content="&#128229;"
-                            Click="OnImportApp" />
+                            Click="OnImportApp">
+                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg" Width="18" Height="18" />
+                    </Button>
                     <Button x:Name="ThemeToggleButton"
                             VerticalAlignment="Center"
                             Height="28"
                             Padding="6,3"
-                            FontSize="15"
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
                             Click="OnThemeToggle"
-                            PointerReleased="OnThemePointerReleased" />
+                            PointerReleased="OnThemePointerReleased">
+                        <svg:Svg x:Name="ThemeToggleIcon" Path="avares://Apportia/Assets/Emoji/1f31e.svg" Width="18"
+                                 Height="18" />
+                    </Button>
                     <Button x:Name="TipsButton"
                             VerticalAlignment="Center"
                             Height="28"
-                            Padding="6,4"
-                            FontSize="15"
+                            Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
-                            Content="&#128161;"
-                            Click="OnTipsButton" />
+                            Click="OnTipsButton">
+                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4a1.svg" Width="18" Height="18" />
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
