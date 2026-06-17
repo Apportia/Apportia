@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.Pipes;
 using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Services;
@@ -17,16 +18,17 @@ namespace Apportia.Views;
 public partial class MainWindow : Window
 {
     private readonly AppDatabaseUpdater _appDatabaseUpdater;
-
-    private readonly string[] _cliAppArgs;
     private readonly CancellationTokenSource _cts = new();
     private readonly AppDownloadService _downloadService;
     private readonly AppImageManager _iconManager;
     private readonly Queue<(AppNode Node, bool Launch)> _installQueue = new();
+    private readonly List<string> _ipcArgBatch = [];
 
     private bool _activateOnSearchClose;
     private string? _activeDownloadFile;
     private AppNode? _activeNode;
+
+    private string[] _cliAppArgs;
 
     private bool _ctrlHeld;
     private FilterViewSettings _defaultView = new();
@@ -36,6 +38,8 @@ public partial class MainWindow : Window
     private int _historyIndex = -1;
     private bool _inSetupPhase;
     private CancellationTokenSource? _installCts;
+    private CancellationTokenSource? _ipcCts;
+    private CancellationTokenSource? _ipcDebounceCts;
     private string? _pendingScrollApp;
     private string? _pendingScrollTarget;
     private bool _pendingScrollTop;
@@ -1808,6 +1812,94 @@ public partial class MainWindow : Window
         SearchBox.AddHandler(KeyDownEvent, OnSearchPreviewKeyDown, RoutingStrategies.Tunnel);
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "Data"));
         _searchHistory = SearchHistoryService.Load();
+        StartIpcServer();
+    }
+
+    private void StartIpcServer()
+    {
+        _ipcCts = new CancellationTokenSource();
+        var token = _ipcCts.Token;
+        _ = Task.Run(IpcLoop, token);
+        return;
+
+        async Task IpcLoop()
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    var pipe = new NamedPipeServerStream("Apportia", PipeDirection.In,
+                                                         NamedPipeServerStream.MaxAllowedServerInstances,
+                                                         PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    await pipe.WaitForConnectionAsync(token);
+                    _ = Task.Run(() => HandlePipeConnection(pipe, token), token);
+                }
+                catch (OperationCanceledException)
+                {
+                    /* shutdown requested */
+                    break;
+                }
+                catch (Exception)
+                {
+                    /* pipe error — restart server on next iteration */
+                }
+            }
+        }
+
+        async Task HandlePipeConnection(NamedPipeServerStream pipe, CancellationToken ct)
+        {
+            try
+            {
+                await using (pipe)
+                {
+                    using var reader = new StreamReader(pipe);
+                    var line = await reader.ReadLineAsync(ct);
+                    if (string.IsNullOrEmpty(line))
+                        return;
+                    var newArgs = line.Split('\0');
+                    Dispatcher.UIThread.Post(() => OnIpcArgsReceived(newArgs));
+                }
+            }
+            catch (Exception)
+            {
+                /* connection dropped or cancelled */
+            }
+        }
+    }
+
+    private void OnIpcArgsReceived(string[] args)
+    {
+        _ipcArgBatch.AddRange(args);
+        _ipcDebounceCts?.Cancel();
+        _ipcDebounceCts = new CancellationTokenSource();
+        var debounceToken = _ipcDebounceCts.Token;
+        Task.Delay(500, debounceToken).ContinueWith(t =>
+        {
+            if (!t.IsCanceled)
+                Dispatcher.UIThread.Post(FlushIpcBatch);
+        }, TaskScheduler.Default);
+    }
+
+    private async void FlushIpcBatch()
+    {
+        try
+        {
+            var args = _ipcArgBatch.ToArray();
+            _ipcArgBatch.Clear();
+            _cliAppArgs = args;
+            Activate();
+            const int maxDisplay = 5;
+            var preview = args.Length <= maxDisplay
+                ? string.Join("\n", args)
+                : string.Join("\n", args.Take(maxDisplay)) + $"\n... and {args.Length - maxDisplay} more";
+            await ShowDialog("Arguments Updated",
+                             $"A second instance was launched with new CLI arguments:\n\n{preview}\n\nThese have replaced the current arguments.",
+                             "OK");
+        }
+        catch
+        {
+            /* window may be closing or dialog failed to show */
+        }
     }
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
@@ -2634,6 +2726,10 @@ public partial class MainWindow : Window
     {
         _cts.Cancel();
         _cts.Dispose();
+        _ipcCts?.Cancel();
+        _ipcCts?.Dispose();
+        _ipcDebounceCts?.Cancel();
+        _ipcDebounceCts?.Dispose();
         _installCts?.Dispose();
         _iconManager.Dispose();
         _appDatabaseUpdater.Dispose();
