@@ -47,14 +47,14 @@ public static partial class Win32Window
         var hwnd = window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
         if (hwnd == IntPtr.Zero)
             return;
-        _ = ShowWindow(hwnd, 9 /* SW_RESTORE */);
-        _ = SetForegroundWindow(hwnd);
+        ShowWindow(hwnd, 9 /* SW_RESTORE */);
+        SetForegroundWindow(hwnd);
     }
 
     public static void AllowAnyForeground()
     {
         if (OperatingSystem.IsWindows())
-            _ = AllowSetForegroundWindow(unchecked((uint)-1) /* ASFW_ANY */);
+            AllowSetForegroundWindow(unchecked((uint)-1) /* ASFW_ANY */);
     }
 
     [LibraryImport("dwmapi.dll")]
@@ -64,13 +64,11 @@ public static partial class Win32Window
     private static partial void SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetForegroundWindow(IntPtr hWnd);
+    private static partial void SetForegroundWindow(IntPtr hWnd);
 
     [LibraryImport("user32.dll")]
-    private static partial int ShowWindow(IntPtr hWnd, int nCmdShow);
+    private static partial void ShowWindow(IntPtr hWnd, int nCmdShow);
 
     [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool AllowSetForegroundWindow(uint dwProcessId);
+    private static partial void AllowSetForegroundWindow(uint dwProcessId);
 }
