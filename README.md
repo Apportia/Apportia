@@ -39,6 +39,7 @@
 - File and folder picker integration for building argument lists
 - Automatic Linux path conversion for Wine (e.g. `/home/user/file.txt` becomes `Z:\home\user\file.txt`)
 - Configurable UI — switch between detailed list and compact tile view, adjust icon size, font size, and more; save and restore view configurations as presets
+- Keyboard shortcuts — press `Ctrl+F` to jump to search instantly; hold `Ctrl` while clicking or confirming an app to install or launch without any dialogs, or to silently queue it for download
 - App details dialog — inspect full metadata for any catalogue entry via context menu
 - App preview images — view a screenshot of any app directly from the context menu
 - Full [VirusTotal](https://www.virustotal.com/) integration — scan apps by hash or upload files directly; results are shown inline without leaving the app; a scan is automatically suggested when a downloaded file fails integrity verification
