@@ -47,9 +47,9 @@ public sealed class AppNode : INotifyPropertyChanged
         else
         {
             DownloadSizeMb = long.TryParse(entry.DownloadSize, out var dlMb) ? dlMb : 1;
-            DownloadSize = AppDiskUsageService.FormatSize(dlMb, true);
-            InstallSizeMb = long.TryParse(entry.InstallSize, out var instMb) ? instMb : 1;
-            InstallSize = AppDiskUsageService.FormatSize(instMb, true);
+            DownloadSize = AppDiskUsageService.FormatSize(DownloadSizeMb, true);
+            InstallSizeMb = long.TryParse(entry.InstallSize, out var instMb) ? instMb : DownloadSizeMb;
+            InstallSize = AppDiskUsageService.FormatSize(InstallSizeMb, true);
         }
 
         Hash = entry.Hash;
