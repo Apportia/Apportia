@@ -31,9 +31,12 @@ internal static class Program
 
     private static AppBuilder BuildAvaloniaApp()
     {
-        return AppBuilder.Configure<App>()
-                         .UsePlatformDetect()
-                         .WithInterFont()
-                         .LogToTrace();
+        var builder = AppBuilder.Configure<App>()
+                               .UsePlatformDetect()
+                               .WithInterFont();
+#if DEBUG
+        builder = builder.LogToTrace();
+#endif
+        return builder;
     }
 }
