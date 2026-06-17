@@ -140,7 +140,8 @@
                             VerticalAlignment="Center">
                     <Button x:Name="SaveViewButton"
                             VerticalAlignment="Center"
-                            Padding="6,3"
+                            Height="28"
+                            Padding="6,4"
                             FontSize="14"
                             Background="Transparent"
                             BorderThickness="0"
@@ -214,10 +215,23 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Button x:Name="UpdateButton"
                             IsVisible="False"
+                            VerticalAlignment="Center"
+                            Height="28"
+                            FontSize="13"
                             Click="OnUpdateApp" />
-                    <Button Content="Import App" Click="OnImportApp" />
+                    <Button x:Name="ImportApp"
+                            VerticalAlignment="Center"
+                            Height="28"
+                            Padding="6,4"
+                            FontSize="14"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Opacity="0.6"
+                            Content="&#128229;"
+                            Click="OnImportApp" />
                     <Button x:Name="ThemeToggleButton"
                             VerticalAlignment="Center"
+                            Height="28"
                             Padding="6,3"
                             FontSize="15"
                             Background="Transparent"
@@ -225,6 +239,16 @@
                             Opacity="0.6"
                             Click="OnThemeToggle"
                             PointerReleased="OnThemePointerReleased" />
+                    <Button x:Name="TipsButton"
+                            VerticalAlignment="Center"
+                            Height="28"
+                            Padding="6,4"
+                            FontSize="15"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Opacity="0.6"
+                            Content="&#128161;"
+                            Click="OnTipsButton" />
                 </StackPanel>
             </Grid>
         </Border>

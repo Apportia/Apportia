@@ -1824,6 +1824,18 @@ public partial class MainWindow : Window
             OnThemeToggle(sender, e);
     }
 
+    private async void OnTipsButton(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await new TipsDialog { Icon = Icon }.ShowDialog(this);
+        }
+        catch
+        {
+            /* window may be closing */
+        }
+    }
+
     private void OnThemeToggle(object? sender, RoutedEventArgs e)
     {
         var current = Application.Current!.RequestedThemeVariant;
@@ -1847,11 +1859,13 @@ public partial class MainWindow : Window
     {
         var requested = Application.Current!.RequestedThemeVariant;
         var isDark = Application.Current.ActualThemeVariant == ThemeVariant.Dark;
-        ThemeToggleButton.Content =
+        var icon =
             requested == ThemeVariant.Light ? "🌞" :
             requested == ThemeVariant.Dark ? "🌚" :
             showAutoIcon ? "🌗" :
             isDark ? "🌚" : "🌞";
+        ThemeToggleButton.Content = icon;
+        ThemeToggleButton.Padding = icon == "🌞" ? new Thickness(6, 4) : new Thickness(6, 3);
         ApplyDarkTitlebar(isDark);
     }
 
@@ -1865,6 +1879,16 @@ public partial class MainWindow : Window
         base.OnOpened(e);
         ApplyDarkTitlebar(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
         _ = CheckOrphanedFilesAsync();
+        var settings = SettingsService.Load();
+        if (settings.HasShownTips)
+            return;
+        settings.HasShownTips = true;
+        SettingsService.Save(settings);
+        _ = Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await Task.Delay(600);
+            await new TipsDialog { Icon = Icon }.ShowDialog(this);
+        });
     }
 
     private async Task CheckOrphanedFilesAsync()
@@ -2450,6 +2474,7 @@ public partial class MainWindow : Window
             ColumnUpdated = vm.Columns.Updated,
             ColumnUsed = vm.Columns.Used,
             Theme = theme == ThemeVariant.Light ? "Light" : theme == ThemeVariant.Dark ? "Dark" : "Default",
+            HasShownTips = existing.HasShownTips,
             ViewPresets = existing.ViewPresets
         });
         SearchHistoryService.Save(_searchHistory);

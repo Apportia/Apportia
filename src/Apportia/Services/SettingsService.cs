@@ -50,6 +50,7 @@ public sealed class AppSettings
     public double ColumnUpdated { get; set; } = 90;
     public double ColumnUsed { get; set; } = 75;
     public string Theme { get; set; } = "Default";
+    public bool HasShownTips { get; set; }
     public Dictionary<string, FilterViewSettings> ViewPresets { get; set; } = new();
 }
 
