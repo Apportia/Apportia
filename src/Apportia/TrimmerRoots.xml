@@ -6,4 +6,6 @@
     <assembly fullname="Avalonia.Themes.Fluent" preserve="all"/>
     <assembly fullname="Avalonia.Fonts.Inter" preserve="all"/>
     <assembly fullname="SharpCompress" preserve="all"/>
+    <assembly fullname="Svg.Model" preserve="all"/>
+    <assembly fullname="Svg.Controls.Skia.Avalonia" preserve="all"/>
 </linker>
