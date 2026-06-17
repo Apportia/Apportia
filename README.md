@@ -33,13 +33,14 @@
 - Apps install and update silently in the background — no wizards, no popups
 - Passive update detection without interruptions
 - Custom app import — select a local folder containing a portable app and fully integrate it: files are copied into the managed custom apps directory and the entry is registered like any catalogue app
-- App data backup and restore — app data is preserved across uninstall and reinstall
+- App data backup and restore — optionally back up and restore app data across uninstall and reinstall
 - Actual disk usage per installed app — see exactly how much space each portable app occupies on your drive, sortable alongside all other columns
 - CLI argument support — pass arguments to any app at launch via an interactive parameter editor
 - File and folder picker integration for building argument lists
 - Automatic Linux path conversion for Wine (e.g. `/home/user/file.txt` becomes `Z:\home\user\file.txt`)
 - Configurable UI — switch between detailed list and compact tile view, adjust icon size, font size, and more; save and restore view configurations as presets
 - App details dialog — inspect full metadata for any catalogue entry via context menu
+- App preview images — view a screenshot of any app directly from the context menu
 - Full [VirusTotal](https://www.virustotal.com/) integration — scan apps by hash or upload files directly; results are shown inline without leaving the app; a scan is automatically suggested when a downloaded file fails integrity verification
 
 ---
