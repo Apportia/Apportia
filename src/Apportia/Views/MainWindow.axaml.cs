@@ -1230,7 +1230,7 @@ public partial class MainWindow : Window
                     win.Website,
                     win.Category,
                     win.SubCategory,
-                    string.Empty,
+                    win.JoinedDate,
                     win.DisplayVersion,
                     win.Version,
                     win.UpdateDate,

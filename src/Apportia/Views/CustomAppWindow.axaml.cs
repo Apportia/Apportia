@@ -137,6 +137,7 @@ public partial class CustomAppWindow : Window
     public string SubCategory { get; private set; } = string.Empty;
     public string DisplayVersion { get; private set; } = string.Empty;
     public string Version { get; private set; } = string.Empty;
+    public string JoinedDate { get; private set; } = string.Empty;
     public string UpdateDate { get; private set; } = string.Empty;
     public string ExeFile { get; private set; } = string.Empty;
     public string VersionSourceExe { get; private set; } = string.Empty;
@@ -551,6 +552,7 @@ public partial class CustomAppWindow : Window
             ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
             : string.Empty;
         DisplayVersion = string.IsNullOrEmpty(_rawVersion) ? Version : _rawVersion;
+        JoinedDate = DateTime.Today.ToString("yyyy-MM-dd");
         IconSourcePath = effectiveIconPath;
         Success = true;
         Close();
