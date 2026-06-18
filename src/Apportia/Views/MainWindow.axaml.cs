@@ -19,7 +19,7 @@ public partial class MainWindow : Window
 {
     private readonly AppDatabaseUpdater _appDatabaseUpdater;
     private readonly CancellationTokenSource _cts = new();
-    private readonly AppDownloadService _downloadService;
+    private readonly AppDeployService _deployService;
     private readonly AppImageManager _iconManager;
     private readonly Queue<(AppNode Node, bool Launch)> _installQueue = new();
     private readonly List<string> _ipcArgBatch = [];
@@ -66,7 +66,7 @@ public partial class MainWindow : Window
 
         _iconManager = new AppImageManager(iconCacheDir);
         _appDatabaseUpdater = new AppDatabaseUpdater();
-        _downloadService = new AppDownloadService(AppDownloadService.AppsDir);
+        _deployService = new AppDeployService(AppDeployService.AppsDir);
 
         if (File.Exists(AppDatabaseUpdater.CachePath))
         {
@@ -236,7 +236,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var appsBaseDir = AppDownloadService.AppsDir;
+        var appsBaseDir = AppDeployService.AppsDir;
 
         if (node.IsPlugin)
         {
@@ -468,25 +468,25 @@ public partial class MainWindow : Window
     private void OnMenuInstallRun(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDownloadService.AppsDir, true);
+            _ = InstallApp(node, AppDeployService.AppsDir, true);
     }
 
     private void OnMenuInstall(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDownloadService.AppsDir, false);
+            _ = InstallApp(node, AppDeployService.AppsDir, false);
     }
 
     private void OnMenuUpdateRun(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDownloadService.AppsDir, true);
+            _ = InstallApp(node, AppDeployService.AppsDir, true);
     }
 
     private void OnMenuUpdate(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDownloadService.AppsDir, false);
+            _ = InstallApp(node, AppDeployService.AppsDir, false);
     }
 
     private void OnMenuAddToQueue(object? sender, RoutedEventArgs e)
@@ -498,7 +498,7 @@ public partial class MainWindow : Window
         if (_downloading || !_installQueue.TryDequeue(out var next))
             return;
         next.Node.IsQueued = false;
-        _ = InstallApp(next.Node, AppDownloadService.AppsDir, next.Launch);
+        _ = InstallApp(next.Node, AppDeployService.AppsDir, next.Launch);
     }
 
     private void OnMenuRemoveFromQueue(object? sender, RoutedEventArgs e)
@@ -592,7 +592,7 @@ public partial class MainWindow : Window
             string? args = null;
             if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
             {
-                var converted = AppDownloadService.ConvertArgsForWine(dialog.ArgsArray);
+                var converted = AppDeployService.ConvertArgsForWine(dialog.ArgsArray);
                 args = RunArgsDialog.CombineArgs(converted);
             }
 
@@ -602,7 +602,7 @@ public partial class MainWindow : Window
             else if (node.IsCustom)
                 RunCustomApp(node, args);
             else
-                RunApp(node, AppDownloadService.AppsDir, args);
+                RunApp(node, AppDeployService.AppsDir, args);
         }
         catch
         {
@@ -616,7 +616,7 @@ public partial class MainWindow : Window
         {
             if (NodeFromMenu(sender) is not { } node)
                 return;
-            var appsBaseDir = AppDownloadService.AppsDir;
+            var appsBaseDir = AppDeployService.AppsDir;
 
             // Check if Java plugins should be co-uninstalled
             List<AppNode> javaPluginsToRemove = [];
@@ -961,7 +961,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            var appDir = AppDownloadService.GetInstallDir(node.SectionName);
+            var appDir = AppDeployService.GetInstallDir(node.SectionName);
             var (resolved, _) = AppExecutableService.Resolve(appDir, node.SectionName);
             if (resolved == null)
                 return;
@@ -991,7 +991,7 @@ public partial class MainWindow : Window
             return;
         var dir = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
-            : AppDownloadService.GetInstallDir(node.SectionName);
+            : AppDeployService.GetInstallDir(node.SectionName);
         if (!Directory.Exists(dir))
             return;
         try
@@ -1083,14 +1083,14 @@ public partial class MainWindow : Window
         var appDir = Path.Combine(appsBaseDir, node.SectionName);
         var (appExe, _) = AppExecutableService.Resolve(appDir, node.SectionName);
         if (appExe != null)
-            AppDownloadService.LaunchApp(appExe, args);
+            AppDeployService.LaunchApp(appExe, args);
     }
 
     private static void RunCustomApp(AppNode node, string? args = null)
     {
         var appExe = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName, node.DownloadFile);
         if (File.Exists(appExe))
-            AppDownloadService.LaunchApp(appExe, args, true);
+            AppDeployService.LaunchApp(appExe, args, true);
     }
 
     private async Task TryLaunchWithArgsAsync(AppNode node)
@@ -1107,7 +1107,7 @@ public partial class MainWindow : Window
             string? args = null;
             if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
             {
-                var converted = AppDownloadService.ConvertArgsForWine(dialog.ArgsArray);
+                var converted = AppDeployService.ConvertArgsForWine(dialog.ArgsArray);
                 args = RunArgsDialog.CombineArgs(converted);
             }
 
@@ -1116,14 +1116,14 @@ public partial class MainWindow : Window
             else if (node.IsCustom)
                 RunCustomApp(node, args);
             else
-                RunApp(node, AppDownloadService.AppsDir, args);
+                RunApp(node, AppDeployService.AppsDir, args);
         }
         else
         {
             if (node.IsCustom)
                 RunCustomApp(node);
             else
-                RunApp(node, AppDownloadService.AppsDir);
+                RunApp(node, AppDeployService.AppsDir);
         }
     }
 
@@ -1203,9 +1203,9 @@ public partial class MainWindow : Window
                     copyProgress,
                     copyDialog.CancellationToken);
                 _ = importTask.ContinueWith(t =>
-                    Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
-                        ? copyDialog.NotifyDone
-                        : copyDialog.Close));
+                                                Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
+                                                                             ? copyDialog.NotifyDone
+                                                                             : copyDialog.Close));
                 await copyDialog.ShowDialog(this);
                 var folderName = await importTask;
 
@@ -1268,7 +1268,7 @@ public partial class MainWindow : Window
         if (string.IsNullOrEmpty(node.DownloadFile) || string.IsNullOrEmpty(node.DownloadPath))
             return;
 
-        if (OperatingSystem.IsLinux() && !AppDownloadService.IsWineAvailable())
+        if (OperatingSystem.IsLinux() && !AppDeployService.IsWineAvailable())
         {
             await ShowDialog(
                 node, "Wine Not Found",
@@ -1411,7 +1411,7 @@ public partial class MainWindow : Window
             {
                 try
                 {
-                    localPath = await _downloadService.DownloadAsync(downloadUrl, downloadFile, progress, node.UserAgent, _installCts.Token);
+                    localPath = await _deployService.DownloadAsync(downloadUrl, downloadFile, progress, node.UserAgent, _installCts.Token);
                     await progressCts.CancelAsync();
                     progressCts.Dispose();
                     break;
@@ -1451,7 +1451,7 @@ public partial class MainWindow : Window
                 }
             }
 
-            var hash = AppDownloadService.VerifyHash(localPath, downloadHash);
+            var hash = AppDeployService.VerifyHash(localPath, downloadHash);
             if (hash == HashResult.Invalid)
             {
                 ShowDownloadBar(false);
@@ -1482,7 +1482,7 @@ public partial class MainWindow : Window
                 ShowDownloadBar(true);
             }
 
-            var sevenZipPath = AppDownloadService.FindSevenZip(appsBaseDir);
+            var sevenZipPath = AppDeployService.FindSevenZip(appsBaseDir);
             var isLegacyArchive =
                 sevenZipPath != null &&
                 DateTime.TryParse(node.UpdateDate, out var updateDtCheck) &&
@@ -1501,7 +1501,7 @@ public partial class MainWindow : Window
                 if (isLegacyArchive)
                 {
                     var extractDest = Path.Combine(appsBaseDir, node.SectionName);
-                    await AppDownloadService.ExtractAsync(sevenZipPath!, localPath, extractDest, _installCts.Token);
+                    await AppDeployService.ExtractAsync(sevenZipPath!, localPath, extractDest, _installCts.Token);
                     try
                     {
                         File.Delete(localPath);
@@ -1554,7 +1554,7 @@ public partial class MainWindow : Window
                         /* non-critical – installer may prompt for EULA if this fails */
                     }
 
-                    await AppDownloadService.ExecuteAsync(localPath, node.SectionName, appsBaseDir, false, _installCts.Token);
+                    await AppDeployService.ExecuteAsync(localPath, node.SectionName, appsBaseDir, false, _installCts.Token);
 
                     try
                     {
@@ -1999,7 +1999,7 @@ public partial class MainWindow : Window
 
     private async Task CheckOrphanedFilesAsync()
     {
-        var appsDir = AppDownloadService.AppsDir;
+        var appsDir = AppDeployService.AppsDir;
         if (!Directory.Exists(appsDir))
             return;
 
@@ -2706,10 +2706,10 @@ public partial class MainWindow : Window
                 if (confirmDialog.Result != "Close Anyway")
                     return;
                 await _installCts?.CancelAsync()!;
-                AppDownloadService.KillActiveInstaller();
+                AppDeployService.KillActiveInstaller();
                 if (_activeDownloadFile is { } activeFile)
                 {
-                    var partialFile = Path.Combine(AppDownloadService.AppsDir, activeFile);
+                    var partialFile = Path.Combine(AppDeployService.AppsDir, activeFile);
                     try
                     {
                         File.Delete(partialFile);
@@ -2748,7 +2748,7 @@ public partial class MainWindow : Window
         _installCts?.Dispose();
         _iconManager.Dispose();
         _appDatabaseUpdater.Dispose();
-        _downloadService.Dispose();
+        _deployService.Dispose();
         base.OnClosed(e);
     }
 }

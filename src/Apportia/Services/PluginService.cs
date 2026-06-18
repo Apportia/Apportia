@@ -33,12 +33,12 @@ public static class PluginService
     public static string GetInstallDir(string sectionName = "")
     {
         return sectionName != string.Empty
-            ? Path.Combine(AppDownloadService.AppsDir, "CommonFiles", sectionName)
-            : Path.Combine(AppDownloadService.AppsDir, "CommonFiles");
+            ? Path.Combine(AppDeployService.AppsDir, "CommonFiles", sectionName)
+            : Path.Combine(AppDeployService.AppsDir, "CommonFiles");
     }
 
     public static string GetMarkerFile(string sectionName)
     {
-        return Path.Combine(AppDownloadService.AppsDir, "CommonFiles", sectionName, "App", "AppInfo", "plugininstaller.ini");
+        return Path.Combine(AppDeployService.AppsDir, "CommonFiles", sectionName, "App", "AppInfo", "plugininstaller.ini");
     }
 }

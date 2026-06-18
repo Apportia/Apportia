@@ -45,7 +45,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                                  }
                                  else
                                  {
-                                     var appDir = AppDownloadService.GetInstallDir(entry.SectionName);
+                                     var appDir = AppDeployService.GetInstallDir(entry.SectionName);
                                      var (resolvedExe, candidates) = AppExecutableService.Resolve(appDir, entry.SectionName);
                                      exists = resolvedExe != null || candidates.Length > 0;
                                      currentDate = resolvedExe != null
@@ -860,7 +860,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                                    ? Path.Combine(customDir, n.SectionName)
                                    : n.IsPlugin
                                        ? PluginService.GetInstallDir(n.SectionName)
-                                       : AppDownloadService.GetInstallDir(n.SectionName)))
+                                       : AppDeployService.GetInstallDir(n.SectionName)))
                    .ToList();
 
         await foreach (var (sectionName, bytes) in AppDiskUsageService.ScanAllAsync(apps))

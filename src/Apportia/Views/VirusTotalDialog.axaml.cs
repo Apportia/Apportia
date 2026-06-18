@@ -100,7 +100,7 @@ public partial class VirusTotalDialog : Window
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
             : node.IsPlugin
                 ? PluginService.GetInstallDir(node.SectionName)
-                : AppDownloadService.GetInstallDir(node.SectionName);
+                : AppDeployService.GetInstallDir(node.SectionName);
 
         foreach (var rel in VirusTotalService.GetTopLevelBinaries(_appDir))
             _entries.Add(BuildEntry(rel));

@@ -3,12 +3,12 @@ using System.Security.Cryptography;
 
 namespace Apportia.Services;
 
-public sealed class AppDownloadService : IDisposable
+public sealed class AppDeployService : IDisposable
 {
     private readonly string _downloadDir;
     private readonly HttpClient _http;
 
-    public AppDownloadService(string downloadDir)
+    public AppDeployService(string downloadDir)
     {
         _downloadDir = downloadDir;
         Directory.CreateDirectory(downloadDir);

@@ -39,7 +39,7 @@ public partial class AppProperties : Window
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
             : node.IsPlugin
                 ? PluginService.GetInstallDir(node.SectionName)
-                : AppDownloadService.GetInstallDir(node.SectionName);
+                : AppDeployService.GetInstallDir(node.SectionName);
 
         var prefix = node.Category + " \u2013 ";
 
