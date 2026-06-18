@@ -43,7 +43,7 @@
         <TextBlock Text="Executable"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
-        <ComboBox x:Name="ExeCombo" HorizontalAlignment="Stretch"
+        <ComboBox x:Name="ExeSourceCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnExeSelectionChanged" />
 
         <TextBlock Text="Name"
@@ -75,7 +75,7 @@
         <TextBlock Text="Version Source"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
-        <ComboBox x:Name="VersionExeCombo" HorizontalAlignment="Stretch"
+        <ComboBox x:Name="VersionSourceCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnVersionExeSelectionChanged" />
 
         <TextBlock Text="Version"
@@ -91,7 +91,7 @@
         <TextBlock Text="Icon Source"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
-        <ComboBox x:Name="IconExeCombo" HorizontalAlignment="Stretch"
+        <ComboBox x:Name="IconSourceCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnIconExeSelectionChanged" />
 
         <TextBlock Text="Icon"

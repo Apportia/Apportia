@@ -14,7 +14,9 @@ namespace Apportia.Views;
 
 public partial class CustomAppWindow : Window
 {
-    private static readonly string[] LaunchablePatterns = ["*.exe", "*.cmd", "*.bat", "*.vbs"];
+    private static readonly HashSet<string> RelevantExtensions = new(StringComparer.OrdinalIgnoreCase)
+        { ".exe", ".dll", ".bat", ".cmd", ".vbs", ".ico", ".png" };
+
     private readonly string _appDir = string.Empty;
     private readonly string _initialDescription = string.Empty;
     private readonly string _initialExe = string.Empty;
@@ -83,31 +85,33 @@ public partial class CustomAppWindow : Window
 
         _initializing = true;
 
-        var exeFiles = GetLaunchableFiles(_appDir);
-        ExeCombo.ItemsSource = exeFiles;
-        ExeCombo.SelectedItem = node.DownloadFile;
-        if (ExeCombo.SelectedIndex < 0 && exeFiles.Count > 0)
-            ExeCombo.SelectedIndex = 0;
+        var scanned = ScanFiles(_appDir);
 
-        var versionItems = BuildVersionSourceItems(_appDir);
-        VersionExeCombo.ItemsSource = versionItems;
+        var exeFiles = GetLaunchableFiles(_appDir, scanned);
+        ExeSourceCombo.ItemsSource = exeFiles;
+        ExeSourceCombo.SelectedItem = node.DownloadFile;
+        if (ExeSourceCombo.SelectedIndex < 0 && exeFiles.Count > 0)
+            ExeSourceCombo.SelectedIndex = 0;
+
+        var versionItems = BuildVersionSourceItems(_appDir, scanned);
+        VersionSourceCombo.ItemsSource = versionItems;
         var defaultVersionSource = string.IsNullOrEmpty(storedVersionSource)
             ? node.DownloadFile
             : storedVersionSource;
         var matchedVersionItem = versionItems.FirstOrDefault(s => s.Display.Equals(defaultVersionSource, StringComparison.OrdinalIgnoreCase));
-        VersionExeCombo.SelectedItem = matchedVersionItem ?? (versionItems.Count > 0 ? versionItems[0] : null);
+        VersionSourceCombo.SelectedItem = matchedVersionItem ?? (versionItems.Count > 0 ? versionItems[0] : null);
 
-        var sourceItems = BuildSourceItems(_appDir);
-        IconExeCombo.ItemsSource = sourceItems;
+        var sourceItems = BuildSourceItems(_appDir, scanned);
+        IconSourceCombo.ItemsSource = sourceItems;
         var matchedItem = sourceItems.FirstOrDefault(s => s.Display.Equals(node.DownloadFile, StringComparison.OrdinalIgnoreCase));
-        IconExeCombo.SelectedItem = matchedItem ?? (sourceItems.Count > 0 ? sourceItems[0] : null);
+        IconSourceCombo.SelectedItem = matchedItem ?? (sourceItems.Count > 0 ? sourceItems[0] : null);
 
         _initializing = false;
 
         _rawVersion = string.IsNullOrEmpty(storedDisplayVersion) ? storedVersion : storedDisplayVersion;
         VersionBox.Text = NormalizeVersion(storedVersion);
 
-        if (VersionExeCombo.SelectedItem is SourceItem versionItem && File.Exists(versionItem.FullPath))
+        if (VersionSourceCombo.SelectedItem is SourceItem versionItem && File.Exists(versionItem.FullPath))
         {
             var liveRaw = CustomAppService.ReadExeVersion(versionItem.FullPath);
             var liveNormalized = NormalizeVersion(liveRaw);
@@ -158,22 +162,23 @@ public partial class CustomAppWindow : Window
             FolderBox.Text = folder;
             _iconManuallySelected = false;
 
-            var exeFiles = GetLaunchableFiles(folder);
+            var scanned = await Task.Run(() => ScanFiles(folder));
+            var exeFiles = GetLaunchableFiles(folder, scanned);
+            var versionItems = BuildVersionSourceItems(folder, scanned);
+            var sourceItems = BuildSourceItems(folder, scanned);
 
-            ExeCombo.ItemsSource = exeFiles;
-            ExeCombo.SelectedIndex = exeFiles.Count > 0 ? 0 : -1;
+            ExeSourceCombo.ItemsSource = exeFiles;
+            ExeSourceCombo.SelectedIndex = exeFiles.Count > 0 ? 0 : -1;
 
-            var selectedExe = ExeCombo.SelectedItem as string;
+            var selectedExe = ExeSourceCombo.SelectedItem as string;
 
-            var versionItems = BuildVersionSourceItems(folder);
-            VersionExeCombo.ItemsSource = versionItems;
+            VersionSourceCombo.ItemsSource = versionItems;
             var matchedVersionItem = versionItems.FirstOrDefault(s => s.Display.Equals(selectedExe, StringComparison.OrdinalIgnoreCase));
-            VersionExeCombo.SelectedItem = matchedVersionItem ?? (versionItems.Count > 0 ? versionItems[0] : null);
+            VersionSourceCombo.SelectedItem = matchedVersionItem ?? (versionItems.Count > 0 ? versionItems[0] : null);
 
-            var sourceItems = BuildSourceItems(folder);
-            IconExeCombo.ItemsSource = sourceItems;
+            IconSourceCombo.ItemsSource = sourceItems;
             var matchedItem = sourceItems.FirstOrDefault(s => s.Display.Equals(selectedExe, StringComparison.OrdinalIgnoreCase));
-            IconExeCombo.SelectedItem = matchedItem ?? (sourceItems.Count > 0 ? sourceItems[0] : null);
+            IconSourceCombo.SelectedItem = matchedItem ?? (sourceItems.Count > 0 ? sourceItems[0] : null);
 
             if (string.IsNullOrWhiteSpace(NameBox.Text))
                 NameBox.Text = Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar));
@@ -215,7 +220,7 @@ public partial class CustomAppWindow : Window
     {
         if (_initializing)
             return;
-        if (ExeCombo.SelectedItem is not string exeFile)
+        if (ExeSourceCombo.SelectedItem is not string exeFile)
             return;
 
         if (_isEditMode)
@@ -253,7 +258,7 @@ public partial class CustomAppWindow : Window
     {
         if (_initializing)
             return;
-        if (VersionExeCombo.SelectedItem is not SourceItem item || !File.Exists(item.FullPath))
+        if (VersionSourceCombo.SelectedItem is not SourceItem item || !File.Exists(item.FullPath))
             return;
         var raw = CustomAppService.ReadExeVersion(item.FullPath);
         _rawVersion = raw;
@@ -264,7 +269,7 @@ public partial class CustomAppWindow : Window
     {
         if (_initializing || _iconManuallySelected)
             return;
-        if (IconExeCombo.SelectedItem is not SourceItem)
+        if (IconSourceCombo.SelectedItem is not SourceItem)
             return;
         RefreshIconGallery();
     }
@@ -303,57 +308,72 @@ public partial class CustomAppWindow : Window
             }
         }
 
-        if (IconExeCombo.SelectedItem is SourceItem item && File.Exists(item.FullPath))
+        if (IconSourceCombo.SelectedItem is SourceItem item && File.Exists(item.FullPath))
             icons.AddRange(LoadIcons(item.FullPath));
 
         PopulateIconGallery(icons);
     }
 
-    private static List<string> GetLaunchableFiles(string dir)
+    private static Dictionary<string, List<string>> ScanFiles(string rootDir)
     {
-        if (!Directory.Exists(dir))
-            return [];
-        return LaunchablePatterns
-               .SelectMany(p => Directory.GetFiles(dir, p, SearchOption.TopDirectoryOnly))
-               .Select(Path.GetFileName)
-               .Where(f => !string.IsNullOrEmpty(f))
-               .OrderBy(f => Path.GetExtension(f!).Equals(".exe", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
-               .ThenBy(f => f, StringComparer.OrdinalIgnoreCase)
-               .ToList()!;
+        var result = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        if (!Directory.Exists(rootDir))
+            return result;
+        foreach (var file in Directory.EnumerateFiles(rootDir, "*", SearchOption.AllDirectories))
+        {
+            var ext = Path.GetExtension(file);
+            if (!RelevantExtensions.Contains(ext))
+                continue;
+            if (!result.TryGetValue(ext, out var list))
+                result[ext] = list = [];
+            list.Add(file);
+        }
+
+        return result;
     }
 
-    private static List<SourceItem> BuildVersionSourceItems(string rootDir)
+    private static List<string> GetLaunchableFiles(string rootDir, Dictionary<string, List<string>> files)
     {
-        if (!Directory.Exists(rootDir))
-            return [];
-
-        return Directory.GetFiles(rootDir, "*.exe", SearchOption.AllDirectories)
-                        .Concat(Directory.GetFiles(rootDir, "*.dll", SearchOption.AllDirectories))
-                        .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
-                        .OrderBy(s => Path.GetDirectoryName(s.Display) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                        .ThenBy(s => Path.GetExtension(s.FullPath).Equals(".dll", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
-                        .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
-                        .ToList();
+        return new[] { ".exe", ".bat", ".cmd", ".vbs" }
+               .SelectMany(ext => files.TryGetValue(ext, out var l) ? l : [])
+               .Select(f => Path.GetRelativePath(rootDir, f))
+               .OrderBy(f => Path.GetDirectoryName(f) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+               .ThenBy(f => Path.GetExtension(f).ToLowerInvariant() switch
+               {
+                   ".exe" => 0,
+                   ".bat" => 1,
+                   ".cmd" => 2,
+                   _ => 3
+               })
+               .ThenBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase)
+               .ToList();
     }
 
-    private static List<SourceItem> BuildSourceItems(string rootDir)
+    private static List<SourceItem> BuildVersionSourceItems(string rootDir, Dictionary<string, List<string>> files)
     {
-        if (!Directory.Exists(rootDir))
-            return [];
+        return new[] { ".exe", ".dll" }
+               .SelectMany(ext => files.TryGetValue(ext, out var l) ? l : [])
+               .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
+               .OrderBy(s => Path.GetDirectoryName(s.Display) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+               .ThenBy(s => Path.GetExtension(s.FullPath).Equals(".dll", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+               .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
+               .ToList();
+    }
 
-        return Directory.GetFiles(rootDir, "*.exe", SearchOption.AllDirectories)
-                        .Concat(Directory.GetFiles(rootDir, "*.ico", SearchOption.AllDirectories))
-                        .Concat(Directory.GetFiles(rootDir, "*.png", SearchOption.AllDirectories))
-                        .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
-                        .OrderBy(s => Path.GetDirectoryName(s.Display) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                        .ThenBy(s => Path.GetExtension(s.FullPath).ToLowerInvariant() switch
-                        {
-                            ".exe" => 0,
-                            ".ico" => 1,
-                            _ => 2
-                        })
-                        .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
-                        .ToList();
+    private static List<SourceItem> BuildSourceItems(string rootDir, Dictionary<string, List<string>> files)
+    {
+        return new[] { ".exe", ".ico", ".png" }
+               .SelectMany(ext => files.TryGetValue(ext, out var l) ? l : [])
+               .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
+               .OrderBy(s => Path.GetDirectoryName(s.Display) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+               .ThenBy(s => Path.GetExtension(s.FullPath).ToLowerInvariant() switch
+               {
+                   ".exe" => 0,
+                   ".ico" => 1,
+                   _ => 2
+               })
+               .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
+               .ToList();
     }
 
     private static List<IconVariant> LoadIcons(string fullPath)
@@ -497,7 +517,7 @@ public partial class CustomAppWindow : Window
             return;
         }
 
-        if (ExeCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
+        if (ExeSourceCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
         {
             ShowError("Please select an executable.");
             return;
@@ -524,7 +544,7 @@ public partial class CustomAppWindow : Window
         Description = DescriptionBox.Text?.Trim() ?? string.Empty;
         Website = WebsiteBox.Text?.Trim() ?? string.Empty;
         Version = VersionBox.Text?.Trim() ?? string.Empty;
-        VersionSourceExe = (VersionExeCombo.SelectedItem as SourceItem)?.Display ?? string.Empty;
+        VersionSourceExe = (VersionSourceCombo.SelectedItem as SourceItem)?.Display ?? string.Empty;
         var versionRelPath = string.IsNullOrEmpty(VersionSourceExe) ? exeFile : VersionSourceExe;
         var versionPath = Path.Combine(FolderName, versionRelPath);
         UpdateDate = File.Exists(versionPath)
@@ -540,7 +560,7 @@ public partial class CustomAppWindow : Window
     {
         ErrorText.IsVisible = false;
 
-        if (ExeCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
+        if (ExeSourceCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
         {
             ShowError("Please select an executable.");
             return;
@@ -561,7 +581,7 @@ public partial class CustomAppWindow : Window
         Description = DescriptionBox.Text?.Trim() ?? string.Empty;
         Website = WebsiteBox.Text?.Trim() ?? string.Empty;
         Version = VersionBox.Text?.Trim() ?? string.Empty;
-        VersionSourceExe = (VersionExeCombo.SelectedItem as SourceItem)?.Display ?? string.Empty;
+        VersionSourceExe = (VersionSourceCombo.SelectedItem as SourceItem)?.Display ?? string.Empty;
         var versionRelPath = string.IsNullOrEmpty(VersionSourceExe) ? exeFile : VersionSourceExe;
         var versionPath = Path.Combine(_appDir, versionRelPath);
         UpdateDate = File.Exists(versionPath)
