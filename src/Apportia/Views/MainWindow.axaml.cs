@@ -36,6 +36,7 @@ public partial class MainWindow : Window
     private bool _downloading;
     private bool _forceClose;
     private int _historyIndex = -1;
+    private CancellationTokenSource? _iconDownloadCts;
     private bool _inSetupPhase;
     private CancellationTokenSource? _installCts;
     private CancellationTokenSource? _ipcCts;
@@ -143,6 +144,13 @@ public partial class MainWindow : Window
 
     private async Task StartIconDownloadsAsync(MainViewModel vm)
     {
+        if (_iconDownloadCts is not null)
+            await _iconDownloadCts.CancelAsync();
+        _iconDownloadCts?.Dispose();
+        _iconDownloadCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+        var ct = _iconDownloadCts.Token;
+
+        var expectedSize = vm.Columns.IconLoadSize;
         var hideGames = vm.CategoryScope == CategoryScope.Standard;
 
         var nodes = vm.AllNodes.Where(n =>
@@ -170,14 +178,16 @@ public partial class MainWindow : Window
 
         await _iconManager.DownloadAllAsync(
             nodeMap.Keys,
-            vm.Columns.IconLoadSize,
+            expectedSize,
             (section, bitmap) =>
             {
                 if (!nodeMap.TryGetValue(section, out var node))
                     return;
+                if (vm.Columns.IconLoadSize != expectedSize)
+                    return;
                 Dispatcher.UIThread.Post(() => node.Icon = bitmap);
             },
-            _cts.Token);
+            ct);
     }
 
     private void OnCategoryHeaderTapped(object? sender, TappedEventArgs e)
@@ -925,7 +935,7 @@ public partial class MainWindow : Window
 
                 var icon = iconChanged
                     ? _iconManager.ReloadCustomIcon(node.SectionName)
-                    : _iconManager.GetCustomIcon(node.SectionName);
+                    : _iconManager.GetCustomIcon(node.SectionName, vm.Columns.IconSize);
 
                 var oldUsedBytes = node.UsedBytes;
                 vm.RemoveCustomApp(node);
@@ -1241,7 +1251,7 @@ public partial class MainWindow : Window
                     string.Empty,
                     string.Empty);
 
-                var icon = _iconManager.GetCustomIcon(folderName);
+                var icon = _iconManager.GetCustomIcon(folderName, vm.Columns.IconSize);
                 var newNode = vm.AddCustomApp(entry, icon);
                 var appDir = Path.Combine(CustomAppService.CustomAppsDir, folderName);
                 _ = ScanAndCacheNodeSizeAsync(newNode, appDir);
@@ -2057,8 +2067,10 @@ public partial class MainWindow : Window
     private async Task ReloadIconsForSizeAsync(MainViewModel vm)
     {
         var size = vm.Columns.IconSize;
-        foreach (var node in vm.AllNodes.Where(n => !n.IsCustom))
-            node.Icon = _iconManager.GetIcon(node.SectionName, size);
+        foreach (var node in vm.AllNodes)
+            node.Icon = node.IsCustom
+                ? _iconManager.GetCustomIcon(node.SectionName, size)
+                : _iconManager.GetIcon(node.SectionName, size);
         await StartIconDownloadsAsync(vm);
     }
 

@@ -27,7 +27,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets/AppImage.png" />
         <AvaloniaResource Include="Assets/ProgramIcon.ico" />
         <AvaloniaResource Include="Assets/Emoji/*.svg" />
     </ItemGroup>

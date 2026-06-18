@@ -76,7 +76,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         foreach (var entry in CustomAppService.LoadAll())
         {
-            var node = new AppNode(entry, iconManager.GetCustomIcon(entry.SectionName), Columns, true, true);
+            var node = new AppNode(entry, iconManager.GetCustomIcon(entry.SectionName, Math.Max(16, iconSize)), Columns, true, true);
             node.PropertyChanged += OnNodePropertyChanged;
             var group = _grouped.FirstOrDefault(g => g.Category == entry.Category);
             if (group == null)

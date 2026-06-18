@@ -2,6 +2,8 @@ using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using SkiaSharp;
+using Svg.Skia;
 
 namespace Apportia.Services;
 
@@ -9,7 +11,7 @@ public sealed class AppImageManager : IDisposable
 {
     private const string RawBase = "https://raw.githubusercontent.com/Apportia/Apportia/main/data/AppImages/";
     private const int MaxConcurrentDownloads = 4;
-    private static readonly Uri FallbackUri = new("avares://Apportia/Assets/AppImage.png");
+    private static readonly Uri FallbackUri = new("avares://Apportia/Assets/Emoji/1f5bc.svg");
 
     private readonly ConcurrentDictionary<string, Bitmap> _cache = new();
     private readonly string _cacheDir;
@@ -40,15 +42,15 @@ public sealed class AppImageManager : IDisposable
     public Bitmap GetIcon(string sectionName, int size)
     {
         var localPath = LocalPath(sectionName, size);
-        return File.Exists(localPath) ? _cache.GetOrAdd($"{size}:{sectionName}", _ => new Bitmap(localPath)) : Placeholder();
+        return File.Exists(localPath) ? _cache.GetOrAdd($"{size}:{sectionName}", _ => new Bitmap(localPath)) : Placeholder(size);
     }
 
-    public Bitmap GetCustomIcon(string folderName)
+    public Bitmap GetCustomIcon(string folderName, int size = 24)
     {
         var iconPath = Path.Combine(CustomAppService.CustomAppImagesDir, folderName + ".png");
         if (!File.Exists(iconPath))
             iconPath = Path.Combine(CustomAppService.CustomAppsDir, folderName, folderName + ".png");
-        return File.Exists(iconPath) ? _cache.GetOrAdd("custom:" + folderName, _ => new Bitmap(iconPath)) : Placeholder();
+        return File.Exists(iconPath) ? _cache.GetOrAdd("custom:" + folderName, _ => new Bitmap(iconPath)) : Placeholder(size);
     }
 
     public Bitmap ReloadCustomIcon(string folderName)
@@ -142,13 +144,28 @@ public sealed class AppImageManager : IDisposable
         }
     }
 
-    private Bitmap Placeholder()
+    private Bitmap Placeholder(int size)
     {
-        return _cache.GetOrAdd(string.Empty, _ =>
-        {
-            using var stream = AssetLoader.Open(FallbackUri);
-            return new Bitmap(stream);
-        });
+        return _cache.GetOrAdd($"placeholder:{size}", _ => RasterizeSvg(FallbackUri, size));
+    }
+
+    private static Bitmap RasterizeSvg(Uri uri, int size)
+    {
+        using var stream = AssetLoader.Open(uri);
+        var svg = new SKSvg();
+        var picture = svg.Load(stream) ?? throw new InvalidOperationException($"Failed to load SVG: {uri}");
+        var bounds = picture.CullRect;
+        var scale = size / Math.Max(bounds.Width, bounds.Height);
+        var info = new SKImageInfo(size, size);
+        using var surface = SKSurface.Create(info);
+        var canvas = surface.Canvas;
+        canvas.Clear(SKColors.Transparent);
+        canvas.Translate((size - bounds.Width * scale) / 2f, (size - bounds.Height * scale) / 2f);
+        canvas.Scale(scale);
+        canvas.DrawPicture(picture);
+        using var image = surface.Snapshot();
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return new Bitmap(new MemoryStream(data.ToArray()));
     }
 
     public string LocalPath(string section, int size)
