@@ -14,6 +14,7 @@ namespace Apportia.Views;
 
 public partial class CustomAppWindow : Window
 {
+    private static readonly string[] LaunchablePatterns = ["*.exe", "*.cmd", "*.bat", "*.vbs"];
     private readonly string _appDir = string.Empty;
     private readonly string _initialDescription = string.Empty;
     private readonly string _initialExe = string.Empty;
@@ -82,13 +83,7 @@ public partial class CustomAppWindow : Window
 
         _initializing = true;
 
-        var exeFiles = Directory.Exists(_appDir)
-            ? Directory.GetFiles(_appDir, "*.exe", SearchOption.TopDirectoryOnly)
-                       .Select(Path.GetFileName)
-                       .Where(f => !string.IsNullOrEmpty(f))
-                       .Order()
-                       .ToList()
-            : [];
+        var exeFiles = GetLaunchableFiles(_appDir);
         ExeCombo.ItemsSource = exeFiles;
         ExeCombo.SelectedItem = node.DownloadFile;
         if (ExeCombo.SelectedIndex < 0 && exeFiles.Count > 0)
@@ -163,11 +158,7 @@ public partial class CustomAppWindow : Window
             FolderBox.Text = folder;
             _iconManuallySelected = false;
 
-            var exeFiles = Directory.GetFiles(folder, "*.exe", SearchOption.TopDirectoryOnly)
-                                    .Select(Path.GetFileName)
-                                    .Where(f => !string.IsNullOrEmpty(f))
-                                    .Order()
-                                    .ToList();
+            var exeFiles = GetLaunchableFiles(folder);
 
             ExeCombo.ItemsSource = exeFiles;
             ExeCombo.SelectedIndex = exeFiles.Count > 0 ? 0 : -1;
@@ -318,6 +309,19 @@ public partial class CustomAppWindow : Window
         PopulateIconGallery(icons);
     }
 
+    private static List<string> GetLaunchableFiles(string dir)
+    {
+        if (!Directory.Exists(dir))
+            return [];
+        return LaunchablePatterns
+               .SelectMany(p => Directory.GetFiles(dir, p, SearchOption.TopDirectoryOnly))
+               .Select(Path.GetFileName)
+               .Where(f => !string.IsNullOrEmpty(f))
+               .OrderBy(f => Path.GetExtension(f!).Equals(".exe", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+               .ThenBy(f => f, StringComparer.OrdinalIgnoreCase)
+               .ToList()!;
+    }
+
     private static List<SourceItem> BuildVersionSourceItems(string rootDir)
     {
         if (!Directory.Exists(rootDir))
@@ -326,8 +330,9 @@ public partial class CustomAppWindow : Window
         return Directory.GetFiles(rootDir, "*.exe", SearchOption.AllDirectories)
                         .Concat(Directory.GetFiles(rootDir, "*.dll", SearchOption.AllDirectories))
                         .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
-                        .OrderBy(s => Path.GetExtension(s.FullPath).Equals(".dll", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
-                        .ThenBy(s => s.Display)
+                        .OrderBy(s => Path.GetDirectoryName(s.Display) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                        .ThenBy(s => Path.GetExtension(s.FullPath).Equals(".dll", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                        .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
                         .ToList();
     }
 
@@ -340,7 +345,14 @@ public partial class CustomAppWindow : Window
                         .Concat(Directory.GetFiles(rootDir, "*.ico", SearchOption.AllDirectories))
                         .Concat(Directory.GetFiles(rootDir, "*.png", SearchOption.AllDirectories))
                         .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
-                        .OrderBy(s => s.Display)
+                        .OrderBy(s => Path.GetDirectoryName(s.Display) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                        .ThenBy(s => Path.GetExtension(s.FullPath).ToLowerInvariant() switch
+                        {
+                            ".exe" => 0,
+                            ".ico" => 1,
+                            _ => 2
+                        })
+                        .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
                         .ToList();
     }
 
