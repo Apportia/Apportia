@@ -1090,7 +1090,7 @@ public partial class MainWindow : Window
     {
         var appExe = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName, node.DownloadFile);
         if (File.Exists(appExe))
-            AppDownloadService.LaunchApp(appExe, args);
+            AppDownloadService.LaunchApp(appExe, args, true);
     }
 
     private async Task TryLaunchWithArgsAsync(AppNode node)

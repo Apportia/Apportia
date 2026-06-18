@@ -232,11 +232,12 @@ public sealed class AppDownloadService : IDisposable
             LaunchApp(appExe);
     }
 
-    public static void LaunchApp(string exePath, string? args = null)
+    public static void LaunchApp(string exePath, string? args = null, bool isCustomApp = false)
     {
         var appDir = Path.GetDirectoryName(exePath)!;
         var sectionName = Path.GetFileNameWithoutExtension(exePath);
-        PrepareAppConfig(appDir, sectionName);
+        if (!isCustomApp)
+            PrepareAppConfig(appDir, sectionName);
         StartProcess(exePath, string.IsNullOrWhiteSpace(args) ? null : args);
     }
 
