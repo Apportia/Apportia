@@ -145,7 +145,6 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
-                            Opacity="0.6"
                             Click="OnSaveView">
                         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4be.svg" Width="18" Height="18" />
                     </Button>
@@ -226,7 +225,6 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
-                            Opacity="0.6"
                             Click="OnImportApp">
                         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg" Width="18" Height="18" />
                     </Button>
@@ -236,7 +234,6 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
-                            Opacity="0.6"
                             Click="OnThemeToggle"
                             PointerReleased="OnThemePointerReleased">
                         <svg:Svg x:Name="ThemeToggleIcon" Path="avares://Apportia/Assets/Emoji/1f31e.svg" Width="18"
@@ -248,7 +245,6 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
-                            Opacity="0.6"
                             Click="OnTipsButton">
                         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4a1.svg" Width="18" Height="18" />
                     </Button>
