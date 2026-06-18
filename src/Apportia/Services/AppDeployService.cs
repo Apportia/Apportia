@@ -367,12 +367,14 @@ public sealed class AppDeployService : IDisposable
 
     private static Process? StartProcess(string exePath, string? args = null)
     {
+        var workingDir = Path.GetDirectoryName(exePath) ?? string.Empty;
         ProcessStartInfo psi;
         if (OperatingSystem.IsLinux())
         {
             psi = new ProcessStartInfo("wine")
             {
                 UseShellExecute = false,
+                WorkingDirectory = workingDir,
                 Arguments = args is not null ? $"\"{exePath}\" {args}" : $"\"{exePath}\""
             };
             var prefix = Environment.GetEnvironmentVariable("WINEPREFIX");
@@ -384,6 +386,7 @@ public sealed class AppDeployService : IDisposable
             psi = new ProcessStartInfo(exePath)
             {
                 UseShellExecute = false,
+                WorkingDirectory = workingDir,
                 Arguments = args ?? string.Empty
             };
         }
