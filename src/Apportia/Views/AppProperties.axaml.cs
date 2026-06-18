@@ -72,13 +72,21 @@ public partial class AppProperties : Window
             new EntryField("Update Date", RelativeDate(node.UpdateDate))
         );
 
-        DownloadList.ItemsSource = Filter(
-            new EntryField("Download File", node.DownloadFile),
-            new EntryField("Hash", node.Hash),
-            new EntryField("Download Path", node.DownloadPath),
-            new EntryField("User Agent", node.UserAgent),
-            new EntryField("Download Size", node.DownloadSize)
-        );
+        if (node.IsCustom)
+        {
+            DownloadSection.IsVisible = false;
+            DownloadList.IsVisible = false;
+        }
+        else
+        {
+            DownloadList.ItemsSource = Filter(
+                new EntryField("Download File", node.DownloadFile),
+                new EntryField("Hash", node.Hash),
+                new EntryField("Download Path", node.DownloadPath),
+                new EntryField("User Agent", node.UserAgent),
+                new EntryField("Download Size", node.DownloadSize)
+            );
+        }
 
         _selectedLanguage = node is { HasLanguageVariants: true, IsInstalled: true }
             ? AppLanguageService.Load(node.SectionName) is { } savedLang
@@ -167,6 +175,6 @@ public partial class AppProperties : Window
 
     private static EntryField[] Filter(params EntryField[] fields)
     {
-        return fields.Where(f => !string.IsNullOrEmpty(f.Value)).ToArray();
+        return fields.Where(f => !string.IsNullOrEmpty(f.Value) && f.Value != "\u2014").ToArray();
     }
 }

@@ -94,7 +94,7 @@
                 </ItemsControl>
 
                 <!-- Download -->
-                <Border Classes="sectionSep">
+                <Border x:Name="DownloadSection" Classes="sectionSep">
                     <TextBlock Classes="sectionHeader" Text="DOWNLOAD" />
                 </Border>
                 <ItemsControl x:Name="DownloadList" Margin="0,0,0,16">
