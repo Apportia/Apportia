@@ -1186,7 +1186,9 @@ public partial class MainWindow : Window
                     break;
                 }
 
-                var folderName = await CustomAppService.ImportAppAsync(
+                var copyDialog = new CopyProgressDialog(win.FolderName);
+                var copyProgress = new Progress<CopyProgress>(copyDialog.Report);
+                var importTask = CustomAppService.ImportAppAsync(
                     win.FolderName,
                     win.ExeFile,
                     win.Name,
@@ -1197,7 +1199,15 @@ public partial class MainWindow : Window
                     win.SubCategory,
                     win.Version,
                     win.VersionSourceExe,
-                    win.DisplayVersion);
+                    win.DisplayVersion,
+                    copyProgress,
+                    copyDialog.CancellationToken);
+                _ = importTask.ContinueWith(t =>
+                    Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
+                        ? copyDialog.NotifyDone
+                        : copyDialog.Close));
+                await copyDialog.ShowDialog(this);
+                var folderName = await importTask;
 
                 // Remove temp icon file created by the gallery picker
                 var iconPath = win.IconSourcePath;
@@ -1235,6 +1245,10 @@ public partial class MainWindow : Window
                 var newNode = vm.AddCustomApp(entry, icon);
                 var appDir = Path.Combine(CustomAppService.CustomAppsDir, folderName);
                 _ = ScanAndCacheNodeSizeAsync(newNode, appDir);
+            }
+            catch (OperationCanceledException)
+            {
+                /* user cancelled the import – partial files already cleaned up */
             }
             catch (Exception ex)
             {

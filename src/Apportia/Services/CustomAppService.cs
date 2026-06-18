@@ -108,7 +108,9 @@ public static class CustomAppService
         string subCategory = "",
         string version = "",
         string versionSource = "",
-        string displayVersion = "")
+        string displayVersion = "",
+        IProgress<CopyProgress>? copyProgress = null,
+        CancellationToken ct = default)
     {
         var baseFolderName = Path.GetFileNameWithoutExtension(exeFile);
         var folderName = baseFolderName;
@@ -120,12 +122,30 @@ public static class CustomAppService
 
         var destDir = Path.Combine(CustomAppsDir, folderName);
 
+        try
+        {
+            await CopyDirectoryAsync(sourceFolder, destDir, copyProgress, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                if (Directory.Exists(destDir))
+                    Directory.Delete(destDir, true);
+            }
+            catch
+            {
+                /* best effort – partial files may remain */
+            }
+
+            throw;
+        }
+
         await Task.Run(() =>
         {
-            CopyDirectory(sourceFolder, destDir);
             Directory.CreateDirectory(CustomAppImagesDir);
             SaveIcon(iconSourcePath, Path.Combine(CustomAppImagesDir, folderName + ".png"));
-        });
+        }, ct);
 
         var versionExeRelPath = string.IsNullOrEmpty(versionSource) ? exeFile : versionSource;
         var versionExePath = Path.Combine(destDir, versionExeRelPath);
@@ -150,7 +170,8 @@ public static class CustomAppService
         Directory.CreateDirectory(DataCustomAppsDir);
         await File.WriteAllTextAsync(
             Path.Combine(DataCustomAppsDir, folderName + ".json"),
-            JsonSerializer.Serialize(info, CustomAppJsonContext.Default.CustomAppInfo));
+            JsonSerializer.Serialize(info, CustomAppJsonContext.Default.CustomAppInfo),
+            ct);
         return folderName;
     }
 
@@ -339,12 +360,25 @@ public static class CustomAppService
         scaled.Save(destPath);
     }
 
-    private static void CopyDirectory(string source, string dest)
+    private static async Task CopyDirectoryAsync(
+        string source,
+        string dest,
+        IProgress<CopyProgress>? progress = null,
+        CancellationToken ct = default)
     {
+        var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
+        progress?.Report(new CopyProgress(files.Length, 0, string.Empty));
         Directory.CreateDirectory(dest);
-        foreach (var file in Directory.GetFiles(source))
-            File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), true);
-        foreach (var sub in Directory.GetDirectories(source))
-            CopyDirectory(sub, Path.Combine(dest, Path.GetFileName(sub)));
+        var done = 0;
+        foreach (var file in files)
+        {
+            ct.ThrowIfCancellationRequested();
+            var rel = Path.GetRelativePath(source, file);
+            var destFile = Path.Combine(dest, rel);
+            Directory.CreateDirectory(Path.GetDirectoryName(destFile)!);
+            await Task.Run(() => File.Copy(file, destFile, true), ct);
+            done++;
+            progress?.Report(new CopyProgress(files.Length, done, rel));
+        }
     }
 }
