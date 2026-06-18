@@ -13,15 +13,20 @@
     <StackPanel Margin="20" Spacing="16">
 
         <!-- Header -->
-        <StackPanel Spacing="4">
-            <TextBlock Text="Tips &amp; Shortcuts"
-                       FontSize="20"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource AppTextBrush}" />
-            <TextBlock Text="Everything you need to get the most out of Apportia."
-                       Foreground="{DynamicResource AppSubTextBrush}"
-                       FontSize="13" />
-        </StackPanel>
+        <Grid>
+            <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4a1.svg"
+                     Width="64" Height="64"
+                     HorizontalAlignment="Right" VerticalAlignment="Center" />
+            <StackPanel Spacing="4" VerticalAlignment="Center">
+                <TextBlock Text="Tips &amp; Shortcuts"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource AppTextBrush}" />
+                <TextBlock Text="Everything you need to get the most out of Apportia."
+                           Foreground="{DynamicResource AppSubTextBrush}"
+                           FontSize="13" />
+            </StackPanel>
+        </Grid>
 
         <!-- Cards -->
         <Grid x:Name="TipsContent" Opacity="0" ColumnDefinitions="*,8,*">
