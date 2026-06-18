@@ -24,6 +24,11 @@ reg delete "HKCU\Software\Classes\*\shell\Apportia" /f >nul 2>&1
 reg delete "HKCU\Software\Classes\Directory\shell\Apportia" /f >nul 2>&1
 reg delete "HKCU\Software\Classes\Directory\Background\shell\Apportia" /f >nul 2>&1
 
+:: ── Environment variable ─────────────────────────────────────────────────────
+
+echo Removing ApportiaDir environment variable...
+reg delete "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v ApportiaDir /f >nul 2>&1
+
 :: ── Shortcuts ────────────────────────────────────────────────────────────────
 
 echo Removing shortcuts...

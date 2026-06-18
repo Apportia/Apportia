@@ -6,6 +6,7 @@ set -euo pipefail
 nc='\033[0m'
 red='\033[0;31m'
 green='\033[0;32m'
+yellow='\033[0;33m'
 white='\033[1;37m'
 ul='\033[4m'
 
@@ -34,22 +35,47 @@ fi
 
 echo -e "\n${ul}${white}Installing Apportia desktop entry${nc}\n"
 
+NEEDS_ICON_CACHE_REFRESH=0
+
 # ── Icons ─────────────────────────────────────────────────────────────────────
 
-echo -e "${white}Installing icons...${nc}"
-mkdir -p "$ICONS_DST"
-cp -r "$ICONS_SRC/." "$ICONS_DST/"
+SENTINEL_ICON="$ICONS_DST/256x256/apps/Apportia.png"
 
-if command -v gtk-update-icon-cache &>/dev/null; then
+if [[ -f "$SENTINEL_ICON" ]]; then
+    echo -e "${yellow}Icons already installed, skipping.${nc}"
+else
+    echo -e "${white}Installing icons...${nc}"
+    mkdir -p "$ICONS_DST"
+    cp -r "$ICONS_SRC/." "$ICONS_DST/"
+    NEEDS_ICON_CACHE_REFRESH=1
+fi
+
+if [[ "$NEEDS_ICON_CACHE_REFRESH" == "1" ]] && command -v gtk-update-icon-cache &>/dev/null; then
     gtk-update-icon-cache -f -t "$ICONS_DST" 2>/dev/null || true
 fi
 
 # ── Desktop entry ─────────────────────────────────────────────────────────────
 
-echo -e "${white}Writing desktop entry...${nc}"
-mkdir -p "$DESKTOP_DIR"
+DESIRED_EXEC="env WINEPREFIX=$HOME/.wine $BINARY"
+DESIRED_PATH="$SCRIPT_DIR"
 
-cat > "$DESKTOP_FILE" <<EOF
+if [[ -f "$DESKTOP_FILE" ]]; then
+    CURRENT_EXEC="$(grep -m1 '^Exec=' "$DESKTOP_FILE" | cut -d= -f2-)"
+    CURRENT_PATH="$(grep -m1 '^Path=' "$DESKTOP_FILE" | cut -d= -f2-)"
+    if [[ "$CURRENT_EXEC" == "$DESIRED_EXEC" && "$CURRENT_PATH" == "$DESIRED_PATH" ]]; then
+        echo -e "${yellow}Desktop entry already up to date, skipping.${nc}"
+    else
+        echo -e "${white}Updating desktop entry...${nc}"
+        _write_desktop=1
+    fi
+else
+    echo -e "${white}Writing desktop entry...${nc}"
+    _write_desktop=1
+fi
+
+if [[ "${_write_desktop:-0}" == "1" ]]; then
+    mkdir -p "$DESKTOP_DIR"
+    cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
 Type=Application
 Name=Apportia
@@ -63,8 +89,8 @@ MimeType=inode/directory;application/x-ms-dos-executable;application/zip;applica
 StartupNotify=true
 TryExec=$BINARY
 EOF
-
-chmod +x "$DESKTOP_FILE"
+    chmod +x "$DESKTOP_FILE"
+fi
 
 echo -e "\n${green}Done!${nc}"
 echo -e "  Binary:  ${green}$BINARY${nc}"
