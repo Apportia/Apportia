@@ -2356,6 +2356,12 @@ public partial class MainWindow : Window
         {
             if (_pendingUpdate == null)
                 return;
+
+            var changelog = new ChangelogDialog(_pendingUpdate.Version, _pendingUpdate.Changelog);
+            await changelog.ShowDialog(this);
+            if (!changelog.Confirmed)
+                return;
+
             UpdateButton.IsEnabled = false;
             ShowDownloadBar(true);
             DownloadProgressBar.IsIndeterminate = false;

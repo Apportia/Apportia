@@ -10,10 +10,11 @@ using SharpCompress.Archives.Zip;
 
 namespace Apportia.Services;
 
-public sealed class SelfUpdateInfo(Version version, string downloadUrl)
+public sealed class SelfUpdateInfo(Version version, string downloadUrl, string? changelog)
 {
     public Version Version { get; } = version;
     public string DownloadUrl { get; } = downloadUrl;
+    public string? Changelog { get; } = changelog;
 }
 
 internal sealed class GitHubAsset
@@ -25,7 +26,7 @@ internal sealed class GitHubAsset
 internal sealed class GitHubRelease
 {
     [JsonPropertyName("tag_name")] public string TagName { get; set; } = string.Empty;
-
+    [JsonPropertyName("body")] public string Body { get; set; } = string.Empty;
     [JsonPropertyName("assets")] public List<GitHubAsset> Assets { get; set; } = [];
 }
 
@@ -49,7 +50,7 @@ public static partial class SelfUpdater
             if (latest <= current)
                 return null;
             var asset = release.Assets.FirstOrDefault(a => a.BrowserDownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
-            return asset == null ? null : new SelfUpdateInfo(latest, asset.BrowserDownloadUrl);
+            return asset == null ? null : new SelfUpdateInfo(latest, asset.BrowserDownloadUrl, release.Body);
         }
         catch
         {
