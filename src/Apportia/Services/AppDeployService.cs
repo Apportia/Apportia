@@ -179,6 +179,10 @@ public sealed class AppDeployService : IDisposable
             ? "Z:" + appsBaseDir.Replace('/', '\\')
             : appsBaseDir;
 
+        var before = new HashSet<string>(
+            Directory.GetFileSystemEntries(appsBaseDir, "*", SearchOption.TopDirectoryOnly),
+            StringComparer.OrdinalIgnoreCase);
+
         var installerArgs = $"/DESTINATION=\"{dest}\\\\\" /AUTOCLOSE=true /HIDEINSTALLER=true /SILENT=true /SILENTLANGUAGEMODE=always";
         var installer = StartProcess(installerPath, installerArgs);
         ActiveInstaller = installer;
@@ -227,9 +231,47 @@ public sealed class AppDeployService : IDisposable
             /* file may be locked briefly after the installer exits */
         }
 
+        EnforceInstallLocation(appsBaseDir, sectionName, before);
+
         var appExe = Path.Combine(appsBaseDir, sectionName, sectionName + ".exe");
         if (launch && File.Exists(appExe))
             LaunchApp(appExe);
+    }
+
+    private static void EnforceInstallLocation(string appsBaseDir, string sectionName, HashSet<string> before)
+    {
+        if (!Directory.Exists(appsBaseDir))
+            return;
+
+        var newEntries =
+            Directory.GetFileSystemEntries(appsBaseDir, "*", SearchOption.TopDirectoryOnly)
+                     .Where(e => !before.Contains(e))
+                     .ToList();
+
+        if (newEntries.Count == 0)
+            return;
+
+        var expectedPath = Path.Combine(appsBaseDir, sectionName);
+
+        // Normal case: installer created exactly one folder – rename it if it doesn't match the section name.
+        if (newEntries.Count == 1 && Directory.Exists(newEntries[0]))
+        {
+            if (!string.Equals(newEntries[0], expectedPath, StringComparison.OrdinalIgnoreCase))
+                Directory.Move(newEntries[0], expectedPath);
+            return;
+        }
+
+        // Fallback: installer scattered multiple entries directly into appsBaseDir – consolidate them.
+        Directory.CreateDirectory(expectedPath);
+        foreach (var entry in newEntries)
+        {
+            var name = Path.GetFileName(entry);
+            var dest = Path.Combine(expectedPath, name);
+            if (Directory.Exists(entry))
+                Directory.Move(entry, dest);
+            else
+                File.Move(entry, dest, true);
+        }
     }
 
     public static void LaunchApp(string exePath, string? args = null, bool isCustomApp = false)
