@@ -81,6 +81,11 @@ jobs:
               (".chm",    "CHM"),     ("mbox",    "MBOX"),
           ]
 
+          DESCRIPTION_OVERRIDES = {
+              "TelegramPortable":                   "Instant messaging",
+              "TelegramDesktopPortableLegacyWinXP": "Instant messaging",
+          }
+
           CATEGORY_REPLACEMENTS = {
               "Graphics and Pictures": "Graphics & Pictures",
               "Music and Video":       "Music & Video",
@@ -151,7 +156,8 @@ jobs:
           LEGACY_KEYWORDS = [
               " Retro", "Discontinued", "Discontinuted", "Legacy",
               "FirefoxPortableNightly64", "PrivateBrowsingByPortableApps",
-              "ProcessHackerPortable", "WinMerge2011Portable", "xpyPortable",
+              "PDF-XChangeViewerPortable", "ProcessHackerPortable",
+              "WinMerge2011Portable", "xpyPortable",
           ]
 
           MIN_ENTRY_COUNT = 100
@@ -411,7 +417,7 @@ jobs:
                   if key == "name":
                       current_fields["Name"] = clean_name(val) or clean_name(current_name)
                   elif key == "description":
-                      current_fields["Description"] = normalize_description(val)
+                      current_fields["Description"] = DESCRIPTION_OVERRIDES.get(current_name) or normalize_description(val)
                   elif key == "category":
                       current_fields["Category"] = normalize_category(val)
                   elif key == "subcategory":
