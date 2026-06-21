@@ -1,21 +1,21 @@
 {
     "downloads.sourceforge.net": {
         "downloads": "Auto-select",
+        "sitsa": "Villa Maria, Argentina",
         "ixpeering": "Brisbane, Australia",
         "netix": "Bulgaria",
+        "altushost-bul": "Sofia, Bulgaria",
+        "excellmedia": "Hyderabad, India",
+        "altushost-swe": "Stockholm, Sweden",
+        "twds": "Taipei City, Taiwan",
         "cytranet-dal": "Dallas, United States",
         "netactuate": "Durham, North Carolina, United States",
         "gigenet": "Fayetteville, United States",
-        "excellmedia": "Hyderabad, India",
         "cytranet": "Las Vegas, Nevada, United States",
         "pilotfiber": "New York, United States",
         "phoenixnap": "Phoenix, Arizona, United States",
-        "altushost-bul": "Sofia, Bulgaria",
-        "altushost-swe": "Stockholm, Sweden",
-        "twds": "Taipei City, Taiwan",
         "cfhcable": "Tampa, United States",
-        "sf-west-interserver-2": "United States",
-        "sitsa": "Villa Maria, Argentina"
+        "sf-west-interserver-2": "Western United States"
     },
     "downloads.portableapps.com": {
         "downloads": "Default",
