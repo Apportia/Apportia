@@ -16,10 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install dependencies
+        run: pip install pycountry
+
       - name: Run sync script
         run: |
           python3 - <<'PYEOF'
           import json
+          import pycountry
           import re
           import subprocess
           import sys
@@ -43,6 +47,20 @@ jobs:
           }
 
 
+          def normalize_location(text):
+              if not text:
+                  return text
+              parts = [p.strip() for p in text.split(",")]
+              last = parts[-1]
+              # Expand US state abbreviations: "Las Vegas, NV" → "Las Vegas, Nevada, United States"
+              if len(last) == 2 and last.isupper():
+                  sub = pycountry.subdivisions.get(code=f"US-{last}")
+                  if sub is not None:
+                      country = pycountry.countries.get(alpha_2="US").name
+                      return ", ".join(parts[:-1] + [sub.name, country])
+              return text
+
+
           def fetch_sourceforge():
               result = subprocess.run(
                   ["wget", "-q", "-O", "-", MIRROR_PAGE],
@@ -50,15 +68,16 @@ jobs:
               )
               if result.returncode not in (0, 8):
                   sys.exit(f"ERROR: wget exited {result.returncode}: {result.stderr.strip()}")
-              mirrors = {"downloads": "Auto-select"}
+              mirrors_raw = {}
               for m in _RE_ENTRY.finditer(result.stdout):
                   slug = m.group(1).strip()
                   if slug == "autoselect":
                       continue
-                  mirrors[slug] = (m.group(2) or "").strip()
-              if len(mirrors) <= 1:
+                  mirrors_raw[slug] = normalize_location((m.group(2) or "").strip())
+              if not mirrors_raw:
                   sys.exit("ERROR: No SourceForge mirrors parsed — page structure may have changed.")
-              return mirrors
+              sorted_mirrors = dict(sorted(mirrors_raw.items(), key=lambda kv: kv[1].casefold()))
+              return {"downloads": "Auto-select"} | sorted_mirrors
 
 
           def main():
