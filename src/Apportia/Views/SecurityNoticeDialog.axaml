@@ -1,0 +1,91 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Apportia.Views.SecurityNoticeDialog"
+        Title="Security Notice"
+        SizeToContent="Height"
+        MinWidth="360"
+        MaxWidth="800"
+        MaxHeight="800"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.field-label">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,10">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                <Button Content="Proceed" Click="OnProceed" />
+                <Button Content="Cancel" Click="OnCancel" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer>
+            <StackPanel Margin="20,16,20,16" Spacing="10">
+
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border x:Name="SeverityBadge"
+                            CornerRadius="3"
+                            Padding="7,2"
+                            VerticalAlignment="Center">
+                        <TextBlock x:Name="SeverityText"
+                                   FontWeight="SemiBold"
+                                   FontSize="11"
+                                   Foreground="White" />
+                    </Border>
+                    <TextBlock x:Name="CategoryText"
+                               Classes="field-label"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <TextBlock x:Name="TitleText"
+                           TextWrapping="Wrap"
+                           FontWeight="SemiBold"
+                           FontSize="14"
+                           Foreground="{DynamicResource AppTextBrush}" />
+
+                <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                        BorderThickness="0,0,0,1" />
+
+                <TextBlock x:Name="NoticeText"
+                           TextWrapping="Wrap"
+                           FontSize="13"
+                           Foreground="{DynamicResource AppTextBrush}" />
+
+                <StackPanel x:Name="AlternativesPanel"
+                            IsVisible="False"
+                            Spacing="4">
+                    <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                            BorderThickness="0,0,0,1" />
+                    <TextBlock Classes="field-label" Text="ALTERNATIVES" />
+                    <TextBlock x:Name="AlternativesText"
+                               TextWrapping="Wrap"
+                               FontSize="13"
+                               Foreground="{DynamicResource AppTextBrush}" />
+                </StackPanel>
+
+                <TextBlock x:Name="UpdatedText"
+                           FontSize="11"
+                           FontStyle="Italic"
+                           HorizontalAlignment="Right"
+                           Padding="0,0,6,0"
+                           Foreground="{DynamicResource AppSubTextBrush}" />
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

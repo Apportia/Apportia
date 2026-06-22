@@ -78,7 +78,8 @@ public partial class MainWindow : Window
             ApplyViewPreset(vm, false);
             _ = Task.WhenAll(
                 _appDatabaseUpdater.TryUpdateAsync(_cts.Token),
-                MirrorService.TryUpdateAsync(_cts.Token));
+                MirrorService.TryUpdateAsync(_cts.Token),
+                SecurityNoticeService.TryUpdateAsync(_cts.Token));
             return;
         }
 
@@ -135,7 +136,8 @@ public partial class MainWindow : Window
     {
         await Task.WhenAll(
             _appDatabaseUpdater.TryUpdateAsync(_cts.Token),
-            MirrorService.TryUpdateAsync(_cts.Token));
+            MirrorService.TryUpdateAsync(_cts.Token),
+            SecurityNoticeService.TryUpdateAsync(_cts.Token));
         var vm = BuildViewModel();
         SubscribeViewModel(vm);
         await Dispatcher.UIThread.InvokeAsync(() => DataContext = vm);
@@ -331,6 +333,9 @@ public partial class MainWindow : Window
             }
             else
             {
+                if (!await CheckSecurityNoticeAsync(node))
+                    return;
+
                 if (ctrlHeld)
                 {
                     await InstallApp(node, appsBaseDir, false);
@@ -452,6 +457,9 @@ public partial class MainWindow : Window
 
             return;
         }
+
+        if (!await CheckSecurityNoticeAsync(node))
+            return;
 
         if (ctrlHeld)
         {
@@ -1791,6 +1799,30 @@ public partial class MainWindow : Window
         return node != null
             ? ShowDialog(node, $"{appName} \u2014 Not Enough Space", msg, "Retry", "Cancel")
             : ShowDialog($"{appName} \u2014 Not Enough Space", msg, "Retry", "Cancel");
+    }
+
+    private async Task<bool> CheckSecurityNoticeAsync(AppNode node)
+    {
+        var notice = SecurityNoticeService.Resolve(node.SectionName);
+        if (notice == null)
+            return true;
+
+        var altNames = notice.Alternatives;
+        if (notice.Alternatives.Count > 0 && DataContext is MainViewModel vm)
+        {
+            var nodeMap = vm.AllNodes.ToDictionary(n => n.SectionName, n => n.Name);
+            altNames = notice.Alternatives
+                             .Select(key => nodeMap.TryGetValue(key, out var name) ? name : key)
+                             .ToArray();
+        }
+
+        var dlg = new SecurityNoticeDialog(notice, altNames)
+        {
+            Title = $"Security Notice \u2014 {node.Name}",
+            Icon = new WindowIcon(node.Icon)
+        };
+        await dlg.ShowDialog(this);
+        return dlg.Proceeded;
     }
 
     private async Task<string?> ShowDialog(AppNode node, string title, string message, params string[] buttons)
