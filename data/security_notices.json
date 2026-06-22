@@ -2,30 +2,30 @@
   "2XClient": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Acquired by Parallels and discontinued; continues as Parallels Client",
-    "Notice": "2X Client was acquired by Parallels and discontinued under that name; it continues as Parallels Client. The version available here is no longer maintained and receives no security updates.",
-    "Updated": "2026-06-21"
+    "Title": "Acquired by Parallels and discontinued › Now continues as Parallels Client",
+    "Notice": "2X Client was acquired by Parallels and discontinued under that name. It lives on as Parallels Client, which is the actively maintained successor.\n\nThe version available here is no longer maintained and receives no security updates.",
+    "Verified": "2026-06-22"
   },
   "aMSNPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued; ships an outdated, unpatched network or web engine",
-    "Notice": "This application is discontinued and no longer maintained. It ships an outdated network or web-rendering engine that no longer receives security patches, so any use that connects to the internet carries unpatched-vulnerability risk.",
-    "Updated": "2026-06-21"
+    "Title": "Discontinued application › No longer receives security updates",
+    "Notice": "This application has been discontinued and is no longer maintained. It ships an outdated network or web-rendering engine that no longer receives security patches, meaning any internet-connected use carries real unpatched-vulnerability risk.",
+    "Verified": "2026-06-22"
   },
   "AudacityPortable": {
     "Severity": "Moderate Risk",
     "Category": "Telemetry & Data Collection",
-    "Title": "Telemetry and vendor update check added after the 2021 acquisition",
-    "Notice": "After Audacity was acquired by Muse Group in 2021, a revised privacy policy introduced limited telemetry (IP address, operating system, CPU type) and an update check that contacts the vendor, and referenced occasional data sharing with offices in Russia. This is a behavioral change from the original offline-only tool; it is not malware.",
-    "Updated": "2026-06-21"
+    "Title": "Telemetry and vendor update checks added after the 2021 acquisition",
+    "Notice": "When Audacity was acquired by Muse Group in 2021, the application changed its behavior in ways worth knowing about. A revised privacy policy introduced limited telemetry (collecting your IP address, operating system, and CPU type) along with an automatic update check that contacts the vendor. The policy also referenced occasional data sharing with offices in Russia.\n\nThis is a behavioral change from the original offline-only tool. It is not malware, but it is no longer the silent, network-isolated application it once was.",
+    "Verified": "2026-06-22"
   },
   "balenaEtcherPortable": {
     "Severity": "Moderate Risk",
     "Category": "Telemetry & Data Collection",
     "Title": "Collects usage analytics and contacts the vendor by default",
-    "Notice": "balenaEtcher collects usage analytics and contacts the vendor by default. This is not malicious behavior, but the application phones home unless analytics are disabled.",
-    "Updated": "2026-06-21",
+    "Notice": "balenaEtcher sends usage analytics to the vendor and contacts its servers by default. This is not malicious behavior, but the application does phone home unless you go into the settings and turn analytics off.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "VentoyPortable"
     ]
@@ -33,16 +33,16 @@
   "BitcoinPortable": {
     "Severity": "Low Risk",
     "Category": "Cryptocurrency Wallet",
-    "Title": "Full-node wallet; outdated versions are a financial risk",
-    "Notice": "This is a full-node cryptocurrency wallet. It is not malicious, but running an outdated version with real funds is a financial risk, since older node and wallet releases have shipped security and consensus-related fixes. Run the latest release and keep an offline backup of the wallet and keys.",
-    "Updated": "2026-06-21"
+    "Title": "Full-node cryptocurrency wallet › Outdated versions are a financial risk",
+    "Notice": "This is a full-node cryptocurrency wallet. The software itself is not malicious, but if you store real funds here, keeping it up to date really matters. Older node and wallet releases have had important security and consensus-related fixes, and running an outdated version with a real balance is a genuine financial risk.\n\nAlways run the latest release and keep an offline backup of your wallet and keys.",
+    "Verified": "2026-06-22"
   },
   "CamStudioPortable": {
     "Severity": "Low Risk",
     "Category": "Bundled Adware",
-    "Title": "Abandoned; official installer repeatedly flagged for adware and trojans",
-    "Notice": "CamStudio is abandoned, and its official installer was repeatedly flagged for bundled adware and trojan detections. Portable packaging excludes the official installer.",
-    "Updated": "2026-06-21",
+    "Title": "Abandoned screen recorder › Official installer repeatedly flagged for adware and trojans",
+    "Notice": "CamStudio has been abandoned and is no longer maintained. Its official installer was repeatedly flagged by antivirus software for bundled adware and trojan detections.\n\nThe portable build here bypasses the official installer, so those components are not included.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "ScreenToGifPortable"
     ]
@@ -50,37 +50,37 @@
   "ccPortable": {
     "Severity": "Moderate Risk",
     "Category": "Ownership & Data Practices",
-    "Title": "Piriform product owned by Avast/Gen Digital; 2017 supply-chain compromise; default telemetry",
-    "Notice": "This is a Piriform product, owned by Avast/Gen Digital. CCleaner, the vendor's flagship product, had its official build compromised in a 2017 supply-chain attack that distributed malware to roughly 2.27 million users, with a further intrusion attempt in 2019. Recent Piriform builds enable telemetry by default and include upsell prompts.",
-    "Updated": "2026-06-21"
+    "Title": "Piriform product owned by Avast › 2017 supply-chain attack and default telemetry",
+    "Notice": "This is a Piriform product, now owned by Avast (Gen Digital). In 2017, CCleaner's official build was compromised in a supply-chain attack that distributed malware to roughly 2.27 million users. A further intrusion attempt was reported in 2019.\n\nRecent Piriform builds also enable telemetry by default and include upsell prompts.",
+    "Verified": "2026-06-22"
   },
   "ConsolePortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued; succeeded by the ConsoleZ fork",
-    "Notice": "Console2 is discontinued and no longer maintained. The active fork ConsoleZ exists as a replacement, though it is not offered here.",
-    "Updated": "2026-06-21"
+    "Title": "Discontinued and succeeded by the ConsoleZ fork",
+    "Notice": "Console2 has been discontinued and is no longer maintained. Its active fork ConsoleZ is available as a replacement, though it is not currently offered here.",
+    "Verified": "2026-06-22"
   },
   "DetectItEasyPortable": {
     "Severity": "Advisory",
     "Category": "Antivirus False-Positive",
-    "Title": "Legitimate reverse-engineering tool; possible antivirus false-positive",
-    "Notice": "This is a legitimate reverse-engineering or resource-editing tool. Because such tools are also used by malware authors, antivirus software may raise a false-positive. It is safe to use.",
-    "Updated": "2026-06-21"
+    "Title": "Legitimate reverse-engineering tool › Antivirus may raise a false-positive",
+    "Notice": "Detect It Easy is a legitimate tool used for reverse engineering and binary analysis. Because tools like this are also used by malware authors, antivirus software may occasionally flag it as suspicious.\n\nThis is a false-positive. The tool is safe to use.",
+    "Verified": "2026-06-22"
   },
   "DiffpdfPortable": {
     "Severity": "Info",
     "Category": "Freeware Discontinued",
-    "Title": "Free version discontinued; application continues as a commercial product",
-    "Notice": "The open-source version of diffpdf has been discontinued. The application continues under commercial licensing only.",
-    "Updated": "2026-06-21"
+    "Title": "Free version discontinued › Now available under a commercial license only",
+    "Notice": "The open-source version of diffpdf has been discontinued. The application continues, but only under a commercial license.",
+    "Verified": "2026-06-22"
   },
   "DVDStylerPortable": {
     "Severity": "Low Risk",
     "Category": "Bundled Adware",
     "Title": "Official installer bundled adware during its SourceForge era",
-    "Notice": "DVDStyler's official installer bundled adware during its SourceForge era. Portable packaging excludes the official installer. The application is otherwise legitimate but only lightly maintained.",
-    "Updated": "2026-06-21",
+    "Notice": "DVDStyler's official installer bundled adware during its time on SourceForge. The portable build here bypasses the official installer, so those components are not included.\n\nThe application itself is legitimate, though it receives only light maintenance.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "InfraRecorderPortable",
       "cdrtfePortable"
@@ -89,9 +89,9 @@
   "EvincePortable": {
     "Severity": "Info",
     "Category": "Outdated Version",
-    "Title": "Windows build discontinued; upstream continues on Linux only",
-    "Notice": "The independent Windows build of Evince has been discontinued. The upstream project remains active on Linux, but the version available here (2.32.0) dates from 2014.",
-    "Updated": "2026-06-21",
+    "Title": "Windows build discontinued › Upstream continues on Linux only",
+    "Notice": "The independent Windows build of Evince has been discontinued. The upstream project remains active on Linux, but the version available here (2.32.0) dates from 2014 and will not receive any further updates.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "PDF-XChangeEditorPortable"
     ]
@@ -99,9 +99,9 @@
   "FalkonPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued Qt browser; ships an outdated, unpatched web-rendering engine",
-    "Notice": "Falkon is discontinued and no longer maintained. It ships an outdated web-rendering engine that no longer receives security patches, so any browsing carries unpatched-vulnerability risk.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued browser with an unpatched web engine",
+    "Notice": "Falkon has been discontinued and is no longer maintained. It runs on an outdated web-rendering engine that no longer receives security patches, which means general browsing carries real unpatched-vulnerability risk.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "FirefoxPortable",
       "LibreWolfPortable",
@@ -111,9 +111,9 @@
   "FileZillaPortable": {
     "Severity": "Low Risk",
     "Category": "Bundled Adware",
-    "Title": "Client is clean; official installer bundled adware for years",
-    "Notice": "The FileZilla client itself is clean and open source, but its official installer bundled third-party adware offers for years. Portable packaging excludes the official installer.",
-    "Updated": "2026-06-21",
+    "Title": "Client is clean and open source › Official installer bundled adware for years",
+    "Notice": "The FileZilla client itself is clean and open source. However, its official installer bundled third-party adware for years.\n\nThe portable build here bypasses the official installer entirely, so those bundled components are not included.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "WinSCPPortable"
     ]
@@ -121,16 +121,16 @@
   "FotografixPortable": {
     "Severity": "Info",
     "Category": "Freeware Discontinued",
-    "Title": "Free version frozen; successor is no longer freeware",
-    "Notice": "The Fotografix Classic free version (1.x) has been frozen. Fotografix 2026 and later are no longer available as freeware.",
-    "Updated": "2026-06-21"
+    "Title": "Free version frozen › Successor is no longer available as freeware",
+    "Notice": "The Fotografix Classic free version (1.x) has been frozen and will not receive further updates. Later versions (Fotografix 2026 and beyond) are no longer available as freeware.",
+    "Verified": "2026-06-22"
   },
   "FreeDownloadManagerPortable": {
     "Severity": "Moderate Risk",
     "Category": "Supply-Chain Compromise",
-    "Title": "Vendor distribution channel was compromised (2020 to 2022)",
-    "Notice": "Free Download Manager's official website was compromised between 2020 and 2022 and selectively served a backdoored Linux build containing an information-stealer, confirmed by Kaspersky and later by the vendor. Windows builds were not affected, but the incident demonstrates that the vendor's distribution channel has been compromised in the past. Where a package retrieves files from the vendor at install time, its integrity depends on that channel; verify the download hash.",
-    "Updated": "2026-06-21",
+    "Title": "Vendor distribution channel was compromised between 2020 and 2022",
+    "Notice": "Free Download Manager's official website was compromised between 2020 and 2022 and selectively served a backdoored Linux build containing an information stealer. This was confirmed by Kaspersky and later acknowledged by the vendor. Windows builds were not directly affected.\n\nThe incident shows that this vendor's distribution channel has been compromised in the past. If the package retrieves files from the vendor during installation, the integrity of those files depends on that channel. It is a good idea to verify download hashes.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "uGetPortable"
     ]
@@ -138,30 +138,30 @@
   "FreeFileSyncPortable": {
     "Severity": "Info",
     "Category": "Outdated Version",
-    "Title": "Severely outdated; current release is 14.9",
-    "Notice": "The version available here (6.2, from 2014) is severely outdated. FreeFileSync is actively maintained and currently at version 14.9.",
-    "Updated": "2026-06-21"
+    "Title": "Severely outdated version › Current release is 14.9",
+    "Notice": "The version available here (6.2, from 2014) is severely outdated. FreeFileSync is actively maintained and is currently at version 14.9.",
+    "Verified": "2026-06-22"
   },
   "FreeUPXPortable": {
     "Severity": "Advisory",
     "Category": "Antivirus False-Positive",
-    "Title": "Executable packer; packed files often trip antivirus heuristics",
-    "Notice": "FUPX is a legitimate executable compressor based on UPX. Packed executables frequently trigger antivirus heuristics, so the tool and the files it produces may be flagged as a false-positive.",
-    "Updated": "2026-06-21"
+    "Title": "Executable packer › Packed files may trigger antivirus heuristics",
+    "Notice": "FUPX is a legitimate executable compressor based on UPX. Because packed executables often trigger antivirus heuristics, both the tool itself and the files it produces may occasionally be flagged as false-positives.",
+    "Verified": "2026-06-22"
   },
   "fscPortable": {
     "Severity": "Info",
     "Category": "Freeware Discontinued",
-    "Title": "Became commercial from version 5.4; this is the last freeware release",
+    "Title": "Became a commercial product from version 5.4 › This is the last freeware release (5.3)",
     "Notice": "FastStone Capture became a commercial product from version 5.4 onwards. The version available here (5.3) is the last release that was distributed as freeware.",
-    "Updated": "2026-06-21"
+    "Verified": "2026-06-22"
   },
   "GnumericPortable": {
     "Severity": "Info",
     "Category": "Outdated Version",
-    "Title": "Windows build outdated; upstream development is slow",
-    "Notice": "The Gnumeric Windows build available here (1.12.17, from 2014) is outdated. Upstream development continues slowly, but Windows builds have not kept pace.",
-    "Updated": "2026-06-21",
+    "Title": "Windows build outdated › Upstream development has not kept pace",
+    "Notice": "The Gnumeric Windows build available here (1.12.17, from 2014) is outdated. The upstream project continues at a slow pace, but Windows builds have not kept up with newer releases.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "LibreOfficePortable"
     ]
@@ -169,9 +169,9 @@
   "HMNISEditPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued since ~2005; no support for NSIS 3",
-    "Notice": "HM NIS Edit has been discontinued since approximately 2005 and does not support NSIS 3. It is no longer a viable editor for modern NSIS scripts.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued around 2005 › No support for NSIS 3",
+    "Notice": "HM NIS Edit has been discontinued since approximately 2005 and does not support NSIS 3. It is no longer a practical editor for modern NSIS scripts.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "NotepadPlusPlusPortable"
     ]
@@ -179,9 +179,9 @@
   "IcoFXPortable": {
     "Severity": "Info",
     "Category": "Freeware Discontinued",
-    "Title": "Became commercial from version 2.0; this is the last freeware release",
+    "Title": "Became a commercial product from version 2.0 › This is the last freeware release (1.6.4)",
     "Notice": "IcoFX became a commercial product from version 2.0 onwards. The version available here (1.6.4) is the last release that was distributed as freeware.",
-    "Updated": "2026-06-21",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "GIMPPortable",
       "InkscapePortable"
@@ -190,9 +190,9 @@
   "ImgBurnPortable": {
     "Severity": "Low Risk",
     "Category": "Bundled Adware",
-    "Title": "Abandoned; official installer historically bundled adware",
-    "Notice": "ImgBurn is no longer maintained; its last release was in 2013. Its official installer historically bundled adware (OpenCandy). Portable packaging excludes the official installer.",
-    "Updated": "2026-06-21",
+    "Title": "Abandoned disc-burning tool › Official installer historically bundled adware",
+    "Notice": "ImgBurn is no longer maintained. Its last release was in 2013. Its official installer historically bundled adware (OpenCandy).\n\nThe portable build here bypasses the official installer, so those components are not included.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "InfraRecorderPortable",
       "cdrtfePortable"
@@ -202,8 +202,8 @@
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
     "Title": "Discontinued Mozilla-based instant messaging client",
-    "Notice": "Instantbird is discontinued and no longer maintained. It ships an outdated network engine that no longer receives security patches.",
-    "Updated": "2026-06-21",
+    "Notice": "Instantbird has been discontinued and is no longer maintained. It ships an outdated network engine that no longer receives security patches.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "PidginPortable"
     ]
@@ -211,9 +211,9 @@
   "IObitUninstallerPortable": {
     "Severity": "Low Risk",
     "Category": "Bundled Adware",
-    "Title": "Vendor known for aggressive bundling and upselling",
-    "Notice": "IObit products have a long-standing reputation for aggressive bundling and upselling, and the company was accused in 2009 of using a competitor's detection database. The tools are functional, but vendor practices are a concern.",
-    "Updated": "2026-06-21",
+    "Title": "Vendor with a reputation for aggressive bundling and upselling",
+    "Notice": "IObit products have a long-standing reputation for aggressive bundling and upselling. The company was also accused in 2009 of incorporating a competitor's malware detection database without authorization.\n\nThe tools are functional, but the vendor's practices are worth being aware of.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "RevoUninstallerPortable",
       "GeekUninstallerPortable",
@@ -223,9 +223,9 @@
   "IronPortable": {
     "Severity": "Low Risk",
     "Category": "Third-Party Build",
-    "Title": "Unofficial Chromium fork with overstated privacy claims",
-    "Notice": "SRWare Iron is an unofficial Chromium fork. It renders all web traffic, depends on a small team for security updates, and has long been criticized for overstating its privacy benefits over standard Chromium. No malicious behavior is documented; the consideration is trust and patch cadence.",
-    "Updated": "2026-06-21",
+    "Title": "Unofficial Chromium fork › Privacy claims have been criticized as overstated",
+    "Notice": "SRWare Iron is an unofficial Chromium fork. It handles all your web traffic, relies on a small team for security updates, and has long been criticized for overstating its privacy advantages over standard Chromium.\n\nNo malicious behavior has been documented. The main consideration is how much you trust the team and how quickly they ship security patches.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "ChromiumPortable",
       "LibreWolfPortable"
@@ -234,16 +234,16 @@
   "JkDefragPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued; successor MyDefrag is also dead",
-    "Notice": "JkDefrag is discontinued and no longer maintained. Its successor MyDefrag has also been abandoned, leaving no active continuation of the project.",
-    "Updated": "2026-06-21"
+    "Title": "Discontinued with no active successor",
+    "Notice": "JkDefrag has been discontinued and is no longer maintained. Its intended successor, MyDefrag, has also since been abandoned, leaving no active continuation of the project.",
+    "Verified": "2026-06-22"
   },
   "KasperskyTDSSKillerPortable": {
     "Severity": "High Risk",
     "Category": "Vendor Jurisdiction",
-    "Title": "Russia-based vendor; discontinued and subject to government warnings and bans",
-    "Notice": "This is a Kaspersky tool. In 2022 Germany's Federal Office for Information Security (BSI) warned against using Kaspersky products, and in 2024 the United States prohibited their sale and updates over concerns about potential data access by Russian authorities. The tool is also discontinued and no longer receives updates.",
-    "Updated": "2026-06-21",
+    "Title": "Russia-based vendor subject to government bans and warnings › Tool is also discontinued",
+    "Notice": "This is a Kaspersky tool. In 2022, Germany's Federal Office for Information Security (BSI) warned against using Kaspersky products. In 2024, the United States banned their sale and distribution over concerns about potential data access by Russian authorities.\n\nThe tool itself is also discontinued and no longer receives updates.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "EmsisoftEmergencyKitPortable"
     ]
@@ -251,23 +251,23 @@
   "KeePassProPortable": {
     "Severity": "Advisory",
     "Category": "Security Clarification",
-    "Title": "KeePass 2.x had CVE-2023-32784 (fixed in 2.54); use the latest version",
-    "Notice": "KeePass 2.x ('Professional') was affected by CVE-2023-32784, which allowed recovery of the master password from a memory dump. It was fixed in version 2.54; ensure version 2.54 or later is in use. KeePass Classic (1.x) and KeePassXC were not affected.",
-    "Updated": "2026-06-21"
+    "Title": "CVE-2023-32784 was fixed in version 2.54 › Please make sure you are on 2.54 or later",
+    "Notice": "KeePass 2.x (the Professional edition) was affected by CVE-2023-32784, a vulnerability that could allow an attacker with access to the machine to recover the master password from a process memory dump. This was fixed in version 2.54.\n\nPlease make sure you are running version 2.54 or later. KeePass Classic (1.x) and KeePassXC were not affected by this vulnerability.",
+    "Verified": "2026-06-22"
   },
   "KompoZerPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued; ships an outdated, unpatched web-rendering engine",
-    "Notice": "KompoZer is a Mozilla-based WYSIWYG web editor discontinued around 2010. It ships an outdated web-rendering engine that no longer receives security patches. Its intended successor BlueGriffon has also been abandoned.",
-    "Updated": "2026-06-21"
+    "Title": "Discontinued WYSIWYG web editor › Ships an unpatched web-rendering engine",
+    "Notice": "KompoZer is a Mozilla-based WYSIWYG web editor that was discontinued around 2010. It ships an outdated web-rendering engine that no longer receives security patches. Its intended successor, BlueGriffon, has also since been abandoned.",
+    "Verified": "2026-06-22"
   },
   "MaxthonPortable": {
     "Severity": "High Risk",
     "Category": "Telemetry & Data Collection",
-    "Title": "Transmits browsing data to servers in China",
-    "Notice": "Maxthon is developed in China. Independent security researchers (Fidelis Cybersecurity and Exatel) documented that it transmits sensitive data — including the full browsing history, search queries, operating system details and a list of installed applications — to a server in Beijing, and that this continued even when the User Experience Improvement Program was disabled. Reporting from 2024 to 2025 indicates data is still sent to servers in China. This is browser-level behavior and is not affected by portable packaging.",
-    "Updated": "2026-06-21",
+    "Title": "Documented to transmit browsing data to servers in China",
+    "Notice": "Maxthon is developed in China. Independent security researchers at Fidelis Cybersecurity and Exatel found that it transmits sensitive data to a server in Beijing, including your full browsing history, search queries, operating system details, and a list of installed applications. This continued even when the User Experience Improvement Program was disabled.\n\nMore recent reporting from 2024 to 2025 indicates that data is still being sent to servers in China. This is browser-level behavior and cannot be addressed by portable packaging.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "LibreWolfPortable",
       "FirefoxPortable",
@@ -277,16 +277,16 @@
   "MediaInfoPortable": {
     "Severity": "Low Risk",
     "Category": "Bundled Adware",
-    "Title": "App is clean; only some official GUI installers offered adware",
-    "Notice": "MediaInfo itself is clean and open source. Only some official GUI installer builds offered bundled adware; the command-line core and portable builds are unaffected.",
-    "Updated": "2026-06-21"
+    "Title": "App is clean › Only some official GUI installers historically included bundled adware",
+    "Notice": "MediaInfo itself is clean and open source. Only certain official GUI installer builds offered bundled adware at some point. The command-line version and portable builds are not affected.",
+    "Verified": "2026-06-22"
   },
   "MirandaPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued; ships an outdated, unpatched network engine",
-    "Notice": "Miranda IM is discontinued and no longer maintained. It ships an outdated network engine that no longer receives security patches.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued instant messaging client",
+    "Notice": "Miranda IM has been discontinued and is no longer maintained. It ships an outdated network engine that no longer receives security patches.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "PidginPortable"
     ]
@@ -294,9 +294,9 @@
   "Notepad2Portable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued; succeeded by Notepad3",
-    "Notice": "Notepad2 and its mod fork are both discontinued and no longer maintained. Notepad3 is the active successor and a recommended replacement.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued text editor › Succeeded by Notepad3",
+    "Notice": "Notepad2 and its mod fork have both been discontinued and are no longer maintained. Notepad3 is the active successor and a recommended replacement.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "AkelPadPortable",
       "NotepadPlusPlusPortable"
@@ -305,9 +305,9 @@
   "OperaMailPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued Opera email client; ships an outdated, unpatched network engine",
-    "Notice": "Opera Mail is discontinued and no longer maintained. It ships an outdated network engine that no longer receives security patches.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued Opera email client",
+    "Notice": "Opera Mail has been discontinued and is no longer maintained. It ships an outdated network engine that no longer receives security patches.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "ThunderbirdPortable"
     ]
@@ -315,9 +315,9 @@
   "OperaPortable": {
     "Severity": "Moderate Risk",
     "Category": "Ownership & Data Practices",
-    "Title": "China-based ownership; predatory loan-app scandal; browser telemetry",
-    "Notice": "Opera has been owned by a China-based consortium (majority Kunlun Tech) since 2016. In 2020, investigative reporting documented that the company operated predatory mobile loan apps that harvested users' contacts and charged extreme interest rates. The desktop browser also includes telemetry.",
-    "Updated": "2026-06-21",
+    "Title": "China-based ownership since 2016 › Predatory loan-app scandal and browser telemetry",
+    "Notice": "Opera has been owned by a China-based consortium (with Kunlun Tech holding the majority stake) since 2016. In 2020, investigative reporting found that the company also operated predatory mobile loan apps that harvested users' contacts and charged extreme interest rates.\n\nThe desktop browser includes telemetry.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "FirefoxPortable",
       "LibreWolfPortable",
@@ -327,9 +327,9 @@
   "OperaPortableLegacy12": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued Presto-era Opera; no security updates",
-    "Notice": "This is a legacy Opera build using the discontinued Presto engine, which receives no security updates. It is usable for compatibility or testing, but not for general or sensitive web browsing.",
-    "Updated": "2026-06-21",
+    "Title": "Legacy Presto-era Opera › No longer receives any security updates",
+    "Notice": "This is a legacy Opera build using the discontinued Presto rendering engine, which no longer receives any security updates. It can be useful for compatibility or testing purposes, but it is not suitable for general or sensitive web browsing.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "FirefoxPortable",
       "LibreWolfPortable",
@@ -339,9 +339,9 @@
   "PDF-XChangeViewerPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued; succeeded by PDF-XChange Editor",
-    "Notice": "PDF-XChange Viewer is discontinued and no longer receives security updates. It has been superseded by PDF-XChange Editor. As an unpatched PDF renderer, it may be vulnerable to malicious documents.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued and superseded by PDF-XChange Editor",
+    "Notice": "PDF-XChange Viewer has been discontinued and no longer receives security updates. It has been superseded by PDF-XChange Editor. As an unpatched PDF renderer, it could be vulnerable when opening documents from untrusted sources.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "PDF-XChangeEditorPortable"
     ]
@@ -349,16 +349,16 @@
   "PhotoFilmStripPortable": {
     "Severity": "Info",
     "Category": "Freeware Discontinued",
-    "Title": "License changed in 3.1.2; free version line has been frozen",
-    "Notice": "PhotoFilmStrip changed its license from version 3.1.2 onwards. The free version line has been frozen and receives no further updates.",
-    "Updated": "2026-06-21"
+    "Title": "License changed from version 3.1.2 › The free version line is now frozen",
+    "Notice": "PhotoFilmStrip changed its license from version 3.1.2 onwards. The free version line has been frozen and will not receive further updates.",
+    "Verified": "2026-06-22"
   },
   "ProcessHackerPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
     "Title": "Renamed and superseded by System Informer",
-    "Notice": "Process Hacker has been renamed to System Informer and is now fully open-source. System Informer is the recommended replacement and is offered here.",
-    "Updated": "2026-06-21",
+    "Notice": "Process Hacker has been renamed to System Informer and is now fully open source. System Informer is the recommended replacement and is available here.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "SystemInformerPortable"
     ]
@@ -367,8 +367,8 @@
     "Severity": "Low Risk",
     "Category": "Third-Party Build",
     "Title": "Third-party qBittorrent fork with additional network behavior",
-    "Notice": "qBittorrent Enhanced is a third-party fork that adds extra network behavior, such as automatic peer banning. The added functionality and its independent maintenance are a trust consideration.",
-    "Updated": "2026-06-21",
+    "Notice": "qBittorrent Enhanced is a third-party fork that adds behavior such as automatic peer banning. The added functionality and the fact that it is independently maintained are both worth considering from a trust perspective.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "qBittorrentPortable"
     ]
@@ -376,9 +376,9 @@
   "QupZillaPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued Qt browser; superseded by Falkon, which is also discontinued",
-    "Notice": "QupZilla is discontinued and was succeeded by Falkon, which has also since been discontinued. It ships an outdated web-rendering engine that no longer receives security patches.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued browser › Succeeded by Falkon, which has also been discontinued",
+    "Notice": "QupZilla has been discontinued and was succeeded by Falkon, which has since also been discontinued. It ships an outdated web-rendering engine that no longer receives security patches.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "FirefoxPortable",
       "LibreWolfPortable",
@@ -388,9 +388,9 @@
   "SeaMonkeyPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Old Gecko engine; receives web-security fixes slowly or not at all",
-    "Notice": "This browser is built on an old Gecko engine and lags well behind Firefox, so it receives web-security fixes slowly or not at all. It is acceptable for local use, but outdated for general or sensitive web browsing.",
-    "Updated": "2026-06-21",
+    "Title": "Older Gecko engine › Web security fixes arrive slowly or not at all",
+    "Notice": "SeaMonkey is built on an older version of the Gecko engine and lags well behind Firefox, meaning web security fixes arrive slowly or not at all. It is fine for local use, but it is not suitable for general or sensitive web browsing.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "FirefoxPortable",
       "LibreWolfPortable",
@@ -400,23 +400,23 @@
   "SmartDeblurPortable": {
     "Severity": "Info",
     "Category": "Freeware Discontinued",
-    "Title": "Became commercial from version 2.0; this is the last freeware release",
+    "Title": "Became a commercial product from version 2.0 › This is the last freeware release (1.27)",
     "Notice": "Smart Deblur became a commercial product from version 2.0 onwards. The version available here (1.27) is the last release that was distributed as freeware.",
-    "Updated": "2026-06-21"
+    "Verified": "2026-06-22"
   },
   "SUMoPortable": {
     "Severity": "Low Risk",
     "Category": "Bundled Adware",
-    "Title": "Discontinued KC Softwares utility; installers bundled offers",
-    "Notice": "This KC Softwares utility is discontinued, and the vendor's installers historically bundled third-party offers. It is an unmaintained tool that checks for updates online.",
-    "Updated": "2026-06-21"
+    "Title": "Discontinued KC Softwares utility › Installers historically bundled third-party offers",
+    "Notice": "This KC Softwares utility has been discontinued. The vendor's installers historically bundled third-party offers, and the tool itself is unmaintained. It checks for software updates by contacting the internet.",
+    "Verified": "2026-06-22"
   },
   "SunbirdPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued Mozilla calendar; ships an outdated, unpatched network engine",
-    "Notice": "Mozilla Sunbird is discontinued and no longer maintained. It ships an outdated network engine that no longer receives security patches.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued Mozilla calendar application",
+    "Notice": "Mozilla Sunbird has been discontinued and is no longer maintained. It ships an outdated network engine that no longer receives security patches.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "ThunderbirdPortable"
     ]
@@ -424,9 +424,9 @@
   "SupermiumPortable": {
     "Severity": "Low Risk",
     "Category": "Third-Party Build",
-    "Title": "Unofficial, independently maintained browser fork",
-    "Notice": "This is an unofficial, independently maintained fork of a mainstream browser. It renders all web traffic and depends on a small team to keep pace with upstream security patches. No malicious behavior is documented; the consideration is trust and patch cadence.",
-    "Updated": "2026-06-21",
+    "Title": "Unofficial browser fork › Maintained by a small independent team",
+    "Notice": "This is an unofficial, independently maintained fork of a mainstream browser. It handles all your web traffic and depends on a small team to keep pace with upstream security patches.\n\nNo malicious behavior has been documented. The main consideration is trust and how quickly patches are shipped.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "FirefoxPortable",
       "LibreWolfPortable",
@@ -436,9 +436,9 @@
   "SylpheedPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued email client; ships an outdated, unpatched network engine",
-    "Notice": "Sylpheed is discontinued and no longer actively maintained. It ships an outdated network engine that no longer receives security patches.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued email client",
+    "Notice": "Sylpheed has been discontinued and is no longer actively maintained. It ships an outdated network engine that no longer receives security patches.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "ThunderbirdPortable"
     ]
@@ -446,9 +446,9 @@
   "SystemExplorerPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued since ~2016",
-    "Notice": "System Explorer is discontinued and has not been maintained since approximately 2016.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued since around 2016",
+    "Notice": "System Explorer has been discontinued and has not been maintained since approximately 2016.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "SystemInformerPortable"
     ]
@@ -456,30 +456,30 @@
   "SystemInformerPortable": {
     "Severity": "Advisory",
     "Category": "Antivirus False-Positive",
-    "Title": "Legitimate tool that antivirus may flag (kernel driver abuse by malware)",
-    "Notice": "This is a legitimate, advanced system and process tool. Its kernel driver is sometimes abused by malware to disable security software, so antivirus products may flag it as potentially unwanted. The tool itself is safe when obtained from a trusted source.",
-    "Updated": "2026-06-21"
+    "Title": "Legitimate advanced system tool › Kernel driver may trigger antivirus alerts",
+    "Notice": "System Informer is a legitimate, advanced tool for monitoring processes and system activity. Its kernel driver is sometimes abused by malware to disable security software, which can cause antivirus products to flag it as potentially unwanted.\n\nThe tool is safe when obtained from a trusted source.",
+    "Verified": "2026-06-22"
   },
   "TeamViewerPortable": {
     "Severity": "Advisory",
     "Category": "Remote Access Abuse Risk",
-    "Title": "Legitimate remote access; a common technical-support scam vector",
-    "Notice": "TeamViewer is legitimate remote-access software, but it is among the most commonly abused tools in technical-support scams, and remote-access tools are a frequent intrusion vector — TeamViewer was the entry point in the 2017 CCleaner breach. A connection should only ever be granted to someone contacted directly and fully trusted.",
-    "Updated": "2026-06-21"
+    "Title": "Legitimate remote access tool › Frequently abused in technical-support scams",
+    "Notice": "TeamViewer is legitimate remote-access software, but it is one of the most commonly abused tools in technical-support scams. Remote-access tools are also a frequent intrusion vector, and TeamViewer was in fact the entry point in the 2017 CCleaner supply-chain breach.\n\nOnly ever grant a connection to someone you contacted first and fully trust.",
+    "Verified": "2026-06-22"
   },
   "UltraDefragPortable": {
     "Severity": "Info",
     "Category": "Freeware Discontinued",
-    "Title": "Open-source version discontinued; application continues commercially",
-    "Notice": "The open-source version of UltraDefrag has been discontinued. The application continues under commercial licensing only.",
-    "Updated": "2026-06-21"
+    "Title": "Open-source version discontinued › Now available under a commercial license only",
+    "Notice": "The open-source version of UltraDefrag has been discontinued. The application continues, but only under a commercial license.",
+    "Verified": "2026-06-22"
   },
   "uTorrentPortable": {
     "Severity": "Moderate Risk",
     "Category": "Bundled Adware",
-    "Title": "History of bundled adware and a hidden cryptocurrency miner",
-    "Notice": "uTorrent's official installer bundled a cryptocurrency miner ('EpicScale') without clear consent in 2015 and has a long history of bundling adware. The torrent client itself is functional. Portable packaging excludes the official installer.",
-    "Updated": "2026-06-21",
+    "Title": "History of bundled adware › Included a hidden cryptocurrency miner in 2015",
+    "Notice": "In 2015, uTorrent's official installer was found to include a cryptocurrency miner called EpicScale without clear user consent. The installer has also had a long history of bundling adware.\n\nThe torrent client itself is functional. The portable build here bypasses the official installer, so those bundled components are not included.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "TransmissionPortable"
     ]
@@ -487,9 +487,9 @@
   "VirtualDubPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued since ~2013; active fork VirtualDub2 is not offered here",
-    "Notice": "VirtualDub is discontinued and no longer maintained since approximately 2013. The active fork VirtualDub2 exists as a replacement, though it is not offered here.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued since around 2013 › Active fork VirtualDub2 is not offered here",
+    "Notice": "VirtualDub has been discontinued and has not been maintained since approximately 2013. An active fork called VirtualDub2 exists as a replacement, though it is not currently offered here.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "HandBrakePortable"
     ]
@@ -498,8 +498,8 @@
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
     "Title": "Discontinued download manager",
-    "Notice": "WackGet is discontinued and no longer maintained.",
-    "Updated": "2026-06-21",
+    "Notice": "WackGet has been discontinued and is no longer maintained.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "uGetPortable"
     ]
@@ -508,8 +508,8 @@
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
     "Title": "Discontinued download manager",
-    "Notice": "wxDownload Fast is discontinued and no longer maintained.",
-    "Updated": "2026-06-21",
+    "Notice": "wxDownload Fast has been discontinued and is no longer maintained.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "uGetPortable"
     ]
@@ -517,9 +517,9 @@
   "ZSoftUninstallerPortable": {
     "Severity": "Low Risk",
     "Category": "Discontinued & Unpatched",
-    "Title": "Discontinued since ~2010",
-    "Notice": "ZSoft Uninstaller is discontinued and has not been maintained since approximately 2010.",
-    "Updated": "2026-06-21",
+    "Title": "Discontinued since around 2010",
+    "Notice": "ZSoft Uninstaller has been discontinued and has not been maintained since approximately 2010.",
+    "Verified": "2026-06-22",
     "Alternatives": [
       "RevoUninstallerPortable",
       "GeekUninstallerPortable",
