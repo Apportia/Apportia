@@ -9018,6 +9018,7 @@
     "Website": "https://portableapps.com/apps/office/pdf-xchange-portable",
     "Category": "Office",
     "SubCategory": "Document Viewers & Tools",
+    "Class": "Legacy",
     "JoinedDate": "2014-03-14",
     "DisplayVersion": "2.5.322.10",
     "PackageVersion": "2.5.322.10",
@@ -12072,7 +12073,7 @@
   },
   "TelegramDesktopPortableLegacyWinXP": {
     "Name": "Telegram Desktop (Legacy XP)",
-    "Description": "Secure instant messaging",
+    "Description": "Instant messaging",
     "Website": "https://portableapps.com/apps/internet/telegram-desktop-portable",
     "Category": "Internet",
     "SubCategory": "Chat",
