@@ -9,8 +9,7 @@ internal partial class MirrorDatabaseJsonContext : JsonSerializerContext;
 
 internal static class MirrorService
 {
-    private const string RemoteUrl =
-        "https://raw.githubusercontent.com/Apportia/Apportia/main/data/mirror_database.json";
+    private const string RepoPath = "data/mirror_database.json";
 
     private static readonly string CachePath =
         Path.Combine(AppContext.BaseDirectory, "Data", "mirror_database.json");
@@ -19,13 +18,15 @@ internal static class MirrorService
         Path.Combine(AppContext.BaseDirectory, "Data", "preferred_mirrors.json");
 
     private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? _database;
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
 
     internal static async Task TryUpdateAsync(CancellationToken ct = default)
     {
         try
         {
-            var json = await Http.GetStringAsync(RemoteUrl, ct);
+            var json = await GitHubContentClient.FetchTextAsync(RepoPath, ct);
+            if (json is null)
+                return;
+
             Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
             await File.WriteAllTextAsync(CachePath, json, ct);
             _database = null;

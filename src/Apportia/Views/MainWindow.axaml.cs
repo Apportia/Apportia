@@ -17,7 +17,6 @@ namespace Apportia.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly AppDatabaseUpdater _appDatabaseUpdater;
     private readonly CancellationTokenSource _cts = new();
     private readonly AppDeployService _deployService;
     private readonly AppImageManager _iconManager;
@@ -66,7 +65,6 @@ public partial class MainWindow : Window
         var iconCacheDir = Path.Combine(AppContext.BaseDirectory, "Data", "AppImages");
 
         _iconManager = new AppImageManager(iconCacheDir);
-        _appDatabaseUpdater = new AppDatabaseUpdater();
         _deployService = new AppDeployService(AppDeployService.AppsDir);
 
         if (File.Exists(AppDatabaseUpdater.CachePath))
@@ -77,7 +75,7 @@ public partial class MainWindow : Window
             DataContext = vm;
             ApplyViewPreset(vm, false);
             _ = Task.WhenAll(
-                _appDatabaseUpdater.TryUpdateAsync(_cts.Token),
+                AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
                 MirrorService.TryUpdateAsync(_cts.Token),
                 SecurityNoticeService.TryUpdateAsync(_cts.Token));
             return;
@@ -135,7 +133,7 @@ public partial class MainWindow : Window
     private async Task StartFirstRunAsync()
     {
         await Task.WhenAll(
-            _appDatabaseUpdater.TryUpdateAsync(_cts.Token),
+            AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
             MirrorService.TryUpdateAsync(_cts.Token),
             SecurityNoticeService.TryUpdateAsync(_cts.Token));
         var vm = BuildViewModel();
@@ -1812,7 +1810,7 @@ public partial class MainWindow : Window
         {
             var nodeMap = vm.AllNodes.ToDictionary(n => n.SectionName, n => n.Name);
             altNames = notice.Alternatives
-                             .Select(key => nodeMap.TryGetValue(key, out var name) ? name : key)
+                             .Select(key => nodeMap.GetValueOrDefault(key, key))
                              .ToArray();
         }
 
@@ -2797,7 +2795,6 @@ public partial class MainWindow : Window
         _ipcDebounceCts?.Dispose();
         _installCts?.Dispose();
         _iconManager.Dispose();
-        _appDatabaseUpdater.Dispose();
         _deployService.Dispose();
         base.OnClosed(e);
     }

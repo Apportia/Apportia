@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,27 +15,18 @@ public sealed record SecurityNotice(
 
 public static class SecurityNoticeService
 {
-    private const string RemoteUrl =
-        "https://raw.githubusercontent.com/Apportia/Apportia/refs/heads/main/data/security_notices.json";
+    private const string RepoPath = "data/security_notices.json";
 
     private static readonly string FilePath =
         Path.Combine(AppContext.BaseDirectory, "Data", "security_notices.json");
 
-    private static readonly HttpClient Http;
-
     private static Dictionary<string, RawNoticeEntry>? _db;
-
-    static SecurityNoticeService()
-    {
-        Http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        Http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Wget", "1.25"));
-    }
 
     public static async Task TryUpdateAsync(CancellationToken ct = default)
     {
         try
         {
-            var json = await TryFetchAsync(ct);
+            var json = await GitHubContentClient.FetchTextAsync(RepoPath, ct);
             if (json is null || !IsValid(json))
                 return;
 
@@ -47,27 +37,6 @@ public static class SecurityNoticeService
         catch
         {
             /* keep existing cache intact on any failure */
-        }
-    }
-
-    private static async Task<string?> TryFetchAsync(CancellationToken ct)
-    {
-        try
-        {
-            using var response = await Http.GetAsync(RemoteUrl, ct);
-            if (!response.IsSuccessStatusCode)
-                return null;
-
-            var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
-            if (contentType.Contains("html", StringComparison.OrdinalIgnoreCase))
-                return null;
-
-            return await response.Content.ReadAsStringAsync(ct);
-        }
-        catch
-        {
-            /* network or parse failure – caller keeps existing cache */
-            return null;
         }
     }
 
