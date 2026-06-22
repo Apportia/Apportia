@@ -143,6 +143,10 @@ jobs:
               "RedNotebookPortableLegacyx86":  "Note-Taking",
           }
 
+          CATEGORY_BY_SUB_CATEGORY = {
+              "Screenshot Tools": "Utilities",
+          }
+
           ADVANCED_KEYWORDS = [
               " ESR", " LTS", " Test", " via ", ", Address Book",
               "2nd Profile", "AppRenamed", "Beta", "Chrome Dev", "Classic", "Compat",
@@ -389,6 +393,9 @@ jobs:
                       cls = classify(current_name, current_fields)
                       if cls:
                           current_fields["Class"] = cls
+                      sub = current_fields.get("SubCategory", "")
+                      if sub in CATEGORY_BY_SUB_CATEGORY:
+                          current_fields["Category"] = CATEGORY_BY_SUB_CATEGORY[sub]
                       result[current_name] = current_fields
 
               for line in raw.split("\n"):
