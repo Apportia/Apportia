@@ -44,7 +44,8 @@
     "Notice": "CamStudio has been abandoned and is no longer maintained. Its official installer was repeatedly flagged by antivirus software for bundled adware and trojan detections.\n\nThe portable build here bypasses the official installer, so those components are not included.",
     "Verified": "2026-06-22",
     "Alternatives": [
-      "ScreenToGifPortable"
+      "ShareXPortable",
+      "OBSPortable"
     ]
   },
   "ccPortable": {
