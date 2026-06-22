@@ -22,7 +22,7 @@ public partial class SecurityNoticeDialog : Window
         CategoryText.Text = notice.Category;
         TitleText.Text = notice.Title;
         NoticeText.Text = notice.Notice;
-        Width = MeasureTextWidth(TitleText.Text, TitleText.FontSize + 1, FontWeight.SemiBold + 56, MinWidth, MaxWidth);
+        Width = MeasureTextWidth(TitleText.Text, TitleText.FontSize + 2, FontWeight.SemiBold + 56, MinWidth, MaxWidth);
         UpdatedText.Text = $"Last verified {FormatDate(notice.Verified)}";
 
         if (alternativeNames.Count == 0)
