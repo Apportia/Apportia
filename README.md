@@ -1,10 +1,10 @@
 # Apportia
 
 <p align="center">
-<img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logoColor=white" title=".NET 10 or higher" alt=".NET">
-<img src="https://img.shields.io/badge/language-C%23-239120?style=for-the-badge&logo=csharp&logoColor=white" title="Written in C#" alt="C#">
-<img src="https://img.shields.io/badge/UI-Avalonia-8B5CF6?style=for-the-badge&logoColor=white" title="Built with Avalonia UI" alt="Avalonia">
-<img src="https://img.shields.io/badge/cross%E2%80%93platform-Linux%2BWindows-blue?style=for-the-badge&logo=linux&logoColor=silver" title="Runs on Linux and Windows" alt="Platform">
+<a href="https://dotnet.microsoft.com/download"><img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logoColor=white" title=".NET 10 or higher" alt=".NET"></a>
+<a href="https://learn.microsoft.com/dotnet/csharp/"><img src="https://img.shields.io/badge/language-C%23-239120?style=for-the-badge&logo=csharp&logoColor=white" title="Written in C#" alt="C#"></a>
+<a href="https://avaloniaui.net/"><img src="https://img.shields.io/badge/UI-Avalonia-8B5CF6?style=for-the-badge&logoColor=white" title="Built with Avalonia UI" alt="Avalonia"></a>
+<a href="https://distrochooser.de/"><img src="https://img.shields.io/badge/cross%E2%80%93platform-Linux%2BWindows-blue?style=for-the-badge&logo=linux&logoColor=silver" title="Runs on Linux and Windows" alt="Platform"></a>
 <a href="LICENSE.txt"><img src="https://img.shields.io/github/license/Apportia/Apportia?style=for-the-badge" title="Read the license terms" alt="License"></a>
 </p>
 <p align="center">
@@ -21,7 +21,7 @@
 ---
 
 ## Preview
-<p align="center"><img src="preview.png"></p>
+<p align="center"><a href="media/"><img src="media/preview.png"></a></p>
 
 ---
 
