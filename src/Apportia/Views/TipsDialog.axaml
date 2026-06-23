@@ -39,8 +39,8 @@
             <!-- Left column: 1–6 -->
             <StackPanel Grid.Column="0" Spacing="6">
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f50d.svg" Width="20" Height="20"
@@ -54,8 +54,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f50e.svg" Width="20" Height="20"
@@ -70,8 +70,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/2328.svg" Width="20" Height="20"
@@ -86,8 +86,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f680.svg" Width="20" Height="20"
@@ -102,8 +102,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f6e1.svg" Width="20" Height="20"
@@ -118,8 +118,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4be.svg" Width="20" Height="20"
@@ -139,8 +139,8 @@
             <!-- Right column: 7–12 -->
             <StackPanel Grid.Column="2" Spacing="6">
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f5bc.svg" Width="20" Height="20"
@@ -155,8 +155,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4ca.svg" Width="20" Height="20"
@@ -171,8 +171,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4cb.svg" Width="20" Height="20"
@@ -187,8 +187,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f4e5.svg" Width="20" Height="20"
@@ -203,8 +203,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f5c3.svg" Width="20" Height="20"
@@ -219,8 +219,8 @@
                     </Grid>
                 </Border>
 
-                <Border Background="{DynamicResource AppColHeaderBrush}"
-                        BorderBrush="#0090FF" BorderThickness="3,0,0,0"
+                <Border Background="{DynamicResource AppCategoryBrush}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
                         <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/2699.svg" Width="20" Height="20"

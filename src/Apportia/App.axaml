@@ -11,31 +11,131 @@
             <ResourceDictionary.ThemeDictionaries>
 
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="AppWindowBrush" Color="#F5F5F7" />
+                    <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#F5C842" />
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#E4E4EA" />
                     <SolidColorBrush x:Key="AppColHeaderBrush" Color="#DADADF" />
-                    <SolidColorBrush x:Key="AppSeparatorBrush" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="AppControlBorderBrush" Color="#9898A8" />
                     <SolidColorBrush x:Key="AppHoverBrush" Color="#E2EAF8" />
-                    <SolidColorBrush x:Key="AppTextBrush" Color="#111111" />
-                    <SolidColorBrush x:Key="AppSubTextBrush" Color="#444458" />
                     <SolidColorBrush x:Key="AppInstalledBrush" Color="#C8EAC8" />
-                    <SolidColorBrush x:Key="AppUpdateBrush" Color="#F5E0A0" />
                     <SolidColorBrush x:Key="AppQueuedBrush" Color="#B8D4F0" />
-                    <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#F5C842" />
+                    <SolidColorBrush x:Key="AppSeparatorBrush" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="AppSubTextBrush" Color="#444458" />
+                    <SolidColorBrush x:Key="AppTextBrush" Color="#111111" />
+                    <SolidColorBrush x:Key="AppUpdateBrush" Color="#F5E0A0" />
+                    <SolidColorBrush x:Key="AppWindowBrush" Color="#F5F5F7" />
+                    <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBackground" Color="#F5F5F7" />
+                    <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBorderBrush" Color="#9898A8" />
+                    <SolidColorBrush x:Key="ButtonBackground" Color="#DADADF" />
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#E2EAF8" />
+                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#9898A8" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#9898A8" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#9898A8" />
+                    <SolidColorBrush x:Key="ButtonForeground" Color="#111111" />
+                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#111111" />
+                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#111111" />
+                    <SolidColorBrush x:Key="ComboBoxBackground" Color="#E4E4EA" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#E4E4EA" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#E4E4EA" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#E4E4EA" />
+                    <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="ComboBoxForeground" Color="#111111" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#E2EAF8" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#E2EAF8" />
+                    <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#111111" />
+                    <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#111111" />
+                    <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPointerOver" Color="#E2EAF8" />
+                    <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="#111111" />
+                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="#111111" />
+                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#F5F5F7" />
+                    <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="ScrollBarButtonArrowForeground" Color="#9898A8" />
+                    <SolidColorBrush x:Key="ScrollBarButtonArrowForegroundPointerOver" Color="#111111" />
+                    <SolidColorBrush x:Key="ScrollBarButtonBackgroundPointerOver" Color="#E2EAF8" />
+                    <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="#9898A8" />
+                    <SolidColorBrush x:Key="ScrollBarThumbBackgroundColor" Color="#9898A8" />
+                    <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#444458" />
+                    <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#111111" />
+                    <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="#DADADF" />
+                    <SolidColorBrush x:Key="SystemControlHighlightAltBaseHighBrush" Color="#111111" />
+                    <SolidColorBrush x:Key="SystemControlHighlightListLowBrush" Color="#E2EAF8" />
+                    <SolidColorBrush x:Key="SystemControlHighlightListMediumBrush" Color="#E2EAF8" />
+                    <SolidColorBrush x:Key="TextControlBackground" Color="#E4E4EA" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#E4E4EA" />
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#E4E4EA" />
+                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="TextControlForeground" Color="#111111" />
+                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#111111" />
+                    <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#111111" />
+                    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#444458" />
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="AppWindowBrush" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#7A5C00" />
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#2C2C2C" />
                     <SolidColorBrush x:Key="AppColHeaderBrush" Color="#272727" />
-                    <SolidColorBrush x:Key="AppSeparatorBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="AppControlBorderBrush" Color="#484850" />
                     <SolidColorBrush x:Key="AppHoverBrush" Color="#2A2A2A" />
-                    <SolidColorBrush x:Key="AppTextBrush" Color="#DCDCDC" />
-                    <SolidColorBrush x:Key="AppSubTextBrush" Color="#888888" />
                     <SolidColorBrush x:Key="AppInstalledBrush" Color="#1A3A1A" />
-                    <SolidColorBrush x:Key="AppUpdateBrush" Color="#3A2E00" />
                     <SolidColorBrush x:Key="AppQueuedBrush" Color="#1A3050" />
-                    <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#7A5C00" />
+                    <SolidColorBrush x:Key="AppSeparatorBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="AppSubTextBrush" Color="#888888" />
+                    <SolidColorBrush x:Key="AppTextBrush" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="AppUpdateBrush" Color="#3A2E00" />
+                    <SolidColorBrush x:Key="AppWindowBrush" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBackground" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBorderBrush" Color="#484850" />
+                    <SolidColorBrush x:Key="ButtonBackground" Color="#272727" />
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#383838" />
+                    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#484850" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#484850" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#484850" />
+                    <SolidColorBrush x:Key="ButtonForeground" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="ComboBoxBackground" Color="#2C2C2C" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#2C2C2C" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#2C2C2C" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#383838" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#383838" />
+                    <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#2C2C2C" />
+                    <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="ComboBoxForeground" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="ComboBoxItemForeground" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="ComboBoxItemForegroundPointerOver" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPointerOver" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="ScrollBarButtonArrowForeground" Color="#484850" />
+                    <SolidColorBrush x:Key="ScrollBarButtonArrowForegroundPointerOver" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="ScrollBarButtonBackgroundPointerOver" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="#484850" />
+                    <SolidColorBrush x:Key="ScrollBarThumbBackgroundColor" Color="#484850" />
+                    <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#888888" />
+                    <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="#272727" />
+                    <SolidColorBrush x:Key="SystemControlHighlightAltBaseHighBrush" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="SystemControlHighlightListLowBrush" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="SystemControlHighlightListMediumBrush" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="TextControlBackground" Color="#2C2C2C" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#2C2C2C" />
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#2C2C2C" />
+                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#383838" />
+                    <SolidColorBrush x:Key="TextControlForeground" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#888888" />
                 </ResourceDictionary>
 
             </ResourceDictionary.ThemeDictionaries>
