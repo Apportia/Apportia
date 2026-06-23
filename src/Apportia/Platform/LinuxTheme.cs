@@ -31,12 +31,51 @@ public static class LinuxTheme
             if (ini == null)
                 return null;
 
-            var lafKey = isDark ? "DefaultDarkLookAndFeel" : "DefaultLightLookAndFeel";
-            if (!ini.TryGetValue("KDE", out var kde) || !kde.TryGetValue(lafKey, out var lookAndFeel))
+            ini.TryGetValue("KDE", out var kde);
+
+            // AutomaticLookAndFeel lets KDE manage separate dark/light packages
+            var automatic = kde != null
+                            && kde.TryGetValue("AutomaticLookAndFeel", out var autoVal)
+                            && autoVal.Equals("true", StringComparison.OrdinalIgnoreCase);
+            if (automatic)
+            {
+                var lafKey = isDark ? "DefaultDarkLookAndFeel" : "DefaultLightLookAndFeel";
+                if (!kde!.TryGetValue(lafKey, out var lafAuto))
+                    return null;
+                var scheme = FindLookAndFeelColorScheme(lafAuto);
+                return scheme != null ? BuildKdeColors(scheme) : null;
+            }
+
+            string? activeScheme = null;
+            if (ini.TryGetValue("General", out var general)
+                && general.TryGetValue("ColorScheme", out var directScheme)
+                && !string.IsNullOrWhiteSpace(directScheme))
+            {
+                activeScheme = directScheme;
+            }
+            else if (kde != null && kde.TryGetValue("LookAndFeelPackage", out var laf))
+            {
+                activeScheme = FindLookAndFeelColorScheme(laf);
+            }
+
+            if (activeScheme == null)
                 return null;
 
-            var colorScheme = FindLookAndFeelColorScheme(lookAndFeel);
-            return colorScheme != null ? BuildKdeColors(colorScheme) : null;
+            var activeColors = BuildKdeColors(activeScheme);
+            if (activeColors == null)
+                return null;
+
+            if (IsDark(activeColors.Window) == isDark)
+                return activeColors;
+
+            // Opposite mode requested, resolve its look-and-feel
+            if (kde == null)
+                return null;
+            var oppKey = isDark ? "DefaultDarkLookAndFeel" : "DefaultLightLookAndFeel";
+            if (!kde.TryGetValue(oppKey, out var oppLaf))
+                return null;
+            var oppScheme = FindLookAndFeelColorScheme(oppLaf);
+            return oppScheme != null ? BuildKdeColors(oppScheme) : null;
         }
         catch
         {
@@ -44,6 +83,12 @@ public static class LinuxTheme
             return null;
         }
     }
+
+    private static bool IsDark(Color c)
+    {
+        return (c.R + c.G + c.B) / 3 < 128;
+    }
+
 
     private static string? FindLookAndFeelColorScheme(string lookAndFeel)
     {
@@ -102,8 +147,7 @@ public static class LinuxTheme
             var text = KdeColor(view, "ForegroundNormal") ?? KdeColor(window, "ForegroundNormal") ?? GuessText(bgColor);
             var subText = KdeColor(view, "ForegroundInactive") ?? KdeColor(window, "ForegroundNormal") ?? text;
 
-            // [Colors:Header] is the dedicated header section; fall back to blending Window and Category
-            // when BackgroundAlternate is identical to Window (as in many KDE themes)
+            // BackgroundAlternate equals Window in many KDE themes, so blend as last resort
             var headerBg = KdeColor(header, "BackgroundNormal");
             var viewBgAlt = KdeColor(view, "BackgroundAlternate");
             var colHeader = headerBg
