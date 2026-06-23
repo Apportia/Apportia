@@ -1,16 +1,20 @@
+<div align="center">
+
 # Screenshots
 
 ### Main Window — Light
-<div align="center"><img src="1-mainwindow-light.png" /></div>
+<img src="1-mainwindow-light.png" />
 
 ### Main Window — Dark
-<div align="center"><img src="2-mainwindow-dark.png" /></div>
+<img src="2-mainwindow-dark.png" />
 
 ### Tips & Shortcuts
-<div align="center"><img src="3-tips-dialog.png" /></div>
+<img src="3-tips-dialog.png" />
 
 ### App Properties
-<div align="center"><img src="4-app-properties.png" /></div>
+<img src="4-app-properties.png" />
 
 ### VirusTotal Scan
-<div align="center"><img src="5-virustotal-scan.png" /></div>
+<img src="5-virustotal-scan.png" />
+
+</div>
