@@ -545,7 +545,7 @@
                                                        FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Version}"
-                                                       Text="{Binding PackageVersion}"
+                                                       Text="{Binding ShownVersion}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
                                                        FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"

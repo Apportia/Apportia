@@ -871,7 +871,13 @@ public partial class MainWindow : Window
             if (Directory.Exists(appDir))
                 Directory.Delete(appDir, true);
             if (!node.IsPlugin)
+            {
                 AppExecutableService.Remove(node.SectionName);
+                LocalVersionService.Remove(node.SectionName);
+                node.LocalDisplayVersion = null;
+                node.LocalPackageVersion = null;
+            }
+
             node.IsInstalled = false;
         }
         catch (Exception ex)
@@ -1605,6 +1611,13 @@ public partial class MainWindow : Window
                     if (chosenLanguage != null)
                         AppLanguageService.Save(node.SectionName, chosenLanguage);
                     node.IsInstalled = true;
+                    if (!node.IsPlugin)
+                    {
+                        LocalVersionService.Save(node.SectionName, node.DisplayVersion, node.PackageVersion);
+                        node.LocalDisplayVersion = node.DisplayVersion;
+                        node.LocalPackageVersion = node.PackageVersion;
+                    }
+
                     var installDir = node.IsPlugin
                         ? PluginService.GetInstallDir(node.SectionName)
                         : Path.Combine(appsBaseDir, node.SectionName);

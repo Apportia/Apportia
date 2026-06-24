@@ -12,6 +12,11 @@ namespace Apportia.Views;
 
 public sealed record EntryField(string Label, string Value);
 
+public sealed record VersionField(string Label, string Installed, string Available)
+{
+    public bool HasUpdate => !string.IsNullOrEmpty(Available);
+}
+
 public sealed record LanguageRow(string Language, string File, string Hash);
 
 public partial class AppProperties : Window
@@ -66,11 +71,17 @@ public partial class AppProperties : Window
             new EntryField("Requires Java", node.RequiresJava ? "Yes" : "")
         );
 
-        VersionList.ItemsSource = Filter(
-            new EntryField("Display Version", node.DisplayVersion),
-            new EntryField("Package Version", node.PackageVersion),
-            new EntryField("Update Date", RelativeDate(node.UpdateDate))
-        );
+        var localDisplay = node.LocalDisplayVersion ?? node.DisplayVersion;
+        var localPackage = node.LocalPackageVersion ?? node.PackageVersion;
+        var availableDisplay = node.NeedsUpdate ? node.DisplayVersion : string.Empty;
+        var availablePackage = node.NeedsUpdate ? node.PackageVersion : string.Empty;
+
+        VersionList.ItemsSource = new VersionField[]
+        {
+            new("Display Version", localDisplay, availableDisplay),
+            new("Package Version", localPackage, availablePackage),
+            new("Update Date", RelativeDate(node.UpdateDate), string.Empty)
+        };
 
         if (node.IsCustom)
         {

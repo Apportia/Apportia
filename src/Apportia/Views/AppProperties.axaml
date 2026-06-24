@@ -78,16 +78,29 @@
                 </Border>
                 <ItemsControl x:Name="VersionList" Margin="0,0,0,16">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="views:EntryField">
+                        <DataTemplate x:DataType="views:VersionField">
                             <Grid ColumnDefinitions="140,*" Margin="0,0,0,4">
                                 <TextBlock Grid.Column="0" Text="{Binding Label}"
                                            FontSize="14" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AppSubTextBrush}"
                                            VerticalAlignment="Top" />
-                                <TextBlock Grid.Column="1" Classes="value" Text="{Binding Value}"
-                                           FontSize="14" TextWrapping="Wrap"
-                                           Foreground="{DynamicResource AppTextBrush}"
-                                           VerticalAlignment="Top" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6"
+                                            VerticalAlignment="Top">
+                                    <TextBlock Classes="value" Text="{Binding Installed}"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource AppSubTextBrush}"
+                                               IsVisible="{Binding HasUpdate}" />
+                                    <TextBlock Text="→" FontSize="14"
+                                               Foreground="{DynamicResource AppSubTextBrush}"
+                                               IsVisible="{Binding HasUpdate}" />
+                                    <TextBlock Classes="value" Text="{Binding Available}"
+                                               FontSize="14" Foreground="#4CAF50"
+                                               IsVisible="{Binding HasUpdate}" />
+                                    <TextBlock Classes="value" Text="{Binding Installed}"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource AppTextBrush}"
+                                               IsVisible="{Binding !HasUpdate}" />
+                                </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

@@ -87,6 +87,7 @@ public sealed class AppNode : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SubCategory)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHighlighted)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NeedsUpdate)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShownVersion)));
             NotifyActionStates();
         }
     }
@@ -181,6 +182,34 @@ public sealed class AppNode : INotifyPropertyChanged
 
     public string DisplayVersion { get; }
     public string PackageVersion { get; }
+
+    public string? LocalDisplayVersion
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalDisplayVersion)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShownVersion)));
+        }
+    }
+
+    public string? LocalPackageVersion
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalPackageVersion)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShownVersion)));
+        }
+    }
+
+    public string ShownVersion => (IsInstalled ? LocalPackageVersion : null) ?? PackageVersion;
     public string DownloadSize { get; }
     public string InstallSize { get; }
     public long DownloadSizeMb { get; }

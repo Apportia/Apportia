@@ -31,6 +31,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                    .OrderBy(g => string.Equals(g.Key, "Games", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                    .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase);
 
+        var localVersions = LocalVersionService.Load();
+
         foreach (var group in byCategory)
         {
             var nodes = group.Select(entry =>
@@ -61,6 +63,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
                                      false,
                                      PluginService.IsPlugin(entry.SectionName),
                                      currentDate);
+                                 if (exists && localVersions.TryGetValue(entry.SectionName, out var lv))
+                                 {
+                                     node.LocalDisplayVersion = lv.DisplayVersion;
+                                     node.LocalPackageVersion = lv.PackageVersion;
+                                 }
+
                                  node.PropertyChanged += OnNodePropertyChanged;
                                  return node;
                              })
