@@ -43,9 +43,9 @@ public partial class MainWindow : Window
     private string? _pendingScrollTarget;
     private bool _pendingScrollTop;
     private double? _pendingScrollY;
-
-    private SelfUpdateInfo? _pendingUpdate;
     private List<string> _searchHistory = [];
+
+    private SelfUpdateCoordinator _selfUpdate = null!;
     private ThemeController _themeController = null!;
 
     public MainWindow()
@@ -1849,6 +1849,7 @@ public partial class MainWindow : Window
         base.OnLoaded(e);
         _themeController = new ThemeController(this, ThemeToggleIcon);
         _themeController.Init();
+        _selfUpdate = new SelfUpdateCoordinator(_cts.Token);
         UpdateIconSizeButton();
         UpdateCategoryScopeButton();
         UpdateCategoryDisplayButton();
@@ -2295,10 +2296,9 @@ public partial class MainWindow : Window
 
     private async Task CheckForUpdateAsync()
     {
-        var info = await SelfUpdater.CheckAsync(_cts.Token);
+        var info = await _selfUpdate.CheckAsync();
         if (info == null)
             return;
-        _pendingUpdate = info;
         UpdateButton.IsVisible = true;
         UpdateButton.Content = $"Update {info.Version}";
     }
@@ -2307,10 +2307,11 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (_pendingUpdate == null)
+            var info = _selfUpdate.Pending;
+            if (info == null)
                 return;
 
-            var changelog = new ChangelogDialog(_pendingUpdate.Version, _pendingUpdate.Changelog);
+            var changelog = new ChangelogDialog(info.Version, info.Changelog);
             await changelog.ShowDialog(this);
             if (!changelog.Confirmed)
                 return;
@@ -2318,18 +2319,17 @@ public partial class MainWindow : Window
             UpdateButton.IsEnabled = false;
             ShowDownloadBar(true);
             DownloadProgressBar.IsIndeterminate = false;
-            DownloadSizeText.Text = $"Downloading update {_pendingUpdate.Version}...";
+            DownloadSizeText.Text = $"Downloading update {info.Version}...";
             DownloadSpeedText.Text = string.Empty;
 
             try
             {
-                var info = _pendingUpdate;
                 var progress = new Progress<int>(p =>
                 {
                     DownloadProgressBar.Value = p;
                     DownloadSizeText.Text = $"Downloading update {info.Version}... {p}%";
                 });
-                await SelfUpdater.ApplyAsync(info, progress, _cts.Token);
+                await _selfUpdate.ApplyAsync(progress);
             }
             catch (Exception ex)
             {
