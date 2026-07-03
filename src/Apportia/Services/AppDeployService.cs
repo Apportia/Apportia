@@ -125,14 +125,14 @@ public sealed class AppDeployService : IDisposable
         if (string.IsNullOrEmpty(expectedHash))
             return HashResult.Skipped;
 
-        var bytes = File.ReadAllBytes(filePath);
+        using var stream = File.OpenRead(filePath);
         var actual = expectedHash.Length switch
         {
-            32 => MD5.HashData(bytes),
-            40 => SHA1.HashData(bytes),
-            64 => SHA256.HashData(bytes),
-            96 => SHA384.HashData(bytes),
-            128 => SHA512.HashData(bytes),
+            32 => MD5.HashData(stream),
+            40 => SHA1.HashData(stream),
+            64 => SHA256.HashData(stream),
+            96 => SHA384.HashData(stream),
+            128 => SHA512.HashData(stream),
             _ => []
         };
 
