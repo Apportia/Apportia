@@ -19,24 +19,20 @@ public partial class MainWindow : Window
     private readonly CancellationTokenSource _cts = new();
     private readonly AppDeployService _deployService;
     private readonly AppImageManager _iconManager;
-    private readonly Queue<(AppNode Node, bool Launch)> _installQueue = new();
+    private readonly InstallQueue _installQueue = new();
     private readonly List<string> _ipcArgBatch = [];
 
     private bool _activateOnSearchClose;
-    private string? _activeDownloadFile;
-    private AppNode? _activeNode;
 
     private string[] _cliAppArgs;
 
     private bool _ctrlHeld;
     private FilterViewSettings _defaultView = new();
 
-    private bool _downloading;
     private bool _forceClose;
     private int _historyIndex = -1;
     private CancellationTokenSource? _iconDownloadCts;
     private bool _inSetupPhase;
-    private CancellationTokenSource? _installCts;
     private CancellationTokenSource? _ipcDebounceCts;
     private IpcServer? _ipcServer;
     private string? _pendingScrollApp;
@@ -261,17 +257,17 @@ public partial class MainWindow : Window
                     "Remove from Queue", "Cancel");
                 if (remove != "Remove from Queue")
                     return;
-                RemoveFromQueue(node);
-                if (_downloading && node == _activeNode && _installCts != null)
-                    await _installCts.CancelAsync();
+                _installQueue.Remove(node);
+                if (_installQueue.IsRunning && node == _installQueue.ActiveNode && _installQueue.Cts != null)
+                    await _installQueue.Cts.CancelAsync();
                 else if (node.IsInstalled)
                     await SilentUninstallAsync(node, appsBaseDir);
                 return;
             }
 
-            if (_downloading)
+            if (_installQueue.IsRunning)
             {
-                if (node == _activeNode)
+                if (node == _installQueue.ActiveNode)
                 {
                     var cancel = await ShowDialog(
                         node, node.Name,
@@ -287,12 +283,10 @@ public partial class MainWindow : Window
 
                 if (ctrlHeld)
                 {
-                    node.IsQueued = true;
-                    _installQueue.Enqueue((node, false));
-                    if (_downloading || !_installQueue.TryDequeue(out var nextCtrl))
+                    _installQueue.Enqueue(node, false);
+                    if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextCtrlNode, out var nextCtrlLaunch))
                         return;
-                    nextCtrl.Node.IsQueued = false;
-                    _ = InstallApp(nextCtrl.Node, appsBaseDir, nextCtrl.Launch);
+                    _ = InstallApp(nextCtrlNode, appsBaseDir, nextCtrlLaunch);
                     return;
                 }
 
@@ -303,12 +297,10 @@ public partial class MainWindow : Window
                     "Add to Queue", "Cancel");
                 if (queue != "Add to Queue")
                     return;
-                node.IsQueued = true;
-                _installQueue.Enqueue((node, false));
-                if (_downloading || !_installQueue.TryDequeue(out var next))
+                _installQueue.Enqueue(node, false);
+                if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
                     return;
-                next.Node.IsQueued = false;
-                _ = InstallApp(next.Node, appsBaseDir, next.Launch);
+                _ = InstallApp(nextNode, appsBaseDir, nextLaunch);
                 return;
             }
 
@@ -374,17 +366,17 @@ public partial class MainWindow : Window
             if (remove != "Remove from Queue")
                 return;
 
-            RemoveFromQueue(node);
-            if (_downloading && node == _activeNode && _installCts != null)
-                await _installCts.CancelAsync();
+            _installQueue.Remove(node);
+            if (_installQueue.IsRunning && node == _installQueue.ActiveNode && _installQueue.Cts != null)
+                await _installQueue.Cts.CancelAsync();
             else if (node.IsInstalled)
                 await SilentUninstallAsync(node, appsBaseDir);
             return;
         }
 
-        if (_downloading)
+        if (_installQueue.IsRunning)
         {
-            if (node == _activeNode)
+            if (node == _installQueue.ActiveNode)
             {
                 var cancel = await ShowDialog(
                     node, node.Name,
@@ -400,12 +392,10 @@ public partial class MainWindow : Window
 
             if (ctrlHeld)
             {
-                node.IsQueued = true;
-                _installQueue.Enqueue((node, false));
-                if (_downloading || !_installQueue.TryDequeue(out var nextCtrl))
+                _installQueue.Enqueue(node, false);
+                if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextCtrlNode, out var nextCtrlLaunch))
                     return;
-                nextCtrl.Node.IsQueued = false;
-                _ = InstallApp(nextCtrl.Node, appsBaseDir, nextCtrl.Launch);
+                _ = InstallApp(nextCtrlNode, appsBaseDir, nextCtrlLaunch);
                 return;
             }
 
@@ -416,12 +406,10 @@ public partial class MainWindow : Window
                 "Add to Queue", "Cancel");
             if (queue != "Add to Queue")
                 return;
-            node.IsQueued = true;
-            _installQueue.Enqueue((node, false));
-            if (_downloading || !_installQueue.TryDequeue(out var next))
+            _installQueue.Enqueue(node, false);
+            if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
                 return;
-            next.Node.IsQueued = false;
-            _ = InstallApp(next.Node, appsBaseDir, next.Launch);
+            _ = InstallApp(nextNode, appsBaseDir, nextLaunch);
             return;
         }
 
@@ -507,27 +495,16 @@ public partial class MainWindow : Window
     {
         if (NodeFromMenu(sender) is not { } node)
             return;
-        node.IsQueued = true;
-        _installQueue.Enqueue((node, false));
-        if (_downloading || !_installQueue.TryDequeue(out var next))
+        _installQueue.Enqueue(node, false);
+        if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
             return;
-        next.Node.IsQueued = false;
-        _ = InstallApp(next.Node, AppDeployService.AppsDir, next.Launch);
+        _ = InstallApp(nextNode, AppDeployService.AppsDir, nextLaunch);
     }
 
     private void OnMenuRemoveFromQueue(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            RemoveFromQueue(node);
-    }
-
-    private void RemoveFromQueue(AppNode node)
-    {
-        node.IsQueued = false;
-        var remaining = _installQueue.Where(i => i.Node != node).ToArray();
-        _installQueue.Clear();
-        foreach (var item in remaining)
-            _installQueue.Enqueue(item);
+            _installQueue.Remove(node);
     }
 
     private async void OnMenuCancelInstall(object? sender, RoutedEventArgs e)
@@ -544,7 +521,7 @@ public partial class MainWindow : Window
 
     private async Task CancelInstallAsync()
     {
-        if (_activeNode == null || _installCts == null)
+        if (_installQueue.ActiveNode == null || _installQueue.Cts == null)
             return;
 
         if (_inSetupPhase)
@@ -553,11 +530,11 @@ public partial class MainWindow : Window
             var watchToken = watchCts.Token;
             var dialog = new AppDialog(
                     "Installation Running",
-                    $"{_activeNode.Name} is currently being installed.\n\n" +
+                    $"{_installQueue.ActiveNode.Name} is currently being installed.\n\n" +
                     "Canceling now may leave the application in a corrupt state.\n\n" +
                     "Are you sure you want to cancel?",
                     "Cancel Installation", "Keep Running")
-                { Icon = new WindowIcon(_activeNode.Icon) };
+                { Icon = new WindowIcon(_installQueue.ActiveNode.Icon) };
 
             var watchTask = Task.Run(async () =>
             {
@@ -576,7 +553,7 @@ public partial class MainWindow : Window
                 return;
         }
 
-        await _installCts.CancelAsync();
+        await _installQueue.Cts.CancelAsync();
     }
 
     private async void OnMenuRun(object? sender, RoutedEventArgs e)
@@ -1283,7 +1260,7 @@ public partial class MainWindow : Window
 
     private async Task InstallApp(AppNode node, string appsBaseDir, bool launch, bool fromQueue = false)
     {
-        if (_downloading && !fromQueue)
+        if (_installQueue.IsRunning && !fromQueue)
             return;
         if (string.IsNullOrEmpty(node.DownloadFile) || string.IsNullOrEmpty(node.DownloadPath))
             return;
@@ -1359,8 +1336,7 @@ public partial class MainWindow : Window
                 foreach (var idx in javaDialog.SelectedIndices)
                 {
                     var javaNode = available[idx];
-                    javaNode.IsQueued = true;
-                    _installQueue.Enqueue((javaNode, false));
+                    _installQueue.Enqueue(javaNode, false);
                 }
             }
         }
@@ -1377,9 +1353,7 @@ public partial class MainWindow : Window
                     var choice = await ShowDiskSpaceDialog(node, node.Name, needed, free);
                     if (choice == "Retry")
                         continue;
-                    foreach (var item in _installQueue)
-                        item.Node.IsQueued = false;
-                    _installQueue.Clear();
+                    _installQueue.ClearQueue();
                     return;
                 }
 
@@ -1388,11 +1362,11 @@ public partial class MainWindow : Window
         }
 
         var wasInstalled = node.IsInstalled;
-        _downloading = true;
+        _installQueue.IsRunning = true;
         _inSetupPhase = false;
-        _installCts = new CancellationTokenSource();
-        _activeNode = node;
-        _activeDownloadFile = downloadFile;
+        _installQueue.Cts = new CancellationTokenSource();
+        _installQueue.ActiveNode = node;
+        _installQueue.ActiveDownloadFile = downloadFile;
         node.IsBeingInstalled = true;
         SetInstalling(true);
         Cursor = new Cursor(StandardCursorType.Wait);
@@ -1431,14 +1405,14 @@ public partial class MainWindow : Window
             {
                 try
                 {
-                    localPath = await _deployService.DownloadAsync(downloadUrl, downloadFile, progress, node.UserAgent, _installCts.Token);
+                    localPath = await _deployService.DownloadAsync(downloadUrl, downloadFile, progress, node.UserAgent, _installQueue.Cts.Token);
                     await progressCts.CancelAsync();
                     progressCts.Dispose();
                     break;
                 }
                 catch (Exception ex)
                 {
-                    if (_installCts.IsCancellationRequested)
+                    if (_installQueue.Cts.IsCancellationRequested)
                         return;
                     try
                     {
@@ -1521,7 +1495,7 @@ public partial class MainWindow : Window
                 if (isLegacyArchive)
                 {
                     var extractDest = Path.Combine(appsBaseDir, node.SectionName);
-                    await AppDeployService.ExtractAsync(sevenZipPath!, localPath, extractDest, _installCts.Token);
+                    await AppDeployService.ExtractAsync(sevenZipPath!, localPath, extractDest, _installQueue.Cts.Token);
                     try
                     {
                         File.Delete(localPath);
@@ -1567,14 +1541,14 @@ public partial class MainWindow : Window
                         await File.WriteAllTextAsync(
                             Path.Combine(licenseDir, "license.ini"),
                             "[PortableApps.comInstaller]\nEULAVersion=1\n",
-                            _installCts.Token);
+                            _installQueue.Cts.Token);
                     }
                     catch
                     {
                         /* non-critical – installer may prompt for EULA if this fails */
                     }
 
-                    await AppDeployService.ExecuteAsync(localPath, node.SectionName, appsBaseDir, false, _installCts.Token);
+                    await AppDeployService.ExecuteAsync(localPath, node.SectionName, appsBaseDir, false, _installQueue.Cts.Token);
 
                     try
                     {
@@ -1645,7 +1619,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                if (!_installCts.IsCancellationRequested)
+                if (!_installQueue.Cts.IsCancellationRequested)
                     await ShowDialog(node, "Launch Failed", ex.Message, "OK");
             }
         }
@@ -1654,9 +1628,9 @@ public partial class MainWindow : Window
             _inSetupPhase = false;
             node.IsBeingInstalled = false;
 
-            if (_installCts?.IsCancellationRequested == true)
+            if (_installQueue.Cts?.IsCancellationRequested == true)
             {
-                var downloadedFile = Path.Combine(appsBaseDir, _activeDownloadFile ?? string.Empty);
+                var downloadedFile = Path.Combine(appsBaseDir, _installQueue.ActiveDownloadFile ?? string.Empty);
                 try
                 {
                     File.Delete(downloadedFile);
@@ -1683,21 +1657,20 @@ public partial class MainWindow : Window
                 }
             }
 
-            _activeNode = null;
-            _activeDownloadFile = null;
-            _installCts?.Dispose();
-            _installCts = null;
+            _installQueue.ActiveNode = null;
+            _installQueue.ActiveDownloadFile = null;
+            _installQueue.Cts?.Dispose();
+            _installQueue.Cts = null;
 
             ShowDownloadBar(false);
 
-            if (_installQueue.TryDequeue(out var next))
+            if (_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
             {
-                next.Node.IsQueued = false;
-                _ = InstallApp(next.Node, appsBaseDir, next.Launch, true);
+                _ = InstallApp(nextNode, appsBaseDir, nextLaunch, true);
             }
             else
             {
-                _downloading = false;
+                _installQueue.IsRunning = false;
                 Cursor = Cursor.Default;
                 SetInstalling(false);
             }
@@ -2661,24 +2634,24 @@ public partial class MainWindow : Window
             if (_forceClose)
                 return;
 
-            if (_downloading)
+            if (_installQueue.IsRunning)
             {
                 e.Cancel = true;
-                var appName = _activeNode?.Name ?? "the current app";
+                var appName = _installQueue.ActiveNode?.Name ?? "the current app";
                 var confirmDialog = new AppDialog(
                     "Installation in Progress",
                     $"{appName} is currently being installed.\n\n" +
                     "Closing now will abort the installation and may leave it in a corrupt state.\n\n" +
                     "Are you sure you want to close?",
                     "Close Anyway", "Keep Running");
-                if (_activeNode != null)
-                    confirmDialog.Icon = new WindowIcon(_activeNode.Icon);
+                if (_installQueue.ActiveNode != null)
+                    confirmDialog.Icon = new WindowIcon(_installQueue.ActiveNode.Icon);
                 await confirmDialog.ShowDialog(this);
                 if (confirmDialog.Result != "Close Anyway")
                     return;
-                await _installCts?.CancelAsync()!;
+                await _installQueue.Cts?.CancelAsync()!;
                 AppDeployService.KillActiveInstaller();
-                if (_activeDownloadFile is { } activeFile)
+                if (_installQueue.ActiveDownloadFile is { } activeFile)
                 {
                     var partialFile = Path.Combine(AppDeployService.AppsDir, activeFile);
                     try
@@ -2691,9 +2664,7 @@ public partial class MainWindow : Window
                     }
                 }
 
-                foreach (var item in _installQueue)
-                    item.Node.IsQueued = false;
-                _installQueue.Clear();
+                _installQueue.ClearQueue();
             }
 
             SaveSettings();
@@ -2715,7 +2686,7 @@ public partial class MainWindow : Window
         _ipcServer?.Dispose();
         _ipcDebounceCts?.Cancel();
         _ipcDebounceCts?.Dispose();
-        _installCts?.Dispose();
+        _installQueue.Dispose();
         _iconManager.Dispose();
         _deployService.Dispose();
         base.OnClosed(e);
