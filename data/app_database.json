@@ -14519,15 +14519,15 @@
     "Category": "Office",
     "SubCategory": "Organization",
     "JoinedDate": "2022-02-01",
-    "DisplayVersion": "4.5.0",
-    "PackageVersion": "4.5.0.0",
-    "UpdateDate": "2026-05-12",
-    "DownloadFile": "ZettlrPortable_4.5.0.paf.exe",
-    "Hash": "031d867e9bb1be5704fb6d0089c59a39ccf9c8dbc2819dc257f0c0774a9102c8",
+    "DisplayVersion": "4.6.0",
+    "PackageVersion": "4.6.0.0",
+    "UpdateDate": "2026-07-03",
+    "DownloadFile": "ZettlrPortable_4.6.0.paf.exe",
+    "Hash": "7ccedeaa299d5679ed1f6f2d0076c3a5b5f53ec7bccf3589f86a159198e4a875",
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
-    "DownloadSize": "135",
-    "InstallSize": "621"
+    "DownloadSize": "138",
+    "InstallSize": "632"
   },
   "ZimPortable": {
     "Name": "Zim",
