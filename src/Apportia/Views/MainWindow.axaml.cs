@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.IO.Pipes;
 using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Services;
@@ -39,8 +38,8 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _iconDownloadCts;
     private bool _inSetupPhase;
     private CancellationTokenSource? _installCts;
-    private CancellationTokenSource? _ipcCts;
     private CancellationTokenSource? _ipcDebounceCts;
+    private IpcServer? _ipcServer;
     private string? _pendingScrollApp;
     private string? _pendingScrollTarget;
     private bool _pendingScrollTop;
@@ -1881,61 +1880,9 @@ public partial class MainWindow : Window
         SearchBox.AddHandler(KeyDownEvent, OnSearchPreviewKeyDown, RoutingStrategies.Tunnel);
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "Data"));
         _searchHistory = SearchHistoryService.Load();
-        StartIpcServer();
-    }
-
-    private void StartIpcServer()
-    {
-        _ipcCts = new CancellationTokenSource();
-        var token = _ipcCts.Token;
-        _ = Task.Run(IpcLoop, token);
-        return;
-
-        async Task IpcLoop()
-        {
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    var pipe = new NamedPipeServerStream(Program.PipeName,
-                                                         PipeDirection.In,
-                                                         NamedPipeServerStream.MaxAllowedServerInstances,
-                                                         PipeTransmissionMode.Byte,
-                                                         PipeOptions.Asynchronous);
-                    await pipe.WaitForConnectionAsync(token);
-                    _ = Task.Run(() => HandlePipeConnection(pipe, token), token);
-                }
-                catch (OperationCanceledException)
-                {
-                    /* shutdown requested */
-                    break;
-                }
-                catch (Exception)
-                {
-                    /* pipe error — restart server on next iteration */
-                }
-            }
-        }
-
-        async Task HandlePipeConnection(NamedPipeServerStream pipe, CancellationToken ct)
-        {
-            try
-            {
-                await using (pipe)
-                {
-                    using var reader = new StreamReader(pipe);
-                    var line = await reader.ReadLineAsync(ct);
-                    if (string.IsNullOrEmpty(line))
-                        return;
-                    var newArgs = line.Split('\0');
-                    Dispatcher.UIThread.Post(() => OnIpcArgsReceived(newArgs));
-                }
-            }
-            catch (Exception)
-            {
-                /* connection dropped or cancelled */
-            }
-        }
+        _ipcServer = new IpcServer(Program.PipeName,
+                                   args => Dispatcher.UIThread.Post(() => OnIpcArgsReceived(args)));
+        _ipcServer.Start();
     }
 
     private void OnIpcArgsReceived(string[] args)
@@ -2888,8 +2835,7 @@ public partial class MainWindow : Window
     {
         _cts.Cancel();
         _cts.Dispose();
-        _ipcCts?.Cancel();
-        _ipcCts?.Dispose();
+        _ipcServer?.Dispose();
         _ipcDebounceCts?.Cancel();
         _ipcDebounceCts?.Dispose();
         _installCts?.Dispose();
