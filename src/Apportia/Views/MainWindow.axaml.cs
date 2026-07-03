@@ -1897,7 +1897,7 @@ public partial class MainWindow : Window
             {
                 try
                 {
-                    var pipe = new NamedPipeServerStream("Apportia",
+                    var pipe = new NamedPipeServerStream(Program.PipeName,
                                                          PipeDirection.In,
                                                          NamedPipeServerStream.MaxAllowedServerInstances,
                                                          PipeTransmissionMode.Byte,

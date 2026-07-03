@@ -6,18 +6,20 @@ namespace Apportia;
 
 internal static class Program
 {
+    internal static readonly string PipeName = "Apportia." + Environment.UserName;
+
     [STAThread]
     public static void Main(string[] args)
     {
-        var lockPath = Path.Combine(Path.GetTempPath(), "Apportia.lock");
+        var lockPath = Path.Combine(Path.GetTempPath(), $"Apportia.{Environment.UserName}.lock");
         FileStream? lockFile;
         try
         {
             lockFile = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            /* another instance already holds the lock */
+            /* another instance already holds the lock, or the lock file belongs to a different user */
             if (args.Length > 0)
                 TrySendArgs(args);
             return;
@@ -38,7 +40,7 @@ internal static class Program
         try
         {
             Win32Window.AllowAnyForeground();
-            using var pipe = new NamedPipeClientStream(".", "Apportia", PipeDirection.Out);
+            using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
             pipe.Connect(2000);
             using var writer = new StreamWriter(pipe);
             writer.WriteLine(string.Join("\0", args));
