@@ -56,8 +56,32 @@ fi
 
 # ── Desktop entry ─────────────────────────────────────────────────────────────
 
-DESIRED_EXEC="env WINEPREFIX=$HOME/.wine $BINARY"
+# Escape a value for the Desktop Entry Exec key: backslash-escape reserved
+# characters, double the % sign (field-code marker), then wrap in double quotes.
+desktop_exec_quote() {
+    local s=$1
+    s=${s//\\/\\\\}
+    s=${s//\"/\\\"}
+    s=${s//\`/\\\`}
+    s=${s//\$/\\\$}
+    s=${s//%/%%}
+    printf '"%s"' "$s"
+}
+
+EXEC_WINEPREFIX="$(desktop_exec_quote "WINEPREFIX=$HOME/.wine")"
+EXEC_BINARY="$(desktop_exec_quote "$BINARY")"
+DESIRED_EXEC="env $EXEC_WINEPREFIX $EXEC_BINARY"
 DESIRED_PATH="$SCRIPT_DIR"
+
+FALLBACK_MIME_TYPES="inode/directory;application/x-ms-dos-executable;application/zip;application/x-zip-compressed;application/x-7z-compressed;application/x-tar;application/x-bzip2;application/x-xz;application/gzip;application/pdf;audio/mpeg;audio/ogg;audio/flac;audio/wav;audio/aac;audio/x-m4a;video/mp4;video/x-matroska;video/x-msvideo;video/mpeg;video/webm;video/quicktime;image/jpeg;image/png;image/gif;image/webp;image/svg+xml;image/bmp;image/tiff;text/plain;text/html;text/css;text/javascript;text/xml;text/csv;text/markdown;"
+
+if [[ -r /usr/share/mime/types ]]; then
+    MIME_TYPES="$(tr '\n' ';' < /usr/share/mime/types)"
+elif MIME_TYPES="$(find /usr/share/mime -name '*.xml' -not -path '*/packages/*' -printf '%P\n' 2>/dev/null | sed 's|\.xml$||' | tr '\n' ';')" && [[ -n "$MIME_TYPES" ]]; then
+    :
+else
+    MIME_TYPES="$FALLBACK_MIME_TYPES"
+fi
 
 if [[ -f "$DESKTOP_FILE" ]]; then
     CURRENT_EXEC="$(grep -m1 '^Exec=' "$DESKTOP_FILE" | cut -d= -f2-)"
@@ -81,15 +105,14 @@ Type=Application
 Name=Apportia
 Comment=Browse, install, and launch Windows portable apps on any platform
 Path=$SCRIPT_DIR
-Exec=env WINEPREFIX=$HOME/.wine $BINARY
+Exec=$DESIRED_EXEC
 Icon=Apportia
 Categories=Utility;Network;FileTransfer;
 Keywords=Windows;Wine;Portable;Launcher;Download;Sources;Repositories;Program;Software;App;Store;
-MimeType=inode/directory;application/x-ms-dos-executable;application/zip;application/x-zip-compressed;application/x-7z-compressed;application/x-tar;application/x-bzip2;application/x-xz;application/gzip;application/pdf;audio/mpeg;audio/ogg;audio/flac;audio/wav;audio/aac;audio/x-m4a;video/mp4;video/x-matroska;video/x-msvideo;video/mpeg;video/webm;video/quicktime;image/jpeg;image/png;image/gif;image/webp;image/svg+xml;image/bmp;image/tiff;text/plain;text/html;text/css;text/javascript;text/xml;text/csv;text/markdown;
+MimeType=$MIME_TYPES
 StartupNotify=true
 TryExec=$BINARY
 EOF
-    chmod +x "$DESKTOP_FILE"
 fi
 
 echo -e "\n${green}Done!${nc}"
