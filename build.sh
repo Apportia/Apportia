@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds Apportia for Linux and Windows and places output in bin/<configuration>/<platform>/.
+# Builds Apportia into bin/<configuration>/.
+# Debug: linux-x64 only. Release: linux-x64 and win-x64 share the same output directory by design.
 # Usage: $0 [Debug|Release]
 
 set -euo pipefail
@@ -61,14 +62,22 @@ publish() {
 
     echo -e "${white}Platform:${nc} $rid"
 
+    local extra=()
+    if [[ "$configuration" == "Release" ]]; then
+        extra+=(-p:DebugType=none -p:DebugSymbols=false)
+    fi
+
     dotnet publish "$CSPROJ" \
         --configuration "$configuration" \
         --runtime "$rid" \
         --output "$OUT_BASE" \
         --nologo \
-        -v minimal
+        -v minimal \
+        "${extra[@]}"
 
     if [[ "$configuration" == "Release" ]]; then
+        # Native SkiaSharp/HarfBuzzSharp PDBs are shipped by their NuGet packages and
+        # ignore DebugType=none, so strip them here.
         find "$OUT_BASE" -name "*.pdb" -delete
     fi
 }
