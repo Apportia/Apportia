@@ -17,6 +17,7 @@ internal static class MirrorService
     private static readonly string PrefsPath =
         Path.Combine(AppContext.BaseDirectory, "Data", "preferred_mirrors.json");
 
+    private static readonly Lock DatabaseLock = new();
     private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? _database;
 
     internal static async Task TryUpdateAsync(CancellationToken ct = default)
@@ -29,7 +30,10 @@ internal static class MirrorService
 
             Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
             await File.WriteAllTextAsync(CachePath, json, ct);
-            _database = null;
+            lock (DatabaseLock)
+            {
+                _database = null;
+            }
         }
         catch
         {
@@ -39,29 +43,33 @@ internal static class MirrorService
 
     private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> GetDatabase()
     {
-        if (_database != null)
-            return _database;
-        try
+        lock (DatabaseLock)
         {
-            if (File.Exists(CachePath) &&
-                JsonSerializer.Deserialize(
-                        File.ReadAllText(CachePath),
-                        typeof(Dictionary<string, Dictionary<string, string>>),
-                        MirrorDatabaseJsonContext.Default)
-                    is Dictionary<string, Dictionary<string, string>> dict)
-            {
-                _database = dict.ToDictionary(
-                    kv => kv.Key, IReadOnlyDictionary<string, string> (kv) => kv.Value);
+            if (_database != null)
                 return _database;
-            }
-        }
-        catch
-        {
-            /* corrupt or missing cache */
-        }
 
-        _database = new Dictionary<string, IReadOnlyDictionary<string, string>>();
-        return _database;
+            try
+            {
+                if (File.Exists(CachePath) &&
+                    JsonSerializer.Deserialize(
+                            File.ReadAllText(CachePath),
+                            typeof(Dictionary<string, Dictionary<string, string>>),
+                            MirrorDatabaseJsonContext.Default)
+                        is Dictionary<string, Dictionary<string, string>> dict)
+                {
+                    _database = dict.ToDictionary(
+                        kv => kv.Key, IReadOnlyDictionary<string, string> (kv) => kv.Value);
+                    return _database;
+                }
+            }
+            catch
+            {
+                /* corrupt or missing cache */
+            }
+
+            _database = new Dictionary<string, IReadOnlyDictionary<string, string>>();
+            return _database;
+        }
     }
 
     private static bool IsSourceForgePrefix(string prefix)

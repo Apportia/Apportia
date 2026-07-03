@@ -10,27 +10,32 @@ public static class LocalVersionService
     private static readonly string FilePath =
         Path.Combine(AppContext.BaseDirectory, "Data", "local_app_versions.json");
 
+    private static readonly Lock CacheLock = new();
     private static Dictionary<string, LocalAppVersion>? _cache;
 
     public static IReadOnlyDictionary<string, LocalAppVersion> Load()
     {
-        if (_cache != null)
-            return _cache;
-        try
+        lock (CacheLock)
         {
-            if (File.Exists(FilePath))
-            {
-                var text = File.ReadAllText(FilePath);
-                _cache = JsonSerializer.Deserialize(text, LocalVersionJsonContext.Default.DictionaryStringLocalAppVersion);
-            }
-        }
-        catch
-        {
-            /* corrupt or missing file — start fresh */
-        }
+            if (_cache != null)
+                return _cache;
 
-        _cache ??= new Dictionary<string, LocalAppVersion>(StringComparer.OrdinalIgnoreCase);
-        return _cache;
+            try
+            {
+                if (File.Exists(FilePath))
+                {
+                    var text = File.ReadAllText(FilePath);
+                    _cache = JsonSerializer.Deserialize(text, LocalVersionJsonContext.Default.DictionaryStringLocalAppVersion);
+                }
+            }
+            catch
+            {
+                /* corrupt or missing file — start fresh */
+            }
+
+            _cache ??= new Dictionary<string, LocalAppVersion>(StringComparer.OrdinalIgnoreCase);
+            return _cache;
+        }
     }
 
     public static void Save(string sectionName, string displayVersion, string packageVersion)
