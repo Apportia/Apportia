@@ -67,11 +67,18 @@ public static partial class SelfUpdater
         var zipPath = Path.Combine(tempDir, "update.zip");
         await DownloadAsync(info.DownloadUrl, zipPath, progress, ct);
 
+        var tempRoot = Path.GetFullPath(tempDir + Path.DirectorySeparatorChar);
         using (var archive = ZipArchive.OpenArchive(zipPath))
         {
             foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
             {
-                var dest = Path.Combine(tempDir, entry.Key!.Replace('/', Path.DirectorySeparatorChar));
+                var dest = Path.GetFullPath(Path.Combine(tempDir, entry.Key!.Replace('/', Path.DirectorySeparatorChar)));
+                if (!dest.StartsWith(tempRoot, StringComparison.Ordinal))
+                {
+                    Log.Write($"Skipped update entry outside extraction directory: '{entry.Key}'");
+                    continue;
+                }
+
                 Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
                 await using var input = await entry.OpenEntryStreamAsync(ct);
                 await using var output = File.Create(dest);
