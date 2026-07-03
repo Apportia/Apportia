@@ -22,6 +22,7 @@ public partial class MainWindow : Window, IInstallUi
     private readonly InstallOrchestrator _installer;
     private readonly InstallQueue _installQueue = new();
     private readonly List<string> _ipcArgBatch = [];
+    private readonly ThemeController _themeController;
 
     private bool _activateOnSearchClose;
 
@@ -42,7 +43,6 @@ public partial class MainWindow : Window, IInstallUi
     private List<string> _searchHistory = [];
 
     private SelfUpdateCoordinator _selfUpdate = null!;
-    private ThemeController _themeController = null!;
 
     public MainWindow()
     {
@@ -61,6 +61,7 @@ public partial class MainWindow : Window, IInstallUi
         _iconManager = new AppImageManager(iconCacheDir);
         _deployService = new AppDeployService(AppDeployService.AppsDir);
         _installer = new InstallOrchestrator(_installQueue, _deployService, this);
+        _themeController = new ThemeController(this, ThemeToggleIcon);
 
         if (File.Exists(AppDatabaseUpdater.CachePath))
         {
@@ -1417,7 +1418,6 @@ public partial class MainWindow : Window, IInstallUi
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _themeController = new ThemeController(this, ThemeToggleIcon);
         _themeController.Init();
         _selfUpdate = new SelfUpdateCoordinator(_cts.Token);
         UpdateIconSizeButton();
