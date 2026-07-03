@@ -317,23 +317,57 @@ public sealed class AppDeployService : IDisposable
             ? File.ReadAllLines(sourceIni).ToList()
             : [];
 
-        SetIniValue(lines, "DisableSplashScreen", "true");
+        SetIniValue(lines, sectionName, "DisableSplashScreen", "true");
         File.WriteAllLines(targetIni, lines);
     }
 
-    private static void SetIniValue(List<string> lines, string key, string value)
+    private static void SetIniValue(List<string> lines, string section, string key, string value)
     {
         var keyEntry = $"{key}={value}";
+        var header = "[" + section + "]";
 
+        var sectionStart = -1;
         for (var i = 0; i < lines.Count; i++)
         {
-            if (!lines[i].StartsWith(key + "=", StringComparison.OrdinalIgnoreCase))
+            if (lines[i].Trim().Equals(header, StringComparison.OrdinalIgnoreCase))
+            {
+                sectionStart = i;
+                break;
+            }
+        }
+
+        if (sectionStart < 0)
+        {
+            if (lines.Count > 0 && !string.IsNullOrWhiteSpace(lines[^1]))
+                lines.Add(string.Empty);
+            lines.Add(header);
+            lines.Add(keyEntry);
+            return;
+        }
+
+        var sectionEnd = lines.Count;
+        for (var i = sectionStart + 1; i < lines.Count; i++)
+        {
+            var trimmed = lines[i].TrimStart();
+            if (trimmed.StartsWith('[') && trimmed.TrimEnd().EndsWith(']'))
+            {
+                sectionEnd = i;
+                break;
+            }
+        }
+
+        for (var i = sectionStart + 1; i < sectionEnd; i++)
+        {
+            if (!lines[i].TrimStart().StartsWith(key + "=", StringComparison.OrdinalIgnoreCase))
                 continue;
             lines[i] = keyEntry;
             return;
         }
 
-        lines.Add(keyEntry);
+        var insertAt = sectionEnd;
+        while (insertAt - 1 > sectionStart && string.IsNullOrWhiteSpace(lines[insertAt - 1]))
+            insertAt--;
+        lines.Insert(insertAt, keyEntry);
     }
 
     /// Returns the path to a usable 7z binary, or null if none found.
