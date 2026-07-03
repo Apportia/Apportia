@@ -7,6 +7,7 @@ public sealed class InstallQueue : IDisposable
     private readonly Queue<(AppNode Node, bool Launch)> _queue = new();
 
     public bool IsRunning { get; set; }
+    public bool InSetupPhase { get; set; }
     public AppNode? ActiveNode { get; set; }
     public string? ActiveDownloadFile { get; set; }
     public CancellationTokenSource? Cts { get; set; }

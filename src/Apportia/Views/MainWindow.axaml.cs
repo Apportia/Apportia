@@ -14,11 +14,12 @@ using Avalonia.VisualTree;
 
 namespace Apportia.Views;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IInstallUi
 {
     private readonly CancellationTokenSource _cts = new();
     private readonly AppDeployService _deployService;
     private readonly AppImageManager _iconManager;
+    private readonly InstallOrchestrator _installer;
     private readonly InstallQueue _installQueue = new();
     private readonly List<string> _ipcArgBatch = [];
 
@@ -32,7 +33,6 @@ public partial class MainWindow : Window
     private bool _forceClose;
     private int _historyIndex = -1;
     private CancellationTokenSource? _iconDownloadCts;
-    private bool _inSetupPhase;
     private CancellationTokenSource? _ipcDebounceCts;
     private IpcServer? _ipcServer;
     private string? _pendingScrollApp;
@@ -60,6 +60,7 @@ public partial class MainWindow : Window
 
         _iconManager = new AppImageManager(iconCacheDir);
         _deployService = new AppDeployService(AppDeployService.AppsDir);
+        _installer = new InstallOrchestrator(_installQueue, _deployService, this);
 
         if (File.Exists(AppDatabaseUpdater.CachePath))
         {
@@ -83,6 +84,84 @@ public partial class MainWindow : Window
 
     private ItemsControl ActiveList =>
         (DataContext as MainViewModel)?.Columns.IsGridView == true ? MainGridList : MainList;
+
+    Task<string?> IInstallUi.ShowDialogAsync(AppNode? node, string title, string message, params string[] buttons)
+    {
+        return node != null ? ShowDialog(node, title, message, buttons) : ShowDialog(title, message, buttons);
+    }
+
+    Task<string?> IInstallUi.ShowDiskSpaceDialogAsync(AppNode node, string appName, long required, long available)
+    {
+        return ShowDiskSpaceDialog(node, appName, required, available);
+    }
+
+    async Task<string?> IInstallUi.ShowLanguageDialogAsync(AppNode node, IReadOnlyList<string> keys, string? savedLang)
+    {
+        var dialog = new LanguageDialog(node.Name, keys, savedLang) { Icon = new WindowIcon(node.Icon) };
+        await dialog.ShowDialog(this);
+        return dialog.SelectedLanguageKey;
+    }
+
+    async Task<int[]?> IInstallUi.ShowJavaRequiredDialogAsync(AppNode node, string[] pluginNames)
+    {
+        var dialog = new JavaRequiredDialog(node.Name, pluginNames) { Icon = new WindowIcon(node.Icon) };
+        await dialog.ShowDialog(this);
+        return dialog.SelectedIndices;
+    }
+
+    async Task<string?> IInstallUi.ShowMirrorDialogAsync(AppNode node, string? failedSlug, IReadOnlyList<(string Slug, string Label)> available)
+    {
+        var dialog = new MirrorDialog(node.Name, failedSlug, available) { Icon = new WindowIcon(node.Icon) };
+        await dialog.ShowDialog(this);
+        return dialog.SelectedMirror;
+    }
+
+    Task IInstallUi.ShowVirusTotalDialogAsync(AppNode node)
+    {
+        return new VirusTotalDialog(node) { Icon = new WindowIcon(node.Icon) }.ShowDialog(this);
+    }
+
+    void IInstallUi.ShowDownloadBar(bool visible)
+    {
+        ShowDownloadBar(visible);
+    }
+
+    void IInstallUi.SetDownloadStatus(string sizeText, string speedText)
+    {
+        DownloadSizeText.Text = sizeText;
+        DownloadSpeedText.Text = speedText;
+    }
+
+    void IInstallUi.SetDownloadProgress(double percent, bool indeterminate)
+    {
+        DownloadProgressBar.IsIndeterminate = indeterminate;
+        DownloadProgressBar.Value = percent;
+    }
+
+    void IInstallUi.SetInstalling(bool value)
+    {
+        SetInstalling(value);
+    }
+
+    void IInstallUi.SetBusyCursor(bool busy)
+    {
+        Cursor = busy ? new Cursor(StandardCursorType.Wait) : Cursor.Default;
+    }
+
+    Task<string?> IInstallUi.ResolveAppExeAsync(AppNode node, string appsBaseDir)
+    {
+        return ResolveAppExeAsync(node, appsBaseDir);
+    }
+
+    Task IInstallUi.LaunchAsync(AppNode node)
+    {
+        return TryLaunchWithArgsAsync(node);
+    }
+
+    IEnumerable<AppNode> IInstallUi.GetAllNodes()
+    {
+        return DataContext is MainViewModel vm ? vm.AllNodes : [];
+    }
 
     private MainViewModel BuildViewModel()
     {
@@ -286,7 +365,7 @@ public partial class MainWindow : Window
                     _installQueue.Enqueue(node, false);
                     if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextCtrlNode, out var nextCtrlLaunch))
                         return;
-                    _ = InstallApp(nextCtrlNode, appsBaseDir, nextCtrlLaunch);
+                    _ = _installer.InstallAsync(nextCtrlNode, appsBaseDir, nextCtrlLaunch);
                     return;
                 }
 
@@ -300,7 +379,7 @@ public partial class MainWindow : Window
                 _installQueue.Enqueue(node, false);
                 if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
                     return;
-                _ = InstallApp(nextNode, appsBaseDir, nextLaunch);
+                _ = _installer.InstallAsync(nextNode, appsBaseDir, nextLaunch);
                 return;
             }
 
@@ -308,7 +387,7 @@ public partial class MainWindow : Window
             {
                 if (ctrlHeld)
                 {
-                    await InstallApp(node, appsBaseDir, false);
+                    await _installer.InstallAsync(node, appsBaseDir, false);
                     return;
                 }
 
@@ -317,7 +396,7 @@ public partial class MainWindow : Window
                     $"A newer version of {node.Name} is available.\n\nWould you like to update now?",
                     "Update", "Cancel");
                 if (choice == "Update")
-                    await InstallApp(node, appsBaseDir, false);
+                    await _installer.InstallAsync(node, appsBaseDir, false);
             }
             else
             {
@@ -326,7 +405,7 @@ public partial class MainWindow : Window
 
                 if (ctrlHeld)
                 {
-                    await InstallApp(node, appsBaseDir, false);
+                    await _installer.InstallAsync(node, appsBaseDir, false);
                     return;
                 }
 
@@ -335,7 +414,7 @@ public partial class MainWindow : Window
                     $"Would you like to install {node.Name}?",
                     "Install", "Cancel");
                 if (choice == "Install")
-                    await InstallApp(node, appsBaseDir, false);
+                    await _installer.InstallAsync(node, appsBaseDir, false);
             }
 
             return;
@@ -395,7 +474,7 @@ public partial class MainWindow : Window
                 _installQueue.Enqueue(node, false);
                 if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextCtrlNode, out var nextCtrlLaunch))
                     return;
-                _ = InstallApp(nextCtrlNode, appsBaseDir, nextCtrlLaunch);
+                _ = _installer.InstallAsync(nextCtrlNode, appsBaseDir, nextCtrlLaunch);
                 return;
             }
 
@@ -409,7 +488,7 @@ public partial class MainWindow : Window
             _installQueue.Enqueue(node, false);
             if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
                 return;
-            _ = InstallApp(nextNode, appsBaseDir, nextLaunch);
+            _ = _installer.InstallAsync(nextNode, appsBaseDir, nextLaunch);
             return;
         }
 
@@ -417,7 +496,7 @@ public partial class MainWindow : Window
         {
             if (ctrlHeld)
             {
-                await InstallApp(node, appsBaseDir, false);
+                await _installer.InstallAsync(node, appsBaseDir, false);
                 return;
             }
 
@@ -429,10 +508,10 @@ public partial class MainWindow : Window
             switch (choice)
             {
                 case "Update & Run":
-                    await InstallApp(node, appsBaseDir, true);
+                    await _installer.InstallAsync(node, appsBaseDir, true);
                     break;
                 case "Update":
-                    await InstallApp(node, appsBaseDir, false);
+                    await _installer.InstallAsync(node, appsBaseDir, false);
                     break;
                 case "Run":
                     await TryLaunchWithArgsAsync(node);
@@ -447,7 +526,7 @@ public partial class MainWindow : Window
 
         if (ctrlHeld)
         {
-            await InstallApp(node, appsBaseDir, false);
+            await _installer.InstallAsync(node, appsBaseDir, false);
             return;
         }
 
@@ -459,10 +538,10 @@ public partial class MainWindow : Window
         switch (installChoice)
         {
             case "Install":
-                await InstallApp(node, appsBaseDir, false);
+                await _installer.InstallAsync(node, appsBaseDir, false);
                 break;
             case "Install & Run":
-                await InstallApp(node, appsBaseDir, true);
+                await _installer.InstallAsync(node, appsBaseDir, true);
                 break;
         }
     }
@@ -470,25 +549,25 @@ public partial class MainWindow : Window
     private void OnMenuInstallRun(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDeployService.AppsDir, true);
+            _ = _installer.InstallAsync(node, AppDeployService.AppsDir, true);
     }
 
     private void OnMenuInstall(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDeployService.AppsDir, false);
+            _ = _installer.InstallAsync(node, AppDeployService.AppsDir, false);
     }
 
     private void OnMenuUpdateRun(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDeployService.AppsDir, true);
+            _ = _installer.InstallAsync(node, AppDeployService.AppsDir, true);
     }
 
     private void OnMenuUpdate(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is { } node)
-            _ = InstallApp(node, AppDeployService.AppsDir, false);
+            _ = _installer.InstallAsync(node, AppDeployService.AppsDir, false);
     }
 
     private void OnMenuAddToQueue(object? sender, RoutedEventArgs e)
@@ -498,7 +577,7 @@ public partial class MainWindow : Window
         _installQueue.Enqueue(node, false);
         if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
             return;
-        _ = InstallApp(nextNode, AppDeployService.AppsDir, nextLaunch);
+        _ = _installer.InstallAsync(nextNode, AppDeployService.AppsDir, nextLaunch);
     }
 
     private void OnMenuRemoveFromQueue(object? sender, RoutedEventArgs e)
@@ -524,7 +603,7 @@ public partial class MainWindow : Window
         if (_installQueue.ActiveNode == null || _installQueue.Cts == null)
             return;
 
-        if (_inSetupPhase)
+        if (_installQueue.InSetupPhase)
         {
             var watchCts = new CancellationTokenSource();
             var watchToken = watchCts.Token;
@@ -538,7 +617,7 @@ public partial class MainWindow : Window
 
             var watchTask = Task.Run(async () =>
             {
-                while (_inSetupPhase && !watchToken.IsCancellationRequested)
+                while (_installQueue.InSetupPhase && !watchToken.IsCancellationRequested)
                     await Task.Delay(100, watchToken);
                 if (!watchToken.IsCancellationRequested)
                     await Dispatcher.UIThread.InvokeAsync(dialog.Close);
@@ -1258,424 +1337,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task InstallApp(AppNode node, string appsBaseDir, bool launch, bool fromQueue = false)
-    {
-        if (_installQueue.IsRunning && !fromQueue)
-            return;
-        if (string.IsNullOrEmpty(node.DownloadFile) || string.IsNullOrEmpty(node.DownloadPath))
-            return;
-
-        if (OperatingSystem.IsLinux() && !AppDeployService.IsWineAvailable())
-        {
-            await ShowDialog(
-                node, "Wine Not Found",
-                "Running Windows applications requires Wine.\n\n" +
-                "Please install Wine using your package manager.",
-                "OK");
-            return;
-        }
-
-        // Language selection – resolve before locking the download state
-        var downloadFile = node.DownloadFile;
-        var downloadHash = node.Hash;
-        string? chosenLanguage = null;
-
-        if (node.HasLanguageVariants)
-        {
-            var savedLang = AppLanguageService.Load(node.SectionName);
-
-            var autoSelected = savedLang == "English" ||
-                               savedLang != null && node.HasLanguageVariantKey(savedLang);
-
-            if (!autoSelected)
-            {
-                var dialog = new LanguageDialog(node.Name, node.GetLanguageKeys()!, savedLang) { Icon = new WindowIcon(node.Icon) };
-                await dialog.ShowDialog(this);
-                if (dialog.SelectedLanguageKey is null)
-                    return;
-                chosenLanguage = dialog.SelectedLanguageKey;
-            }
-            else
-            {
-                chosenLanguage = savedLang;
-            }
-
-            if (chosenLanguage != "English" && node.TryGetLanguageVariant(chosenLanguage!, out var variantFile, out var variantHash))
-            {
-                downloadFile = variantFile;
-                downloadHash = variantHash;
-            }
-        }
-
-        // Java requirement check – runs before locking the download state
-        if (node.RequiresJava && DataContext is MainViewModel vmJava)
-        {
-            var javaInstalled = vmJava.AllNodes
-                                      .Any(n => PluginService.IsJavaPlugin(n.SectionName) && n.IsInstalled);
-
-            if (!javaInstalled)
-            {
-                var available = vmJava.AllNodes
-                                      .Where(n => PluginService.IsJavaPlugin(n.SectionName) && n is { IsInstalled: false, IsLegacy: false })
-                                      .ToList();
-
-                if (available.Count == 0)
-                {
-                    await ShowDialog(
-                        node, "Java Required",
-                        $"{node.Name} requires a Java runtime, but no Java plugins are available to install.",
-                        "OK");
-                    return;
-                }
-
-                var javaDialog = new JavaRequiredDialog(node.Name, available.Select(n => n.Name).ToArray()) { Icon = new WindowIcon(node.Icon) };
-                await javaDialog.ShowDialog(this);
-                if (javaDialog.SelectedIndices == null)
-                    return;
-
-                foreach (var idx in javaDialog.SelectedIndices)
-                {
-                    var javaNode = available[idx];
-                    _installQueue.Enqueue(javaNode, false);
-                }
-            }
-        }
-
-        var requiredBytes = (node.DownloadSizeMb + node.InstallSizeMb) * 1_048_576;
-        if (requiredBytes > 0)
-        {
-            while (true)
-            {
-                var needed = (long)(requiredBytes * 1.1);
-                var free = AppDiskUsageService.GetAvailableFreeSpace(appsBaseDir);
-                if (free < needed)
-                {
-                    var choice = await ShowDiskSpaceDialog(node, node.Name, needed, free);
-                    if (choice == "Retry")
-                        continue;
-                    _installQueue.ClearQueue();
-                    return;
-                }
-
-                break;
-            }
-        }
-
-        var wasInstalled = node.IsInstalled;
-        _installQueue.IsRunning = true;
-        _inSetupPhase = false;
-        _installQueue.Cts = new CancellationTokenSource();
-        _installQueue.ActiveNode = node;
-        _installQueue.ActiveDownloadFile = downloadFile;
-        node.IsBeingInstalled = true;
-        SetInstalling(true);
-        Cursor = new Cursor(StandardCursorType.Wait);
-        ShowDownloadBar(true);
-        DownloadSizeText.Text = $"Preparing {node.Name}...";
-        DownloadSpeedText.Text = "Please wait";
-
-        try
-        {
-            var url = node.DownloadPath.TrimEnd('/') + "/" + downloadFile;
-            var progressCts = new CancellationTokenSource();
-            var progressToken = progressCts.Token;
-            var progress = new Progress<DownloadProgress>(p =>
-            {
-                if (progressToken.IsCancellationRequested)
-                    return;
-                if (p.Percent > 0)
-                {
-                    DownloadProgressBar.IsIndeterminate = false;
-                    DownloadProgressBar.Value = p.Percent;
-                    DownloadSizeText.Text = p.FormatReceived();
-                    DownloadSpeedText.Text = p.BytesPerSecond > 0 ? p.FormatSpeed() : string.Empty;
-                }
-                else
-                {
-                    DownloadProgressBar.IsIndeterminate = true;
-                }
-            });
-
-            string localPath;
-            var preferred = MirrorService.LoadPreferredMirror(url);
-            var downloadUrl = preferred != null
-                ? MirrorService.ApplyMirror(url, preferred)
-                : url;
-            while (true)
-            {
-                try
-                {
-                    localPath = await _deployService.DownloadAsync(downloadUrl, downloadFile, progress, node.UserAgent, _installQueue.Cts.Token);
-                    await progressCts.CancelAsync();
-                    progressCts.Dispose();
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    if (_installQueue.Cts.IsCancellationRequested)
-                        return;
-                    try
-                    {
-                        File.Delete(Path.Combine(appsBaseDir, downloadFile));
-                    }
-                    catch
-                    {
-                        /* partial download file may not exist yet if the connection failed early */
-                    }
-
-                    var failed = MirrorService.GetCurrentMirrorSlug(downloadUrl);
-                    var available = MirrorService.GetAvailableMirrors(downloadUrl);
-                    if (available.Count > 0)
-                    {
-                        ShowDownloadBar(false);
-                        var mirrorDialog = new MirrorDialog(node.Name, failed, available) { Icon = new WindowIcon(node.Icon) };
-                        await mirrorDialog.ShowDialog(this);
-                        if (mirrorDialog.SelectedMirror != null)
-                        {
-                            MirrorService.SavePreferredMirror(downloadUrl, mirrorDialog.SelectedMirror);
-                            downloadUrl = MirrorService.ApplyMirror(downloadUrl, mirrorDialog.SelectedMirror);
-                            ShowDownloadBar(true);
-                            DownloadSizeText.Text = $"Preparing {node.Name}...";
-                            continue;
-                        }
-                    }
-
-                    await ShowDialog(node, "Download Failed", ex.Message, "OK");
-                    return;
-                }
-            }
-
-            var hash = AppDeployService.VerifyHash(localPath, downloadHash);
-            if (hash == HashResult.Invalid)
-            {
-                ShowDownloadBar(false);
-                var choice = await ShowDialog(
-                    node, "Hash Mismatch",
-                    "The downloaded file's hash does not match the expected value.\n\n" +
-                    "The file may be corrupted or tampered with.",
-                    "Scan with VirusTotal", "Proceed Anyway", "Cancel");
-                if (choice == "Scan with VirusTotal")
-                {
-                    await new VirusTotalDialog(node) { Icon = new WindowIcon(node.Icon) }.ShowDialog(this);
-                    choice = await ShowDialog(
-                        node, "Hash Mismatch",
-                        "Do you want to proceed with the installation?",
-                        "Proceed", "Cancel");
-                    if (choice != "Proceed")
-                    {
-                        File.Delete(localPath);
-                        return;
-                    }
-                }
-                else if (choice != "Proceed Anyway")
-                {
-                    File.Delete(localPath);
-                    return;
-                }
-
-                ShowDownloadBar(true);
-            }
-
-            var sevenZipPath = AppDeployService.FindSevenZip(appsBaseDir);
-            var isLegacyArchive =
-                sevenZipPath != null &&
-                DateTime.TryParse(node.UpdateDate, out var updateDtCheck) &&
-                updateDtCheck.Date < new DateTime(2016, 1, 1);
-
-            DownloadProgressBar.IsIndeterminate = true;
-            DownloadProgressBar.Value = 0;
-            DownloadSizeText.Text = isLegacyArchive
-                ? $"Extracting {node.Name}..."
-                : $"Installing {node.Name}...";
-            DownloadSpeedText.Text = "Please wait";
-            _inSetupPhase = true;
-
-            try
-            {
-                if (isLegacyArchive)
-                {
-                    var extractDest = Path.Combine(appsBaseDir, node.SectionName);
-                    await AppDeployService.ExtractAsync(sevenZipPath!, localPath, extractDest, _installQueue.Cts.Token);
-                    try
-                    {
-                        File.Delete(localPath);
-                    }
-                    catch
-                    {
-                        /* file may be locked briefly after extraction completes */
-                    }
-
-                    try
-                    {
-                        var pluginsDir = Path.Combine(extractDest, "$PLUGINSDIR");
-                        if (Directory.Exists(pluginsDir))
-                            Directory.Delete(pluginsDir, true);
-                    }
-                    catch
-                    {
-                        /* $PLUGINSDIR cleanup is best-effort; leftover files are harmless */
-                    }
-
-                    try
-                    {
-                        SetIniSectionValue(
-                            Path.Combine(extractDest, "App", "AppInfo", "appinfo.ini"),
-                            "PortableApps.comInstaller",
-                            "InstallIntegrityCheck",
-                            "true");
-                    }
-                    catch
-                    {
-                        /* appinfo.ini write is best-effort; platform will re-create it on next run */
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        var installDir = node.IsPlugin
-                            ? PluginService.GetInstallDir(node.SectionName)
-                            : Path.Combine(appsBaseDir, node.SectionName);
-                        var licenseDir = Path.Combine(installDir, "Data", "PortableApps.comInstaller");
-                        Directory.CreateDirectory(licenseDir);
-                        await File.WriteAllTextAsync(
-                            Path.Combine(licenseDir, "license.ini"),
-                            "[PortableApps.comInstaller]\nEULAVersion=1\n",
-                            _installQueue.Cts.Token);
-                    }
-                    catch
-                    {
-                        /* non-critical – installer may prompt for EULA if this fails */
-                    }
-
-                    await AppDeployService.ExecuteAsync(localPath, node.SectionName, appsBaseDir, false, _installQueue.Cts.Token);
-
-                    try
-                    {
-                        var baseDir = node.IsPlugin
-                            ? PluginService.GetInstallDir(node.SectionName)
-                            : Path.Combine(appsBaseDir, node.SectionName);
-                        var appInfoPath = Path.Combine(baseDir, "App", "AppInfo", "appinfo.ini");
-                        var eulaInstallerDir = Path.Combine(baseDir, "Data", "PortableApps.comInstaller");
-                        if (!ReadEulaVersion(appInfoPath) && Directory.Exists(eulaInstallerDir))
-                            Directory.Delete(eulaInstallerDir, true);
-                    }
-                    catch
-                    {
-                        /* eulaInstallerDir removal is best-effort; stale folder is harmless */
-                    }
-                }
-
-                string? appExeAfter;
-                if (node.IsPlugin)
-                {
-                    var m = PluginService.GetMarkerFile(node.SectionName);
-                    appExeAfter = File.Exists(m) ? m : null;
-                }
-                else
-                {
-                    appExeAfter = await ResolveAppExeAsync(node, appsBaseDir);
-                }
-
-                if (appExeAfter != null)
-                {
-                    if (chosenLanguage != null)
-                        AppLanguageService.Save(node.SectionName, chosenLanguage);
-                    node.IsInstalled = true;
-                    if (!node.IsPlugin)
-                    {
-                        LocalVersionService.Save(node.SectionName, node.DisplayVersion, node.PackageVersion);
-                        node.LocalDisplayVersion = node.DisplayVersion;
-                        node.LocalPackageVersion = node.PackageVersion;
-                    }
-
-                    var installDir = node.IsPlugin
-                        ? PluginService.GetInstallDir(node.SectionName)
-                        : Path.Combine(appsBaseDir, node.SectionName);
-                    _ = ScanAndCacheNodeSizeAsync(node, installDir);
-                    if (!node.IsPlugin && AppBackupService.HasBackup(node.SectionName))
-                        try
-                        {
-                            AppBackupService.RestoreBackup(node.SectionName, installDir);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Write($"Failed to restore backup for '{node.SectionName}': {ex.Message}");
-                        }
-
-                    if (DateTime.TryParse(node.UpdateDate, out var updateDate))
-                    {
-                        File.SetLastWriteTime(appExeAfter, updateDate);
-                        node.CurrentDate = updateDate.ToString("yyyy-MM-dd");
-                    }
-                    else
-                    {
-                        node.CurrentDate = File.GetLastWriteTime(appExeAfter).ToString("yyyy-MM-dd");
-                    }
-
-                    if (launch && !node.IsPlugin)
-                        await TryLaunchWithArgsAsync(node);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (!_installQueue.Cts.IsCancellationRequested)
-                    await ShowDialog(node, "Launch Failed", ex.Message, "OK");
-            }
-        }
-        finally
-        {
-            _inSetupPhase = false;
-            node.IsBeingInstalled = false;
-
-            if (_installQueue.Cts?.IsCancellationRequested == true)
-            {
-                var downloadedFile = Path.Combine(appsBaseDir, _installQueue.ActiveDownloadFile ?? string.Empty);
-                try
-                {
-                    File.Delete(downloadedFile);
-                }
-                catch
-                {
-                    /* already gone or never created */
-                }
-
-                if (!wasInstalled)
-                {
-                    var appDir = node.IsPlugin
-                        ? PluginService.GetInstallDir(node.SectionName)
-                        : Path.Combine(appsBaseDir, node.SectionName);
-                    try
-                    {
-                        if (Directory.Exists(appDir))
-                            Directory.Delete(appDir, true);
-                    }
-                    catch
-                    {
-                        /* partial dir may be locked */
-                    }
-                }
-            }
-
-            _installQueue.ActiveNode = null;
-            _installQueue.ActiveDownloadFile = null;
-            _installQueue.Cts?.Dispose();
-            _installQueue.Cts = null;
-
-            ShowDownloadBar(false);
-
-            if (_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
-            {
-                _ = InstallApp(nextNode, appsBaseDir, nextLaunch, true);
-            }
-            else
-            {
-                _installQueue.IsRunning = false;
-                Cursor = Cursor.Default;
-                SetInstalling(false);
-            }
-        }
-    }
 
     private void ShowDownloadBar(bool visible)
     {
@@ -1692,70 +1353,6 @@ public partial class MainWindow : Window
     {
         if (DataContext is MainViewModel vm)
             vm.Columns.IsInstalling = value;
-    }
-
-    private static void SetIniSectionValue(string filePath, string section, string key, string value)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-        var lines = File.Exists(filePath) ? File.ReadAllLines(filePath).ToList() : [];
-        var header = $"[{section}]";
-        var sectionIdx = lines.FindIndex(l =>
-                                             l.Trim().Equals(header, StringComparison.OrdinalIgnoreCase));
-
-        if (sectionIdx < 0)
-        {
-            lines.Add(header);
-            lines.Add($"{key}={value}");
-        }
-        else
-        {
-            var keyPrefix = key + "=";
-            var keyIdx = -1;
-            for (var i = sectionIdx + 1; i < lines.Count; i++)
-            {
-                if (lines[i].Trim().StartsWith('['))
-                    break;
-                if (!lines[i].Trim().StartsWith(keyPrefix, StringComparison.OrdinalIgnoreCase))
-                    continue;
-                keyIdx = i;
-                break;
-            }
-
-            if (keyIdx >= 0)
-                lines[keyIdx] = $"{key}={value}";
-            else
-                lines.Insert(sectionIdx + 1, $"{key}={value}");
-        }
-
-        File.WriteAllLines(filePath, lines);
-    }
-
-    /// Returns true when appinfo.ini declares EULAVersion > 0 under [License].
-    private static bool ReadEulaVersion(string appInfoPath)
-    {
-        if (!File.Exists(appInfoPath))
-            return false;
-        var inLicense = false;
-        foreach (var line in File.ReadLines(appInfoPath))
-        {
-            var t = line.Trim();
-            if (t.StartsWith('['))
-            {
-                inLicense = t.Equals("[License]", StringComparison.OrdinalIgnoreCase);
-                continue;
-            }
-
-            if (!inLicense)
-                continue;
-            var eq = t.IndexOf('=');
-            if (eq <= 0)
-                continue;
-            if (!t[..eq].Trim().Equals("EULAVersion", StringComparison.OrdinalIgnoreCase))
-                continue;
-            return int.TryParse(t[(eq + 1)..].Trim(), out var v) && v > 0;
-        }
-
-        return false;
     }
 
     private static bool IsAppUpToDate(string exePath, string updateDate)

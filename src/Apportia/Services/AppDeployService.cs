@@ -441,6 +441,70 @@ public sealed class AppDeployService : IDisposable
         await process.WaitForExitAsync(ct);
     }
 
+    public static void SetIniSectionValue(string filePath, string section, string key, string value)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        var lines = File.Exists(filePath) ? File.ReadAllLines(filePath).ToList() : [];
+        var header = $"[{section}]";
+        var sectionIdx = lines.FindIndex(l =>
+                                             l.Trim().Equals(header, StringComparison.OrdinalIgnoreCase));
+
+        if (sectionIdx < 0)
+        {
+            lines.Add(header);
+            lines.Add($"{key}={value}");
+        }
+        else
+        {
+            var keyPrefix = key + "=";
+            var keyIdx = -1;
+            for (var i = sectionIdx + 1; i < lines.Count; i++)
+            {
+                if (lines[i].Trim().StartsWith('['))
+                    break;
+                if (!lines[i].Trim().StartsWith(keyPrefix, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                keyIdx = i;
+                break;
+            }
+
+            if (keyIdx >= 0)
+                lines[keyIdx] = $"{key}={value}";
+            else
+                lines.Insert(sectionIdx + 1, $"{key}={value}");
+        }
+
+        File.WriteAllLines(filePath, lines);
+    }
+
+    /// Returns true when appinfo.ini declares EULAVersion > 0 under [License].
+    public static bool ReadEulaVersion(string appInfoPath)
+    {
+        if (!File.Exists(appInfoPath))
+            return false;
+        var inLicense = false;
+        foreach (var line in File.ReadLines(appInfoPath))
+        {
+            var t = line.Trim();
+            if (t.StartsWith('['))
+            {
+                inLicense = t.Equals("[License]", StringComparison.OrdinalIgnoreCase);
+                continue;
+            }
+
+            if (!inLicense)
+                continue;
+            var eq = t.IndexOf('=');
+            if (eq <= 0)
+                continue;
+            if (!t[..eq].Trim().Equals("EULAVersion", StringComparison.OrdinalIgnoreCase))
+                continue;
+            return int.TryParse(t[(eq + 1)..].Trim(), out var v) && v > 0;
+        }
+
+        return false;
+    }
+
     private static Process? StartProcess(string exePath, string? args = null)
     {
         var workingDir = Path.GetDirectoryName(exePath) ?? string.Empty;
