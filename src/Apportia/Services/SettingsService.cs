@@ -88,37 +88,7 @@ public static class SettingsService
         }
         catch (Exception ex)
         {
-            Log($"Failed to save settings to '{FilePath}': {ex.Message}");
-        }
-    }
-
-    public static void ClearLog()
-    {
-        try
-        {
-            var exeName = Path.GetFileNameWithoutExtension(Environment.ProcessPath ?? "Apportia");
-            var logPath = Path.Combine("/tmp", exeName + ".log");
-            if (File.Exists(logPath))
-                File.Delete(logPath);
-        }
-        catch
-        {
-            /* log directory may not exist yet */
-        }
-    }
-
-    internal static void Log(string message)
-    {
-        try
-        {
-            var exeName = Path.GetFileNameWithoutExtension(Environment.ProcessPath ?? "Apportia");
-            File.AppendAllText(
-                Path.Combine("/tmp", exeName + ".log"),
-                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}");
-        }
-        catch
-        {
-            /* logging must never crash the app */
+            Log.Write($"Failed to save settings to '{FilePath}': {ex.Message}");
         }
     }
 }

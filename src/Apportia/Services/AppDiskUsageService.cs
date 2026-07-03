@@ -69,7 +69,7 @@ public static class AppDiskUsageService
         }
         catch (Exception ex)
         {
-            SettingsService.Log($"Disk space check failed for '{path}': {ex.Message}");
+            Log.Write($"Disk space check failed for '{path}': {ex.Message}");
             return long.MaxValue; // assume sufficient if check fails
         }
     }

@@ -61,7 +61,7 @@ public partial class MainWindow : Window
         var cliArgs = Environment.GetCommandLineArgs();
         _cliAppArgs = cliArgs.Length > 1 ? Environment.GetCommandLineArgs().Skip(1).ToArray() : [];
 
-        SettingsService.ClearLog();
+        Log.Clear();
 
         var iconCacheDir = Path.Combine(AppContext.BaseDirectory, "Data", "AppImages");
 
@@ -1629,7 +1629,7 @@ public partial class MainWindow : Window
                         }
                         catch (Exception ex)
                         {
-                            SettingsService.Log($"Failed to restore backup for '{node.SectionName}': {ex.Message}");
+                            Log.Write($"Failed to restore backup for '{node.SectionName}': {ex.Message}");
                         }
 
                     if (DateTime.TryParse(node.UpdateDate, out var updateDate))
@@ -2511,7 +2511,7 @@ public partial class MainWindow : Window
             {
                 ShowDownloadBar(false);
                 UpdateButton.IsEnabled = true;
-                SettingsService.Log($"Self-update failed: {ex.Message}");
+                Log.Write($"Self-update failed: {ex.Message}");
             }
         }
         catch

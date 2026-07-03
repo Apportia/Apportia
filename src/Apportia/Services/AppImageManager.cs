@@ -77,7 +77,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log($"Preview not found: {sectionName} ({url}) – {ex.Message}");
+            Log.Write($"Preview not found: {sectionName} ({url}) – {ex.Message}");
             return null;
         }
     }
@@ -125,22 +125,8 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log($"Icon not found: {section} ({url}) – {ex.Message}");
+            Log.Write($"Icon not found: {section} ({url}) – {ex.Message}");
             return null;
-        }
-    }
-
-    private static void Log(string message)
-    {
-        try
-        {
-            var exeName = Path.GetFileNameWithoutExtension(Environment.ProcessPath ?? "Apportia");
-            var logPath = Path.Combine("/tmp", exeName + ".log");
-            File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}");
-        }
-        catch
-        {
-            /* logging must never crash the app */
         }
     }
 
