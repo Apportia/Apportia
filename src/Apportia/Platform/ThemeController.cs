@@ -1,3 +1,4 @@
+using Apportia.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -40,6 +41,7 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         _prevTheme = current;
         Application.Current.RequestedThemeVariant = next;
         RefreshIcon(next == null);
+        _ = WinePrefixTheme.ApplyAsync(Application.Current.ActualThemeVariant == ThemeVariant.Dark);
     }
 
     public void ApplyDarkTitlebar(bool dark)
