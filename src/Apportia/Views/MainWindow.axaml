@@ -145,6 +145,7 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
+                            ToolTip.Tip="Save View Preset"
                             Click="OnSaveView">
                         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4be.svg" Width="18" Height="18" />
                     </Button>
@@ -155,6 +156,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
+                            ToolTip.Tip="Icon Size"
                             Click="OnIconSizeCycle"
                             PointerReleased="OnIconSizePointerReleased" />
                     <Button x:Name="ViewModeButton"
@@ -164,6 +166,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
+                            ToolTip.Tip="View Mode"
                             Click="OnViewModeToggle"
                             PointerReleased="OnViewModePointerReleased" />
                     <Button x:Name="FontSizeButton"
@@ -173,6 +176,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
+                            ToolTip.Tip="Font Size"
                             Click="OnFontSizeCycle"
                             PointerReleased="OnFontSizePointerReleased" />
                     <Button x:Name="CategoryScopeButton"
@@ -182,6 +186,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
+                            ToolTip.Tip="Category Scope"
                             Click="OnCategoryScopeCycle"
                             PointerReleased="OnCategoryScopePointerReleased" />
                     <Button x:Name="CategoryDisplayButton"
@@ -191,6 +196,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
+                            ToolTip.Tip="Category Display"
                             Click="OnCategoryDisplayCycle"
                             PointerReleased="OnCategoryDisplayPointerReleased" />
                     <Button x:Name="InstallFilterButton"
@@ -200,6 +206,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Opacity="0.6"
+                            ToolTip.Tip="Install Filter"
                             Click="OnInstallFilterCycle"
                             PointerReleased="OnInstallFilterPointerReleased" />
                 </StackPanel>
@@ -218,6 +225,7 @@
                             VerticalAlignment="Center"
                             Height="28"
                             FontSize="13"
+                            ToolTip.Tip="Update Apportia"
                             Click="OnUpdateApp" />
                     <Button x:Name="LinuxSetupButton"
                             IsVisible="False"
@@ -236,6 +244,7 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
+                            ToolTip.Tip="Import Custom App"
                             Click="OnImportApp">
                         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg" Width="18" Height="18" />
                     </Button>
@@ -245,6 +254,7 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
+                            ToolTip.Tip="Toggle Theme"
                             Click="OnThemeToggle"
                             PointerReleased="OnThemePointerReleased">
                         <svg:Svg x:Name="ThemeToggleIcon" Path="avares://Apportia/Assets/Emoji/1f31e.svg" Width="18"
@@ -256,6 +266,7 @@
                             Padding="6,3"
                             Background="Transparent"
                             BorderThickness="0"
+                            ToolTip.Tip="Tips"
                             Click="OnTipsButton">
                         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4a1.svg" Width="18" Height="18" />
                     </Button>
