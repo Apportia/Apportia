@@ -43,7 +43,6 @@ public partial class MainWindow : Window, IInstallUi
     private List<string> _searchHistory = [];
 
     private SelfUpdateCoordinator _selfUpdate = null!;
-    private bool _winePrefixThemeApplied;
 
     public MainWindow()
     {
@@ -1207,11 +1206,8 @@ public partial class MainWindow : Window, IInstallUi
         if (OperatingSystem.IsLinux() && !node.IsCustom && !await EnsureWineReadyAsync())
             return;
 
-        if (OperatingSystem.IsLinux() && !node.IsCustom && !_winePrefixThemeApplied)
-        {
-            _winePrefixThemeApplied = true;
+        if (OperatingSystem.IsLinux() && !node.IsCustom)
             await WinePrefixTheme.ApplyAsync(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
-        }
 
         if (_cliAppArgs.Length > 0)
         {

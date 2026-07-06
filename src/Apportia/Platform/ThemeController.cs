@@ -42,7 +42,7 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
 
         Application.Current.RequestedThemeVariant = next;
         RefreshIcon(next == null);
-        _ = WinePrefixTheme.ApplyAsync(Application.Current.ActualThemeVariant == ThemeVariant.Dark);
+        _ = WinePrefixTheme.ApplyAsync(Application.Current.ActualThemeVariant == ThemeVariant.Dark, true);
     }
 
     public void ApplyDarkTitlebar(bool dark)

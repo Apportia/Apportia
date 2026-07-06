@@ -3,6 +3,7 @@ using Apportia.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Styling;
 
 namespace Apportia.Views;
 
@@ -214,6 +215,10 @@ public partial class LinuxSetupDialog : Window
         Directory.CreateDirectory(WineService.PrefixDir);
         settings.LinuxSetupCompleted = true;
         SettingsService.Save(settings);
+
+        var isDark = Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
+        _ = WinePrefixTheme.ApplyAsync(isDark, true);
+
         Close();
     }
 
