@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:svg="using:Avalonia.Svg.Skia"
+        x:Class="Apportia.Views.LinuxSetupDialog"
+        Title="Wine Setup"
+        Width="460"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <StackPanel Margin="20" Spacing="12">
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <svg:Svg Path="avares://Apportia/Assets/Emoji/1f427.svg" Width="24" Height="24" />
+            <TextBlock Text="Wine Setup"
+                       FontSize="15" FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource AppTextBrush}" />
+        </StackPanel>
+
+        <TextBlock Text="Windows applications need Wine. Choose which Wine to use."
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppTextBrush}" />
+
+        <StackPanel x:Name="SystemWinePanel" Spacing="6" IsVisible="False">
+            <TextBlock Text="Installation:" FontWeight="SemiBold"
+                       Foreground="{DynamicResource AppTextBrush}" />
+            <RadioButton x:Name="SystemModeRadio"
+                         GroupName="Mode"
+                         Content="Use system Wine and ~/.wine"
+                         Foreground="{DynamicResource AppTextBrush}" />
+            <RadioButton x:Name="BundledModeRadio"
+                         GroupName="Mode"
+                         Content="Use bundled Wine in Data/Linux (isolated)"
+                         Foreground="{DynamicResource AppTextBrush}"
+                         IsCheckedChanged="OnModeChanged" />
+        </StackPanel>
+
+        <StackPanel x:Name="VersionPanel" Spacing="6">
+            <TextBlock Text="Bundled Wine version:" FontWeight="SemiBold"
+                       Foreground="{DynamicResource AppTextBrush}" />
+            <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+            <TextBlock x:Name="VersionHint"
+                       FontSize="11" TextWrapping="Wrap"
+                       Foreground="{DynamicResource AppTextBrush}"
+                       Opacity="0.7" />
+        </StackPanel>
+
+        <StackPanel x:Name="ProgressPanel" Spacing="4" IsVisible="False">
+            <TextBlock x:Name="ProgressText"
+                       FontSize="12"
+                       Foreground="{DynamicResource AppTextBrush}" />
+            <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Height="6" />
+        </StackPanel>
+
+        <TextBlock x:Name="ErrorText"
+                   IsVisible="False"
+                   TextWrapping="Wrap"
+                   Foreground="#e57373" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,4,0,0">
+            <Button x:Name="RetryButton" Content="Retry" IsVisible="False" Click="OnRetry" />
+            <Button x:Name="SaveButton" Content="Save" Click="OnSave" IsDefault="True" />
+            <Button Content="Cancel" Click="OnCancel" IsCancel="True" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>

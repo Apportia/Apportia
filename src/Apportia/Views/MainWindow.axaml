@@ -219,6 +219,17 @@
                             Height="28"
                             FontSize="13"
                             Click="OnUpdateApp" />
+                    <Button x:Name="LinuxSetupButton"
+                            IsVisible="False"
+                            VerticalAlignment="Center"
+                            Height="28"
+                            Padding="6,3"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ToolTip.Tip="Wine Setup"
+                            Click="OnLinuxSetupButton">
+                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f427.svg" Width="18" Height="18" />
+                    </Button>
                     <Button x:Name="ImportApp"
                             VerticalAlignment="Center"
                             Height="28"

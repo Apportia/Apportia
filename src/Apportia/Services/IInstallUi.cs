@@ -20,4 +20,6 @@ public interface IInstallUi
     Task<string?> ResolveAppExeAsync(AppNode node, string appsBaseDir);
     Task LaunchAsync(AppNode node);
     IEnumerable<AppNode> GetAllNodes();
+
+    Task<bool> EnsureWineReadyAsync();
 }

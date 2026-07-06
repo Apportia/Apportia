@@ -152,6 +152,11 @@ public partial class MainWindow : Window, IInstallUi
         return DataContext is MainViewModel vm ? vm.AllNodes : [];
     }
 
+    Task<bool> IInstallUi.EnsureWineReadyAsync()
+    {
+        return EnsureWineReadyAsync();
+    }
+
     private async Task StartupAsync()
     {
         // Yield so the window renders before we touch the JSON or filesystem.
@@ -1188,6 +1193,9 @@ public partial class MainWindow : Window, IInstallUi
         if (!node.TryBeginLaunchFx())
             return;
 
+        if (OperatingSystem.IsLinux() && !node.IsCustom && !await EnsureWineReadyAsync())
+            return;
+
         if (_cliAppArgs.Length > 0)
         {
             var dialog = new RunArgsDialog(node.Name, _cliAppArgs) { Icon = new WindowIcon(node.Icon) };
@@ -1245,6 +1253,41 @@ public partial class MainWindow : Window, IInstallUi
             return null;
         AppExecutableService.Save(node.SectionName, dialog.SelectedExe, node.SectionName + ".exe");
         return Path.Combine(appDir, dialog.SelectedExe);
+    }
+
+    private async void OnLinuxSetupButton(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await new LinuxSetupDialog { Icon = Icon }.ShowDialog(this);
+        }
+        catch
+        {
+            /* window may be closing */
+        }
+    }
+
+    /// Ensures a working Wine setup before running an installer or launching a .exe.
+    /// First call ever prompts the user; later only when no Wine is available.
+    /// Returns true when Wine is ready, false when the user cancelled or setup failed.
+    private async Task<bool> EnsureWineReadyAsync()
+    {
+        if (!OperatingSystem.IsLinux())
+            return true;
+        var settings = SettingsService.Load();
+        if (settings.LinuxSetupCompleted && WineService.IsWineReady())
+            return true;
+        try
+        {
+            var dialog = new LinuxSetupDialog { Icon = Icon };
+            await dialog.ShowDialog(this);
+        }
+        catch
+        {
+            /* window may be closing */
+        }
+
+        return WineService.IsWineReady();
     }
 
     private async void OnImportApp(object? sender, RoutedEventArgs e)
@@ -1532,6 +1575,8 @@ public partial class MainWindow : Window, IInstallUi
         base.OnOpened(e);
         _themeController.ApplyDarkTitlebar(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
         _ = CheckOrphanedFilesAsync();
+        if (OperatingSystem.IsLinux())
+            LinuxSetupButton.IsVisible = true;
         var settings = SettingsService.Load();
         if (settings.HasShownTips)
             return;

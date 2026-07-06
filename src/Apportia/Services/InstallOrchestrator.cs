@@ -15,15 +15,8 @@ public sealed class InstallOrchestrator(
         if (string.IsNullOrEmpty(node.DownloadFile) || string.IsNullOrEmpty(node.DownloadPath))
             return;
 
-        if (OperatingSystem.IsLinux() && !AppDeployService.IsWineAvailable())
-        {
-            await ui.ShowDialogAsync(
-                node, "Wine Not Found",
-                "Running Windows applications requires Wine.\n\n" +
-                "Please install Wine using your package manager.",
-                "OK");
+        if (OperatingSystem.IsLinux() && !await ui.EnsureWineReadyAsync())
             return;
-        }
 
         var downloadFile = node.DownloadFile;
         var downloadHash = node.Hash;

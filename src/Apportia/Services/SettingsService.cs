@@ -51,6 +51,9 @@ public sealed class AppSettings
     public double ColumnUsed { get; set; } = 75;
     public string Theme { get; set; } = "Default";
     public bool HasShownTips { get; set; }
+    public bool LinuxSetupCompleted { get; set; }
+    public string WineMode { get; set; } = "System";
+    public string WineVersion { get; set; } = "latest";
     public Dictionary<string, FilterViewSettings> ViewPresets { get; set; } = new();
 }
 

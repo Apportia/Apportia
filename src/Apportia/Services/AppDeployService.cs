@@ -32,24 +32,7 @@ public sealed class AppDeployService : IDisposable
 
     public static bool IsWineAvailable()
     {
-        if (!OperatingSystem.IsLinux())
-            return true;
-        try
-        {
-            using var p = Process.Start(new ProcessStartInfo("which", "wine")
-            {
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
-            p?.WaitForExit(3000);
-            return p?.ExitCode == 0;
-        }
-        catch
-        {
-            /* wine may not be installed – caller checks return value */
-            return false;
-        }
+        return WineService.IsWineReady();
     }
 
     /// Converts absolute Linux paths in each arg to Wine Z: drive paths.
@@ -404,15 +387,13 @@ public sealed class AppDeployService : IDisposable
         {
             var wineArchive = "Z:" + archivePath.Replace('/', '\\');
             var wineDest = "Z:" + destDir.Replace('/', '\\');
-            psi = new ProcessStartInfo("wine")
+            psi = new ProcessStartInfo(WineService.ResolveWineBinary() ?? "wine")
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 Arguments = $"\"{sevenZipPath}\" x \"{wineArchive}\" -o\"{wineDest}\" -aoa -y"
             };
-            var prefix = Environment.GetEnvironmentVariable("WINEPREFIX");
-            if (!string.IsNullOrEmpty(prefix))
-                psi.Environment["WINEPREFIX"] = prefix;
+            WineService.ApplyEnv(psi);
         }
         else
         {
@@ -499,15 +480,13 @@ public sealed class AppDeployService : IDisposable
         ProcessStartInfo psi;
         if (OperatingSystem.IsLinux())
         {
-            psi = new ProcessStartInfo("wine")
+            psi = new ProcessStartInfo(WineService.ResolveWineBinary() ?? "wine")
             {
                 UseShellExecute = false,
                 WorkingDirectory = workingDir,
                 Arguments = args is not null ? $"\"{exePath}\" {args}" : $"\"{exePath}\""
             };
-            var prefix = Environment.GetEnvironmentVariable("WINEPREFIX");
-            if (!string.IsNullOrEmpty(prefix))
-                psi.Environment["WINEPREFIX"] = prefix;
+            WineService.ApplyEnv(psi);
         }
         else
         {
