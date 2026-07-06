@@ -2171,24 +2171,20 @@ public partial class MainWindow : Window, IInstallUi
         if (DataContext is not MainViewModel vm)
             return;
         var theme = Application.Current?.RequestedThemeVariant;
-        var existing = SettingsService.Load();
-        existing.ViewPresets.Remove("Default");
-        SettingsService.Save(new AppSettings
-        {
-            InstallFilter = vm.InstallFilter,
-            SortColumn = vm.Columns.SortColumn,
-            SortDescending = vm.Columns.SortDescending,
-            ColumnName = vm.Columns.Name,
-            ColumnVersion = vm.Columns.Version,
-            ColumnDownload = vm.Columns.Download,
-            ColumnInstall = vm.Columns.Install,
-            ColumnJoined = vm.Columns.Joined,
-            ColumnUpdated = vm.Columns.Updated,
-            ColumnUsed = vm.Columns.Used,
-            Theme = theme == ThemeVariant.Light ? "Light" : theme == ThemeVariant.Dark ? "Dark" : "Default",
-            HasShownTips = existing.HasShownTips,
-            ViewPresets = existing.ViewPresets
-        });
+        var settings = SettingsService.Load();
+        settings.ViewPresets.Remove("Default");
+        settings.InstallFilter = vm.InstallFilter;
+        settings.SortColumn = vm.Columns.SortColumn;
+        settings.SortDescending = vm.Columns.SortDescending;
+        settings.ColumnName = vm.Columns.Name;
+        settings.ColumnVersion = vm.Columns.Version;
+        settings.ColumnDownload = vm.Columns.Download;
+        settings.ColumnInstall = vm.Columns.Install;
+        settings.ColumnJoined = vm.Columns.Joined;
+        settings.ColumnUpdated = vm.Columns.Updated;
+        settings.ColumnUsed = vm.Columns.Used;
+        settings.Theme = theme == ThemeVariant.Light ? "Light" : theme == ThemeVariant.Dark ? "Dark" : "Default";
+        SettingsService.Save(settings);
         SearchHistoryService.Save(_searchHistory);
     }
 

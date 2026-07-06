@@ -184,7 +184,7 @@ public partial class LinuxSetupDialog : Window
             return;
         }
 
-        if (!await EnsurePrefixLocationAsync())
+        if (!EnsurePrefixLocation())
             return;
 
         settings.WineVersion = pickedVersion;
@@ -223,13 +223,9 @@ public partial class LinuxSetupDialog : Window
         Close();
     }
 
-    private async Task<bool> EnsurePrefixLocationAsync()
+    private bool EnsurePrefixLocation()
     {
-        var defaultFs = WineService.GetFilesystemType(WineService.DefaultPrefixDir) ?? "unknown";
-        var tmpFs = WineService.GetFilesystemType("/tmp") ?? "unknown";
         var defaultOk = WineService.SupportsWinePrefix(WineService.DefaultPrefixDir);
-        var tmpOk = WineService.SupportsWinePrefix("/tmp");
-
         double tmpFreeGib = 0;
         try
         {
@@ -240,22 +236,17 @@ public partial class LinuxSetupDialog : Window
             /* leave as 0 */
         }
 
-        var chosen = defaultOk ? WineService.DefaultPrefixDir
-            : tmpOk && tmpFreeGib >= 5 ? WineService.FallbackPrefixDir
-            : null;
+        var tmpOk = WineService.SupportsWinePrefix("/tmp") && tmpFreeGib >= 5;
 
-        var debug =
-            $"Default prefix: {WineService.DefaultPrefixDir}\n" +
-            $"  fs: {defaultFs}, wine-compatible: {defaultOk}\n\n" +
-            $"Fallback prefix: {WineService.FallbackPrefixDir}\n" +
-            $"  /tmp fs: {tmpFs}, wine-compatible: {tmpOk}\n" +
-            $"  /tmp free: {tmpFreeGib:0.0} GiB (need 5 GiB)\n\n" +
-            $"Chosen: {chosen ?? "NONE — setup aborted"}";
-        await new AppDialog("Prefix location check", debug, "OK").ShowDialog(this);
+        var chosen = defaultOk ? WineService.DefaultPrefixDir
+            : tmpOk ? WineService.FallbackPrefixDir
+            : null;
 
         if (chosen == null)
         {
-            ErrorText.Text = "No suitable location for the bundled Wine prefix. See details in the dialog above.";
+            ErrorText.Text = $"No suitable location for the bundled Wine prefix. " +
+                             $"Install drive filesystem is unsupported and /tmp fallback needs 5 GiB free " +
+                             $"(has {tmpFreeGib:0.0} GiB).";
             ErrorText.IsVisible = true;
             return false;
         }
