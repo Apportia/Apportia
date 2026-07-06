@@ -8,11 +8,22 @@ namespace Apportia.Services;
 
 public sealed record WineRunnerRelease(string Version, string ArchiveName, string DownloadUrl, bool IsStaging);
 
+internal sealed class WineReleasesCache
+{
+    public DateTime FetchedAt { get; set; }
+    public List<WineRunnerRelease> Releases { get; set; } = [];
+}
+
 /// Fetches Kron4ek/Wine-Builds releases (vanilla + staging, 64-bit) and manages
 /// download + extract into Data/Linux/runners/&lt;archive-basename&gt;/.
 public static partial class WineRunnersClient
 {
     private const string ReleasesApi = "https://api.github.com/repos/Kron4ek/Wine-Builds/releases?per_page=30";
+
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(6);
+
+    private static readonly string CacheFile =
+        Path.Combine(AppContext.BaseDirectory, "Data", "wine_releases.json");
 
     private static readonly HttpClient Http;
 
@@ -24,28 +35,72 @@ public static partial class WineRunnersClient
     }
 
     /// Returns available vanilla + staging 64-bit releases. Newest first; when a version has
-    /// both vanilla and staging, staging appears first.
+    /// both vanilla and staging, staging appears first. Cached to disk for 6h; falls back to
+    /// stale cache when the GitHub API is unreachable or rate-limited.
     public static async Task<IReadOnlyList<WineRunnerRelease>> FetchReleasesAsync(CancellationToken ct = default)
     {
-        var json = await Http.GetStringAsync(ReleasesApi, ct);
-        if (JsonSerializer.Deserialize(json, WineReleasesJsonContext.Default.GhReleaseArray) is not { } releases)
-            return [];
+        var cache = LoadCache();
+        if (cache != null && DateTime.UtcNow - cache.FetchedAt < CacheTtl)
+            return cache.Releases;
 
-        return releases
-               .SelectMany(r => r.Assets)
-               .Select(a => (Asset: a, Match: AssetNameRegex().Match(a.Name)))
-               .Where(x => x.Match.Success)
-               .Select(x =>
-               {
-                   var staging = x.Match.Groups["staging"].Success;
-                   var version = x.Match.Groups["ver"].Value + (staging ? "-staging" : string.Empty);
-                   return new WineRunnerRelease(version, x.Asset.Name, x.Asset.DownloadUrl, staging);
-               })
-               .GroupBy(r => r.Version)
-               .Select(g => g.First())
-               .OrderByDescending(r => ParseVersion(r.Version))
-               .ThenByDescending(r => r.IsStaging)
-               .ToList();
+        try
+        {
+            var json = await Http.GetStringAsync(ReleasesApi, ct);
+            if (JsonSerializer.Deserialize(json, WineReleasesJsonContext.Default.GhReleaseArray) is not { } releases)
+                return cache?.Releases ?? [];
+
+            var mapped = releases
+                         .SelectMany(r => r.Assets)
+                         .Select(a => (Asset: a, Match: AssetNameRegex().Match(a.Name)))
+                         .Where(x => x.Match.Success)
+                         .Select(x =>
+                         {
+                             var staging = x.Match.Groups["staging"].Success;
+                             var version = x.Match.Groups["ver"].Value + (staging ? "-staging" : string.Empty);
+                             return new WineRunnerRelease(version, x.Asset.Name, x.Asset.DownloadUrl, staging);
+                         })
+                         .GroupBy(r => r.Version)
+                         .Select(g => g.First())
+                         .OrderByDescending(r => ParseVersion(r.Version))
+                         .ThenByDescending(r => r.IsStaging)
+                         .ToList();
+
+            SaveCache(new WineReleasesCache { FetchedAt = DateTime.UtcNow, Releases = mapped });
+            return mapped;
+        }
+        catch when (cache != null)
+        {
+            return cache.Releases;
+        }
+    }
+
+    private static WineReleasesCache? LoadCache()
+    {
+        try
+        {
+            if (!File.Exists(CacheFile))
+                return null;
+            var text = File.ReadAllText(CacheFile);
+            return JsonSerializer.Deserialize(text, WineReleasesJsonContext.Default.WineReleasesCache);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void SaveCache(WineReleasesCache cache)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(CacheFile)!);
+            File.WriteAllText(CacheFile,
+                              JsonSerializer.Serialize(cache, WineReleasesJsonContext.Default.WineReleasesCache));
+        }
+        catch
+        {
+            /* best-effort */
+        }
     }
 
     /// Resolves the release named by version, or the newest staging build when "latest".
@@ -247,4 +302,7 @@ internal sealed class GhAsset
 [JsonSerializable(typeof(GhRelease))]
 [JsonSerializable(typeof(GhAsset[]))]
 [JsonSerializable(typeof(GhAsset))]
+[JsonSerializable(typeof(WineReleasesCache))]
+[JsonSerializable(typeof(WineRunnerRelease))]
+[JsonSourceGenerationOptions(WriteIndented = true)]
 internal partial class WineReleasesJsonContext : JsonSerializerContext;
