@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Net.Http.Headers;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -15,16 +14,11 @@ public sealed class AppImageManager : IDisposable
 
     private readonly ConcurrentDictionary<string, Bitmap> _cache = new();
     private readonly string _cacheDir;
-    private readonly HttpClient _http;
     private bool _disposed;
 
     public AppImageManager(string cacheDir)
     {
         _cacheDir = cacheDir;
-
-        _http = new HttpClient();
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Wget", "1.25"));
-        _http.Timeout = TimeSpan.FromSeconds(15);
     }
 
     public void Dispose()
@@ -32,7 +26,6 @@ public sealed class AppImageManager : IDisposable
         if (_disposed)
             return;
         _disposed = true;
-        _http.Dispose();
         foreach (var bitmap in _cache.Values)
             bitmap.Dispose();
         _cache.Clear();
@@ -87,16 +80,22 @@ public sealed class AppImageManager : IDisposable
             return new Bitmap(localPath);
 
         var url = $"{RawBase}Previews/{NormalizeSection(sectionName)}.png";
+        var bytes = await GitHubClient.GetAssetBytesAsync(url, ct);
+        if (bytes == null)
+        {
+            Log.Write($"Preview not found: {sectionName} ({url})");
+            return null;
+        }
+
         try
         {
-            var bytes = await _http.GetByteArrayAsync(url, ct);
             Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
             await AtomicFile.WriteAllBytesAsync(localPath, bytes, ct);
             return new Bitmap(new MemoryStream(bytes));
         }
         catch (Exception ex)
         {
-            Log.Write($"Preview not found: {sectionName} ({url}) – {ex.Message}");
+            Log.Write($"Preview write failed: {sectionName} – {ex.Message}");
             return null;
         }
     }
@@ -132,9 +131,15 @@ public sealed class AppImageManager : IDisposable
     private async Task<Bitmap?> DownloadAsync(string section, int size, CancellationToken ct)
     {
         var url = $"{RawBase}{size}/{NormalizeSection(section)}.png";
+        var bytes = await GitHubClient.GetAssetBytesAsync(url, ct);
+        if (bytes == null)
+        {
+            Log.Write($"Icon not found: {section} ({url})");
+            return null;
+        }
+
         try
         {
-            var bytes = await _http.GetByteArrayAsync(url, ct);
             var localPath = LocalPath(section, size);
             Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
             await AtomicFile.WriteAllBytesAsync(localPath, bytes, ct);
@@ -144,7 +149,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Write($"Icon not found: {section} ({url}) – {ex.Message}");
+            Log.Write($"Icon write failed: {section} – {ex.Message}");
             return null;
         }
     }

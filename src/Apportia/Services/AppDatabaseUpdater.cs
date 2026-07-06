@@ -20,7 +20,7 @@ public static class AppDatabaseUpdater
         {
             try
             {
-                var json = await GitHubContentClient.FetchTextAsync(RepoPath, ct);
+                var json = await GitHubClient.FetchFileContentAsync("Apportia/Apportia", RepoPath, ct: ct);
                 if (json != null)
                 {
                     if (!IsValid(json))

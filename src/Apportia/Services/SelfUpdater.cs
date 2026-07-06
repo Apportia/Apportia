@@ -1,11 +1,8 @@
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using SharpCompress.Archives.Zip;
 
 namespace Apportia.Services;
@@ -17,22 +14,9 @@ public sealed class SelfUpdateInfo(Version version, string downloadUrl, string? 
     public string? Changelog { get; } = changelog;
 }
 
-internal sealed class GitHubAsset
-{
-    [JsonPropertyName("browser_download_url")]
-    public string BrowserDownloadUrl { get; set; } = string.Empty;
-}
-
-internal sealed class GitHubRelease
-{
-    [JsonPropertyName("tag_name")] public string TagName { get; set; } = string.Empty;
-    [JsonPropertyName("body")] public string Body { get; set; } = string.Empty;
-    [JsonPropertyName("assets")] public List<GitHubAsset> Assets { get; set; } = [];
-}
-
 public static partial class SelfUpdater
 {
-    private const string ApiUrl = "https://api.github.com/repos/Apportia/Apportia/releases/latest";
+    private const string Repo = "Apportia/Apportia";
 
     public static async Task<SelfUpdateInfo?> CheckAsync(CancellationToken ct)
     {
@@ -40,23 +24,13 @@ public static partial class SelfUpdater
         if (current == null)
             return null;
 
-        try
-        {
-            using var client = CreateClient();
-            var json = await client.GetStringAsync(ApiUrl, ct);
-            var release = JsonSerializer.Deserialize(json, UpdateJsonContext.Default.GitHubRelease);
-            if (release == null || !Version.TryParse(release.TagName, out var latest))
-                return null;
-            if (latest <= current)
-                return null;
-            var asset = release.Assets.FirstOrDefault(a => a.BrowserDownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
-            return asset == null ? null : new SelfUpdateInfo(latest, asset.BrowserDownloadUrl, release.Body);
-        }
-        catch
-        {
-            /* network unavailable or API format changed */
+        var release = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
+        if (release == null || !Version.TryParse(release.TagName, out var latest) || latest <= current)
             return null;
-        }
+
+        var url = release.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))?.DownloadUrl
+                  ?? $"https://github.com/{Repo}/releases/download/{release.TagName}/Apportia.zip";
+        return new SelfUpdateInfo(latest, url, release.Body);
     }
 
     public static async Task ApplyAsync(SelfUpdateInfo info, IProgress<int>? progress, CancellationToken ct)
@@ -98,24 +72,9 @@ public static partial class SelfUpdater
 
     private static async Task DownloadAsync(string url, string dest, IProgress<int>? progress, CancellationToken ct)
     {
-        using var client = CreateClient();
-        using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
-        response.EnsureSuccessStatusCode();
-
-        var total = response.Content.Headers.ContentLength ?? -1L;
-        await using var src = await response.Content.ReadAsStreamAsync(ct);
-        await using var dst = File.Create(dest);
-
-        var buf = new byte[81920];
-        long downloaded = 0;
-        int read;
-        while ((read = await src.ReadAsync(buf, ct)) > 0)
-        {
-            await dst.WriteAsync(buf.AsMemory(0, read), ct);
-            downloaded += read;
-            if (total > 0)
-                progress?.Report((int)(downloaded * 100 / total));
-        }
+        var pct = progress == null ? null : new Progress<double>(p => progress.Report((int)(p * 100)));
+        if (!await GitHubClient.DownloadAssetAsync(url, dest, pct, ct))
+            throw new IOException($"Failed to download {url}");
     }
 
     [LibraryImport("libc", EntryPoint = "system", StringMarshalling = StringMarshalling.Utf8)]
@@ -189,15 +148,4 @@ public static partial class SelfUpdater
                 del "%~f0"
                 """;
     }
-
-    private static HttpClient CreateClient()
-    {
-        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Apportia", "1.0"));
-        return client;
-    }
 }
-
-[JsonSerializable(typeof(GitHubRelease))]
-[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
-internal partial class UpdateJsonContext : JsonSerializerContext;

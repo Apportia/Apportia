@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -18,21 +17,12 @@ internal sealed class WineReleasesCache
 /// download + extract into Data/Linux/runners/&lt;archive-basename&gt;/.
 public static partial class WineRunnersClient
 {
-    private const string ReleasesApi = "https://api.github.com/repos/Kron4ek/Wine-Builds/releases?per_page=30";
+    private const string Repo = "Kron4ek/Wine-Builds";
 
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(6);
 
     private static readonly string CacheFile =
         Path.Combine(AppContext.BaseDirectory, "Data", "wine_releases.json");
-
-    private static readonly HttpClient Http;
-
-    static WineRunnersClient()
-    {
-        Http = new HttpClient { Timeout = TimeSpan.FromMinutes(15) };
-        Http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Apportia", "1.0"));
-        Http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-    }
 
     /// Returns available vanilla + staging 64-bit releases. Newest first; when a version has
     /// both vanilla and staging, staging appears first. Cached to disk for 6h; falls back to
@@ -43,34 +33,45 @@ public static partial class WineRunnersClient
         if (cache != null && DateTime.UtcNow - cache.FetchedAt < CacheTtl)
             return cache.Releases;
 
-        try
-        {
-            var json = await Http.GetStringAsync(ReleasesApi, ct);
-            if (JsonSerializer.Deserialize(json, WineReleasesJsonContext.Default.GhReleaseArray) is not { } releases)
-                return cache?.Releases ?? [];
+        var releases = await GitHubClient.FetchReleasesAsync(Repo, 30, ct);
+        if (releases.Count == 0)
+            return cache?.Releases ?? [];
 
-            var mapped = releases
-                         .SelectMany(r => r.Assets)
-                         .Select(a => (Asset: a, Match: AssetNameRegex().Match(a.Name)))
-                         .Where(x => x.Match.Success)
-                         .Select(x =>
-                         {
-                             var staging = x.Match.Groups["staging"].Success;
-                             var version = x.Match.Groups["ver"].Value + (staging ? "-staging" : string.Empty);
-                             return new WineRunnerRelease(version, x.Asset.Name, x.Asset.DownloadUrl, staging);
-                         })
-                         .GroupBy(r => r.Version)
-                         .Select(g => g.First())
-                         .OrderByDescending(r => ParseVersion(r.Version))
-                         .ThenByDescending(r => r.IsStaging)
-                         .ToList();
+        var mapped = releases
+                     .SelectMany(r => r.Assets.Count > 0 ? r.Assets : SynthesizeAssets(r.TagName))
+                     .Select(a => (Asset: a, Match: AssetNameRegex().Match(a.Name)))
+                     .Where(x => x.Match.Success)
+                     .Select(x =>
+                     {
+                         var staging = x.Match.Groups["staging"].Success;
+                         var version = x.Match.Groups["ver"].Value + (staging ? "-staging" : string.Empty);
+                         return new WineRunnerRelease(version, x.Asset.Name, x.Asset.DownloadUrl, staging);
+                     })
+                     .GroupBy(r => r.Version)
+                     .Select(g => g.First())
+                     .OrderByDescending(r => ParseVersion(r.Version))
+                     .ThenByDescending(r => r.IsStaging)
+                     .ToList();
 
-            SaveCache(new WineReleasesCache { FetchedAt = DateTime.UtcNow, Releases = mapped });
-            return mapped;
-        }
-        catch when (cache != null)
+        if (mapped.Count == 0)
+            return cache?.Releases ?? [];
+
+        SaveCache(new WineReleasesCache { FetchedAt = DateTime.UtcNow, Releases = mapped });
+        return mapped;
+    }
+
+    /// Atom fallback yields tags without asset lists — reconstruct the two Kron4ek asset
+    /// URLs (vanilla and staging) by convention.
+    private static IEnumerable<GhAsset> SynthesizeAssets(string tag)
+    {
+        foreach (var suffix in new[] { "-amd64.tar.xz", "-staging-amd64.tar.xz" })
         {
-            return cache.Releases;
+            var name = $"wine-{tag}{suffix}";
+            yield return new GhAsset
+            {
+                Name = name,
+                DownloadUrl = $"https://github.com/{Repo}/releases/download/{tag}/{name}"
+            };
         }
     }
 
@@ -163,21 +164,8 @@ public static partial class WineRunnersClient
         IProgress<double>? progress,
         CancellationToken ct)
     {
-        using var response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
-        response.EnsureSuccessStatusCode();
-        var total = response.Content.Headers.ContentLength ?? -1;
-        await using var input = await response.Content.ReadAsStreamAsync(ct);
-        await using var output = new FileStream(dest, FileMode.Create, FileAccess.Write, FileShare.None);
-        var buffer = new byte[81920];
-        long downloaded = 0;
-        int read;
-        while ((read = await input.ReadAsync(buffer, ct)) > 0)
-        {
-            await output.WriteAsync(buffer.AsMemory(0, read), ct);
-            downloaded += read;
-            if (total > 0)
-                progress?.Report(downloaded / (double)total);
-        }
+        if (!await GitHubClient.DownloadAssetAsync(url, dest, progress, ct))
+            throw new IOException($"Failed to download {url}");
     }
 
     private static async Task<bool> ExtractTarballAsync(string archive, string destDir, CancellationToken ct)
@@ -285,23 +273,6 @@ public static partial class WineRunnersClient
     private static partial Regex AssetNameRegex();
 }
 
-internal sealed class GhRelease
-{
-    [JsonPropertyName("assets")] public GhAsset[] Assets { get; set; } = [];
-}
-
-internal sealed class GhAsset
-{
-    [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
-
-    [JsonPropertyName("browser_download_url")]
-    public string DownloadUrl { get; set; } = string.Empty;
-}
-
-[JsonSerializable(typeof(GhRelease[]))]
-[JsonSerializable(typeof(GhRelease))]
-[JsonSerializable(typeof(GhAsset[]))]
-[JsonSerializable(typeof(GhAsset))]
 [JsonSerializable(typeof(WineReleasesCache))]
 [JsonSerializable(typeof(WineRunnerRelease))]
 [JsonSourceGenerationOptions(WriteIndented = true)]
