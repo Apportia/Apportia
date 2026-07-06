@@ -135,6 +135,9 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         SetBrush(rd, themeKey, "TextControlForegroundFocused", colors.Text);
         SetBrush(rd, themeKey, "TextControlForegroundPointerOver", colors.Text);
         SetBrush(rd, themeKey, "TextControlPlaceholderForeground", colors.SubText);
+        SetBrush(rd, themeKey, "ToolTipBackground", colors.Category);
+        SetBrush(rd, themeKey, "ToolTipBorderBrush", colors.ControlBorder);
+        SetBrush(rd, themeKey, "ToolTipForeground", colors.Text);
     }
 
     private static void SetBrush(ResourceDictionary rd, ThemeVariant themeKey, string key, Color color)
