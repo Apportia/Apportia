@@ -52,6 +52,9 @@ public partial class MainWindow : Window, IInstallUi
         if (OperatingSystem.IsWindows())
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
+        // Avoids a flash at XAML defaults before StartupAsync runs.
+        ApplyPersistedShell();
+
         var cliArgs = Environment.GetCommandLineArgs();
         _cliAppArgs = cliArgs.Length > 1 ? Environment.GetCommandLineArgs().Skip(1).ToArray() : [];
 
@@ -189,9 +192,6 @@ public partial class MainWindow : Window, IInstallUi
         var settings = SettingsService.Load();
         _defaultView = FilterViewSettings.Default;
 
-        Width = _defaultView.WindowWidth;
-        Height = _defaultView.WindowHeight;
-
         var vm = new MainViewModel(AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath), _iconManager, _defaultView.IconSize)
         {
             Columns =
@@ -214,14 +214,24 @@ public partial class MainWindow : Window, IInstallUi
         vm.Columns.IsGridView = _defaultView.IsGridView;
         vm.InstallFilter = settings.InstallFilter;
 
-        Application.Current!.RequestedThemeVariant = settings.Theme switch
-        {
-            "Light" => ThemeVariant.Light,
-            "Dark" => ThemeVariant.Dark,
-            _ => null
-        };
-
         return vm;
+    }
+
+    private void ApplyPersistedShell()
+    {
+        var settings = SettingsService.Load();
+        settings.ViewPresets.TryGetValue(settings.InstallFilter.ToString(), out var preset);
+        preset ??= FilterViewSettings.Default;
+        Width = preset.WindowWidth;
+        Height = preset.WindowHeight;
+
+        if (Application.Current is { } app)
+            app.RequestedThemeVariant = settings.Theme switch
+            {
+                "Light" => ThemeVariant.Light,
+                "Dark" => ThemeVariant.Dark,
+                _ => null
+            };
     }
 
     private async Task StartFirstRunAsync()
