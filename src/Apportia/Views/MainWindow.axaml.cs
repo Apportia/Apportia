@@ -63,22 +63,10 @@ public partial class MainWindow : Window, IInstallUi
         _installer = new InstallOrchestrator(_installQueue, _deployService, this);
         _themeController = new ThemeController(this, ThemeToggleIcon);
 
-        if (File.Exists(AppDatabaseUpdater.CachePath))
-        {
-            // Cache available: populate UI immediately, update + download icons in background
-            var vm = BuildViewModel();
-            SubscribeViewModel(vm);
-            DataContext = vm;
-            ApplyViewPreset(vm, false);
-            _ = Task.WhenAll(
-                AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
-                MirrorService.TryUpdateAsync(_cts.Token),
-                SecurityNoticeService.TryUpdateAsync(_cts.Token));
-            return;
-        }
+        var dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
+        _ = Task.Run(() => AtomicFile.SweepStaleTempFiles(dataDir, TimeSpan.FromMinutes(5)));
 
-        // No cache: download first, then populate UI
-        _ = StartFirstRunAsync();
+        _ = StartupAsync();
     }
 
     public static bool IsWindows => OperatingSystem.IsWindows();
@@ -164,6 +152,32 @@ public partial class MainWindow : Window, IInstallUi
         return DataContext is MainViewModel vm ? vm.AllNodes : [];
     }
 
+    private async Task StartupAsync()
+    {
+        // Yield so the window renders before we touch the JSON or filesystem.
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+
+        if (File.Exists(AppDatabaseUpdater.CachePath))
+        {
+            PopulateFromCache();
+            _ = Task.WhenAll(
+                AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
+                MirrorService.TryUpdateAsync(_cts.Token),
+                SecurityNoticeService.TryUpdateAsync(_cts.Token));
+            return;
+        }
+
+        await StartFirstRunAsync();
+    }
+
+    private void PopulateFromCache()
+    {
+        var vm = BuildViewModel();
+        SubscribeViewModel(vm);
+        DataContext = vm;
+        ApplyViewPreset(vm, false);
+    }
+
     private MainViewModel BuildViewModel()
     {
         var settings = SettingsService.Load();
@@ -210,10 +224,9 @@ public partial class MainWindow : Window, IInstallUi
             AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
             MirrorService.TryUpdateAsync(_cts.Token),
             SecurityNoticeService.TryUpdateAsync(_cts.Token));
-        var vm = BuildViewModel();
-        SubscribeViewModel(vm);
-        await Dispatcher.UIThread.InvokeAsync(() => DataContext = vm);
-        await Dispatcher.UIThread.InvokeAsync(() => ApplyViewPreset(vm, false));
+        if (!File.Exists(AppDatabaseUpdater.CachePath))
+            return;
+        await Dispatcher.UIThread.InvokeAsync(PopulateFromCache);
     }
 
     private async Task StartIconDownloadsAsync(MainViewModel vm)
