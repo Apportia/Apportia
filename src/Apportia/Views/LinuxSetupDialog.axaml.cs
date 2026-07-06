@@ -172,6 +172,7 @@ public partial class LinuxSetupDialog : Window
         }
 
         settings.WineVersion = pickedVersion;
+        SettingsService.Save(settings);
 
         SaveButton.IsEnabled = false;
         RetryButton.IsVisible = false;
