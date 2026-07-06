@@ -42,7 +42,26 @@ public sealed class AppImageManager : IDisposable
     public Bitmap GetIcon(string sectionName, int size)
     {
         var localPath = LocalPath(sectionName, size);
-        return File.Exists(localPath) ? _cache.GetOrAdd($"{size}:{sectionName}", _ => new Bitmap(localPath)) : Placeholder(size);
+        if (!File.Exists(localPath))
+            return Placeholder(size);
+        try
+        {
+            return _cache.GetOrAdd($"{size}:{sectionName}", _ => new Bitmap(localPath));
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"Icon corrupt, discarding: {sectionName} @ {size} – {ex.Message}");
+            try
+            {
+                File.Delete(localPath);
+            }
+            catch
+            {
+                /* file may be locked – will retry on next launch after Bitmap ref drops */
+            }
+
+            return Placeholder(size);
+        }
     }
 
     public Bitmap GetCustomIcon(string folderName, int size = 24)
@@ -72,7 +91,7 @@ public sealed class AppImageManager : IDisposable
         {
             var bytes = await _http.GetByteArrayAsync(url, ct);
             Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-            await File.WriteAllBytesAsync(localPath, bytes, ct);
+            await AtomicFile.WriteAllBytesAsync(localPath, bytes, ct);
             return new Bitmap(new MemoryStream(bytes));
         }
         catch (Exception ex)
@@ -118,7 +137,7 @@ public sealed class AppImageManager : IDisposable
             var bytes = await _http.GetByteArrayAsync(url, ct);
             var localPath = LocalPath(section, size);
             Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-            await File.WriteAllBytesAsync(localPath, bytes, ct);
+            await AtomicFile.WriteAllBytesAsync(localPath, bytes, ct);
             var bitmap = new Bitmap(new MemoryStream(bytes));
             _cache[$"{size}:{section}"] = bitmap;
             return bitmap;

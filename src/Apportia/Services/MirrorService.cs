@@ -29,7 +29,7 @@ internal static class MirrorService
                 return;
 
             Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
-            await File.WriteAllTextAsync(CachePath, json, ct);
+            await AtomicFile.WriteAllTextAsync(CachePath, json, ct: ct);
             lock (DatabaseLock)
             {
                 _database = null;
@@ -183,8 +183,8 @@ internal static class MirrorService
                 prefs = existing;
             prefs[prefix] = slug;
             Directory.CreateDirectory(Path.GetDirectoryName(PrefsPath)!);
-            File.WriteAllText(PrefsPath,
-                              JsonSerializer.Serialize(prefs, typeof(Dictionary<string, string>), MirrorDatabaseJsonContext.Default));
+            AtomicFile.WriteAllText(PrefsPath,
+                                    JsonSerializer.Serialize(prefs, typeof(Dictionary<string, string>), MirrorDatabaseJsonContext.Default));
         }
         catch
         {

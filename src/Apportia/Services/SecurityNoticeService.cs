@@ -31,7 +31,7 @@ public static class SecurityNoticeService
                 return;
 
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            await File.WriteAllTextAsync(FilePath, json, Encoding.UTF8, ct);
+            await AtomicFile.WriteAllTextAsync(FilePath, json, Encoding.UTF8, ct);
             _db = null;
         }
         catch

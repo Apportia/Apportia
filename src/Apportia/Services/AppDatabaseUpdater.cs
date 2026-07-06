@@ -10,22 +10,45 @@ public static class AppDatabaseUpdater
     private const double MinEntryRatio = 0.8;
     private const int MinEntryCount = 100;
 
+    private static readonly TimeSpan[] RetryDelays = [TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(8)];
+
     public static readonly string CachePath = Path.Combine(ResolveDataDir(), "app_database.json");
 
     public static async Task TryUpdateAsync(CancellationToken ct = default)
     {
-        try
+        for (var attempt = 0;; attempt++)
         {
-            var json = await GitHubContentClient.FetchTextAsync(RepoPath, ct);
-            if (json is null || !IsValid(json))
+            try
+            {
+                var json = await GitHubContentClient.FetchTextAsync(RepoPath, ct);
+                if (json != null)
+                {
+                    if (!IsValid(json))
+                        return;
+                    Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
+                    await AtomicFile.WriteAllTextAsync(CachePath, json, Encoding.UTF8, ct);
+                    return;
+                }
+            }
+            catch (OperationCanceledException)
+            {
                 return;
+            }
+            catch
+            {
+                /* transient failure — fall through to retry */
+            }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
-            await File.WriteAllTextAsync(CachePath, json, Encoding.UTF8, ct);
-        }
-        catch
-        {
-            /* keep existing cache intact on any failure */
+            if (attempt >= RetryDelays.Length)
+                return;
+            try
+            {
+                await Task.Delay(RetryDelays[attempt], ct);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
         }
     }
 
