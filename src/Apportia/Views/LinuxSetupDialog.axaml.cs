@@ -106,7 +106,7 @@ public partial class LinuxSetupDialog : Window
         var settings = SettingsService.Load();
         var idx = items.FindIndex(v => v.Equals(settings.WineVersion, StringComparison.OrdinalIgnoreCase));
         VersionCombo.SelectedIndex = idx >= 0 ? idx : 0;
-        VersionHint.Text = "\"latest\" automatically updates to the newest staging build.";
+        VersionHint.Text = "\"latest\" automatically updates to the newest vanilla build.";
     }
 
     private async void OnRetry(object? sender, RoutedEventArgs e)

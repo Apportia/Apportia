@@ -25,8 +25,9 @@ public static partial class WineRunnersClient
         Path.Combine(AppContext.BaseDirectory, "Data", "wine_releases.json");
 
     /// Returns available vanilla + staging 64-bit releases. Newest first; when a version has
-    /// both vanilla and staging, staging appears first. Cached to disk for 6h; falls back to
-    /// stale cache when the GitHub API is unreachable or rate-limited.
+    /// both vanilla and staging, vanilla appears first (staging tends to break normal apps).
+    /// Cached to disk for 6h; falls back to stale cache when the GitHub API is unreachable or
+    /// rate-limited.
     public static async Task<IReadOnlyList<WineRunnerRelease>> FetchReleasesAsync(CancellationToken ct = default)
     {
         var cache = LoadCache();
@@ -50,7 +51,7 @@ public static partial class WineRunnersClient
                      .GroupBy(r => r.Version)
                      .Select(g => g.First())
                      .OrderByDescending(r => ParseVersion(r.Version))
-                     .ThenByDescending(r => r.IsStaging)
+                     .ThenBy(r => r.IsStaging)
                      .ToList();
 
         if (mapped.Count == 0)
@@ -104,13 +105,13 @@ public static partial class WineRunnersClient
         }
     }
 
-    /// Resolves the release named by version, or the newest staging build when "latest".
+    /// Resolves the release named by version, or the newest vanilla build when "latest".
     public static WineRunnerRelease? PickRelease(IReadOnlyList<WineRunnerRelease> releases, string version)
     {
         if (releases.Count == 0)
             return null;
         if (version.Equals("latest", StringComparison.OrdinalIgnoreCase))
-            return releases.FirstOrDefault(r => r.IsStaging) ?? releases[0];
+            return releases.FirstOrDefault(r => !r.IsStaging) ?? releases[0];
         return releases.FirstOrDefault(r => r.Version.Equals(version, StringComparison.OrdinalIgnoreCase));
     }
 
