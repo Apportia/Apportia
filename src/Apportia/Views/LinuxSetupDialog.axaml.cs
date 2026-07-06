@@ -9,6 +9,8 @@ namespace Apportia.Views;
 public partial class LinuxSetupDialog : Window
 {
     private const string LatestKey = "latest";
+    private const long RequiredDiskGib = 2;
+    private const long RequiredDiskGibBytes = RequiredDiskGib * 1024L * 1024L * 1024L;
 
     private CancellationTokenSource? _downloadCts;
     private double _lastHeight;
@@ -171,6 +173,14 @@ public partial class LinuxSetupDialog : Window
             return;
         }
 
+        if (!HasEnoughDiskSpace(out var freeGib))
+        {
+            ErrorText.Text = $"Not enough free disk space for the bundled Wine prefix. " +
+                             $"At least {RequiredDiskGib} GiB required, only {freeGib:0.0} GiB available in {WineService.LinuxDir}.";
+            ErrorText.IsVisible = true;
+            return;
+        }
+
         settings.WineVersion = pickedVersion;
         SettingsService.Save(settings);
 
@@ -205,6 +215,24 @@ public partial class LinuxSetupDialog : Window
     {
         _downloadCts?.Cancel();
         Close();
+    }
+
+    private static bool HasEnoughDiskSpace(out double freeGib)
+    {
+        freeGib = 0;
+        try
+        {
+            var dir = Directory.Exists(WineService.LinuxDir)
+                ? WineService.LinuxDir
+                : Path.GetDirectoryName(WineService.LinuxDir.TrimEnd(Path.DirectorySeparatorChar)) ?? AppContext.BaseDirectory;
+            var drive = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(dir)) ?? "/");
+            freeGib = drive.AvailableFreeSpace / (1024.0 * 1024.0 * 1024.0);
+            return drive.AvailableFreeSpace >= RequiredDiskGibBytes;
+        }
+        catch
+        {
+            return true;
+        }
     }
 
     private static void TryDeleteDir(string path)
