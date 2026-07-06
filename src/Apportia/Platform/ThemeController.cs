@@ -8,7 +8,6 @@ namespace Apportia.Platform;
 
 public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIcon)
 {
-    private ThemeVariant? _prevTheme;
     private bool _systemIsDark;
 
     public void Init()
@@ -27,18 +26,20 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
     public void Toggle()
     {
         var current = Application.Current!.RequestedThemeVariant;
-        var opposite = _systemIsDark ? ThemeVariant.Light : ThemeVariant.Dark;
-        var same = _systemIsDark ? (ThemeVariant?)ThemeVariant.Dark : ThemeVariant.Light;
 
         ThemeVariant? next;
-        if (current == opposite)
-            next = null;
-        else if (current == null && _prevTheme == opposite)
-            next = same;
+        if (current == null)
+        {
+            _systemIsDark = Application.Current.ActualThemeVariant == ThemeVariant.Dark;
+            next = _systemIsDark ? ThemeVariant.Light : ThemeVariant.Dark;
+        }
         else
-            next = opposite;
+        {
+            var opposite = _systemIsDark ? ThemeVariant.Light : ThemeVariant.Dark;
+            var same = _systemIsDark ? ThemeVariant.Dark : ThemeVariant.Light;
+            next = current == opposite ? same : null;
+        }
 
-        _prevTheme = current;
         Application.Current.RequestedThemeVariant = next;
         RefreshIcon(next == null);
         _ = WinePrefixTheme.ApplyAsync(Application.Current.ActualThemeVariant == ThemeVariant.Dark);
