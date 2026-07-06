@@ -8,7 +8,7 @@ namespace Apportia.Services;
 /// - Bundled: uses Data/Linux/runners/&lt;version&gt;/bin/wine and Data/Linux/prefixes/default.
 public static class WineService
 {
-    public const string FallbackPrefixDir = "/tmp/apportia-wine-prefix";
+    public static readonly string FallbackPrefixDir = $"/tmp/apportia.{Environment.UserName}.wine";
     public const long FallbackMinFreeBytes = 5L * 1024 * 1024 * 1024;
 
     public static readonly string LinuxDir = Path.Combine(AppContext.BaseDirectory, "Data", "Linux");
