@@ -154,7 +154,10 @@ public partial class LinuxSetupDialog : Window
                     "Delete", "Keep");
                 await confirm.ShowDialog(this);
                 if (confirm.Result == "Delete")
+                {
                     TryDeleteDir(WineService.LinuxDir);
+                    TryDeleteDir(WineService.FallbackPrefixDir);
+                }
             }
 
             settings.LinuxSetupCompleted = true;
@@ -180,6 +183,9 @@ public partial class LinuxSetupDialog : Window
             ErrorText.IsVisible = true;
             return;
         }
+
+        if (!await EnsurePrefixLocationAsync())
+            return;
 
         settings.WineVersion = pickedVersion;
         SettingsService.Save(settings);
@@ -215,6 +221,57 @@ public partial class LinuxSetupDialog : Window
     {
         _downloadCts?.Cancel();
         Close();
+    }
+
+    private async Task<bool> EnsurePrefixLocationAsync()
+    {
+        var defaultFs = WineService.GetFilesystemType(WineService.DefaultPrefixDir) ?? "unknown";
+        var tmpFs = WineService.GetFilesystemType("/tmp") ?? "unknown";
+        var defaultOk = WineService.SupportsWinePrefix(WineService.DefaultPrefixDir);
+        var tmpOk = WineService.SupportsWinePrefix("/tmp");
+
+        double tmpFreeGib = 0;
+        try
+        {
+            tmpFreeGib = new DriveInfo(Path.GetPathRoot("/tmp") ?? "/").AvailableFreeSpace / (1024.0 * 1024.0 * 1024.0);
+        }
+        catch
+        {
+            /* leave as 0 */
+        }
+
+        var chosen = defaultOk ? WineService.DefaultPrefixDir
+            : tmpOk && tmpFreeGib >= 5 ? WineService.FallbackPrefixDir
+            : null;
+
+        var debug =
+            $"Default prefix: {WineService.DefaultPrefixDir}\n" +
+            $"  fs: {defaultFs}, wine-compatible: {defaultOk}\n\n" +
+            $"Fallback prefix: {WineService.FallbackPrefixDir}\n" +
+            $"  /tmp fs: {tmpFs}, wine-compatible: {tmpOk}\n" +
+            $"  /tmp free: {tmpFreeGib:0.0} GiB (need 5 GiB)\n\n" +
+            $"Chosen: {chosen ?? "NONE — setup aborted"}";
+        await new AppDialog("Prefix location check", debug, "OK").ShowDialog(this);
+
+        if (chosen == null)
+        {
+            ErrorText.Text = "No suitable location for the bundled Wine prefix. See details in the dialog above.";
+            ErrorText.IsVisible = true;
+            return false;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(chosen);
+        }
+        catch (Exception ex)
+        {
+            ErrorText.Text = $"Failed to create prefix directory '{chosen}': {ex.Message}";
+            ErrorText.IsVisible = true;
+            return false;
+        }
+
+        return true;
     }
 
     private static bool HasEnoughDiskSpace(out double freeGib)

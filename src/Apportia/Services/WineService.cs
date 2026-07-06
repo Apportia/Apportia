@@ -8,9 +8,59 @@ namespace Apportia.Services;
 /// - Bundled: uses Data/Linux/runners/&lt;version&gt;/bin/wine and Data/Linux/prefixes/default.
 public static class WineService
 {
+    public const string FallbackPrefixDir = "/tmp/apportia-wine-prefix";
+    public const long FallbackMinFreeBytes = 5L * 1024 * 1024 * 1024;
+
     public static readonly string LinuxDir = Path.Combine(AppContext.BaseDirectory, "Data", "Linux");
     public static readonly string RunnersDir = Path.Combine(LinuxDir, "runners");
-    public static readonly string PrefixDir = Path.Combine(LinuxDir, "prefixes", "default");
+    public static readonly string DefaultPrefixDir = Path.Combine(LinuxDir, "prefixes", "default");
+
+    private static readonly HashSet<string> CompatibleFsTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "ext4", "btrfs", "xfs", "zfs", "f2fs", "tmpfs"
+    };
+
+    public static string PrefixDir => SupportsWinePrefix(DefaultPrefixDir) ? DefaultPrefixDir : FallbackPrefixDir;
+
+    public static bool SupportsWinePrefix(string dir)
+    {
+        var fsType = GetFilesystemType(dir);
+        return fsType != null && CompatibleFsTypes.Contains(fsType);
+    }
+
+    public static string? GetFilesystemType(string dir)
+    {
+        try
+        {
+            var probe = dir;
+            while (!Directory.Exists(probe))
+            {
+                var parent = Path.GetDirectoryName(probe.TrimEnd(Path.DirectorySeparatorChar));
+                if (string.IsNullOrEmpty(parent) || parent == probe)
+                    return null;
+                probe = parent;
+            }
+
+            var psi = new ProcessStartInfo("stat")
+            {
+                ArgumentList = { "-f", "-c", "%T", probe },
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            using var proc = Process.Start(psi);
+            if (proc is null)
+                return null;
+            var output = proc.StandardOutput.ReadToEnd().Trim();
+            proc.WaitForExit(3000);
+            return proc.ExitCode == 0 && output.Length > 0 ? output : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     public static bool IsSystemWineAvailable()
     {
@@ -75,9 +125,11 @@ public static class WineService
 
     private static string ResolvePrefix()
     {
-        return IsBundled()
-            ? PrefixDir
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".wine");
+        if (!IsBundled())
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".wine");
+        var prefix = PrefixDir;
+        Directory.CreateDirectory(prefix);
+        return prefix;
     }
 
     private static string? ResolveActiveRunnerDir()
