@@ -4171,15 +4171,15 @@
     "Category": "Graphics & Pictures",
     "SubCategory": "Computer-Aided Design",
     "JoinedDate": "2020-09-27",
-    "DisplayVersion": "1.0.2",
-    "PackageVersion": "1.0.2.0",
-    "UpdateDate": "2025-09-23",
-    "DownloadFile": "FreeCADPortable_1.0.2.paf.exe",
-    "Hash": "210baa575491e52e125d1b67801c6927d6e22e80f85a782208323e1bfd28b43f",
+    "DisplayVersion": "1.1.1",
+    "PackageVersion": "1.1.1.0",
+    "UpdateDate": "2026-07-07",
+    "DownloadFile": "FreeCADPortable_1.1.1.paf.exe",
+    "Hash": "0ea8f1e6a6b63fa376b52c3c0a64f848269504ff2fb87d10420e2590f4722703",
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
-    "DownloadSize": "370",
-    "InstallSize": "2283"
+    "DownloadSize": "371",
+    "InstallSize": "2255"
   },
   "FreeCADPortableLegacyWin81": {
     "Name": "FreeCAD (Legacy Win8.1)",
