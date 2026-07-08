@@ -77,10 +77,6 @@
         <Style Selector="Button#LinuxSetupButton.update:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource AppUpdateBrush}" />
         </Style>
-        <Style Selector="Border.appRow.runningRow">
-            <Setter Property="BorderBrush" Value="#4CAF50" />
-            <Setter Property="BorderThickness" Value="3,0,0,0" />
-        </Style>
         <Style Selector="Border.appRow.launchFxRow">
             <Style.Animations>
                 <Animation Duration="0:0:0.7" IterationCount="INFINITE">
@@ -471,7 +467,6 @@
                                             Classes.queuedRow="{Binding IsQueued}"
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchFxRow="{Binding IsLaunchFx}"
-                                            Classes.runningRow="{Binding IsRunning}"
                                             Classes.indentedRow="{Binding IsIndented}"
                                             Classes.searchFxRow="{Binding IsSearchFx}"
                                             PointerPressed="OnAppRowPointerPressed"
@@ -637,65 +632,69 @@
                                                 </MenuItem>
                                             </ContextMenu>
                                         </Border.ContextMenu>
-                                        <DockPanel LastChildFill="True">
-                                            <Image DockPanel.Dock="Left"
-                                                   Source="{Binding Icon}"
-                                                   Width="{Binding Columns.IconSize}"
-                                                   Height="{Binding Columns.IconSize}"
-                                                   Margin="4,0,4,0"
-                                                   VerticalAlignment="Center"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
-                                            <TextBlock DockPanel.Dock="Left"
-                                                       Width="{Binding Columns.Name}"
-                                                       Text="{Binding Name}"
-                                                       Margin="0,0,8,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       ToolTip.Tip="{Binding Name}" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Used}"
-                                                       IsVisible="{Binding Columns.ShowUsedColumn}"
-                                                       Text="{Binding UsedSize}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Install}"
-                                                       IsVisible="{Binding Columns.ShowMetaColumns}"
-                                                       Text="{Binding InstallSize}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Download}"
-                                                       IsVisible="{Binding Columns.ShowMetaColumns}"
-                                                       Text="{Binding DownloadSize}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Version}"
-                                                       Text="{Binding ShownVersion}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Updated}"
-                                                       Text="{Binding UpdateDateDisplay}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Current}"
-                                                       IsVisible="{Binding Columns.ShowCurrentColumn}"
-                                                       Text="{Binding CurrentDate}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Joined}"
-                                                       IsVisible="{Binding Columns.ShowJoinedColumn}"
-                                                       Text="{Binding JoinedDateDisplay}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}" />
-                                            <TextBlock Text="{Binding Description}" Margin="4,0,0,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       ToolTip.Tip="{Binding Description}" />
-                                        </DockPanel>
+                                        <Grid>
+                                            <DockPanel LastChildFill="True">
+                                                <Image DockPanel.Dock="Left"
+                                                       Source="{Binding Icon}"
+                                                       Width="{Binding Columns.IconSize}"
+                                                       Height="{Binding Columns.IconSize}"
+                                                       Margin="4,0,4,0"
+                                                       VerticalAlignment="Center"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                                <TextBlock DockPanel.Dock="Left"
+                                                           Width="{Binding Columns.Name}"
+                                                           Text="{Binding Name}"
+                                                           Margin="0,0,8,0"
+                                                           FontSize="{Binding Columns.FontSize}"
+                                                           ToolTip.Tip="{Binding Name}" />
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           Width="{Binding Columns.Used}"
+                                                           IsVisible="{Binding Columns.ShowUsedColumn}"
+                                                           Text="{Binding UsedSize}"
+                                                           TextAlignment="Right" Margin="0,0,4,0"
+                                                           FontSize="{Binding Columns.FontSize}" />
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           Width="{Binding Columns.Install}"
+                                                           IsVisible="{Binding Columns.ShowMetaColumns}"
+                                                           Text="{Binding InstallSize}"
+                                                           TextAlignment="Right" Margin="0,0,4,0"
+                                                           FontSize="{Binding Columns.FontSize}" />
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           Width="{Binding Columns.Download}"
+                                                           IsVisible="{Binding Columns.ShowMetaColumns}"
+                                                           Text="{Binding DownloadSize}"
+                                                           TextAlignment="Right" Margin="0,0,4,0"
+                                                           FontSize="{Binding Columns.FontSize}" />
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           Width="{Binding Columns.Version}"
+                                                           Text="{Binding ShownVersion}"
+                                                           TextAlignment="Right" Margin="0,0,4,0"
+                                                           FontSize="{Binding Columns.FontSize}" />
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           Width="{Binding Columns.Updated}"
+                                                           Text="{Binding UpdateDateDisplay}"
+                                                           TextAlignment="Right" Margin="0,0,4,0"
+                                                           FontSize="{Binding Columns.FontSize}" />
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           Width="{Binding Columns.Current}"
+                                                           IsVisible="{Binding Columns.ShowCurrentColumn}"
+                                                           Text="{Binding CurrentDate}"
+                                                           TextAlignment="Right" Margin="0,0,4,0"
+                                                           FontSize="{Binding Columns.FontSize}"
+                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                <TextBlock DockPanel.Dock="Right"
+                                                           Width="{Binding Columns.Joined}"
+                                                           IsVisible="{Binding Columns.ShowJoinedColumn}"
+                                                           Text="{Binding JoinedDateDisplay}"
+                                                           TextAlignment="Right" Margin="0,0,4,0"
+                                                           FontSize="{Binding Columns.FontSize}" />
+                                                <TextBlock Text="{Binding Description}" Margin="4,0,0,0"
+                                                           FontSize="{Binding Columns.FontSize}"
+                                                           ToolTip.Tip="{Binding Description}" />
+                                            </DockPanel>
+                                            <Rectangle Width="3" HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                                       Fill="#4CAF50" IsVisible="{Binding IsRunning}" />
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
 
@@ -759,7 +758,6 @@
                                             Classes.queuedRow="{Binding IsQueued}"
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchFxRow="{Binding IsLaunchFx}"
-                                            Classes.runningRow="{Binding IsRunning}"
                                             Classes.searchFxRow="{Binding IsSearchFx}"
                                             Width="{Binding Columns.TileWidth}"
                                             Padding="4,6"
@@ -926,20 +924,25 @@
                                                 </MenuItem>
                                             </ContextMenu>
                                         </Border.ContextMenu>
-                                        <StackPanel HorizontalAlignment="Center" Spacing="4">
-                                            <Image Source="{Binding Icon}"
-                                                   Width="{Binding Columns.IconSize}"
-                                                   Height="{Binding Columns.IconSize}"
-                                                   HorizontalAlignment="Center"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
-                                            <TextBlock Text="{Binding Name}"
-                                                       TextAlignment="Center"
-                                                       TextWrapping="Wrap"
-                                                       TextTrimming="None"
-                                                       MaxLines="2"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       VerticalAlignment="Top" />
-                                        </StackPanel>
+                                        <Grid>
+                                            <StackPanel HorizontalAlignment="Center" Spacing="4">
+                                                <Image Source="{Binding Icon}"
+                                                       Width="{Binding Columns.IconSize}"
+                                                       Height="{Binding Columns.IconSize}"
+                                                       HorizontalAlignment="Center"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                                <TextBlock Text="{Binding Name}"
+                                                           TextAlignment="Center"
+                                                           TextWrapping="Wrap"
+                                                           TextTrimming="None"
+                                                           MaxLines="2"
+                                                           FontSize="{Binding Columns.FontSize}"
+                                                           VerticalAlignment="Top" />
+                                            </StackPanel>
+                                            <Rectangle Height="3" HorizontalAlignment="Stretch"
+                                                       VerticalAlignment="Bottom"
+                                                       Fill="#4CAF50" IsVisible="{Binding IsRunning}" />
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
 
