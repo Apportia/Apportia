@@ -6,22 +6,93 @@ using Avalonia.Media;
 
 namespace Apportia.Services;
 
-/// Writes Apportia's resolved Linux theme colors into the bundled Wine prefix's user.reg
-/// and force-disables the Windows theme engine. No-op when system Wine is in use.
-///
-/// A marker key `[HKCU\Software\Apportia]` with `Theme` and `User` values makes the operation
-/// idempotent: if user.reg already reports the desired variant for the current $USER we skip
-/// wineboot/regedit entirely.
 public static class WinePrefixTheme
 {
     private const int VerifyRetries = 3;
+    private const int QuietWindowMs = 1500;
 
-    public static async Task ApplyAsync(bool isDark, bool force = false, CancellationToken ct = default)
+    private static readonly Lock DesiredLock = new();
+    private static bool? _desiredDark;
+    private static bool _desiredForce;
+    private static long _desiredTickMs;
+    private static Task? _worker;
+
+    public static Task ApplyAsync(bool isDark, bool force = false, CancellationToken ct = default)
     {
         if (!OperatingSystem.IsLinux())
-            return;
+            return Task.CompletedTask;
         if (!SettingsService.Load().WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase))
-            return;
+            return Task.CompletedTask;
+        if (WineService.ResolveWineBinary() is null)
+            return Task.CompletedTask;
+
+        lock (DesiredLock)
+        {
+            _desiredDark = isDark;
+            _desiredForce |= force;
+            _desiredTickMs = Environment.TickCount64;
+            // Shared singleton worker — per-caller ct would let one caller cancel work queued by another.
+            _worker ??= Task.Run(() => WorkerLoopAsync(CancellationToken.None), CancellationToken.None);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static async Task WorkerLoopAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (TryClaimNextRequest(out var isDark, out var force, out var waitMs))
+            {
+                if (waitMs > 0)
+                {
+                    await Task.Delay(waitMs, ct);
+                    continue;
+                }
+
+                await ApplyOnceAsync(isDark, force, ct);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown signal — leave the queue as-is.
+        }
+    }
+
+    private static bool TryClaimNextRequest(out bool isDark, out bool force, out int waitMs)
+    {
+        lock (DesiredLock)
+        {
+            if (_desiredDark is null)
+            {
+                _worker = null;
+                isDark = false;
+                force = false;
+                waitMs = 0;
+                return false;
+            }
+
+            var elapsed = Environment.TickCount64 - _desiredTickMs;
+            var remaining = QuietWindowMs - elapsed;
+            if (remaining > 0)
+            {
+                isDark = false;
+                force = false;
+                waitMs = (int)remaining;
+                return true;
+            }
+
+            isDark = _desiredDark.Value;
+            force = _desiredForce;
+            _desiredDark = null;
+            _desiredForce = false;
+            waitMs = 0;
+            return true;
+        }
+    }
+
+    private static async Task ApplyOnceAsync(bool isDark, bool force, CancellationToken ct)
+    {
         var wine = WineService.ResolveWineBinary();
         if (wine is null)
             return;
@@ -36,14 +107,12 @@ public static class WinePrefixTheme
         if (!force && MarkerMatches(userReg, variant, user))
             return;
 
-        // Ensure wineboot finishes before regedit — implicit wineboot on a fresh or stale prefix
-        // races with `regedit /S` and clobbers imported keys.
-        // Seed the fonts before wineboot so its font-registry pass picks them up.
-        // Guarded by a marker inside the prefix, so this is a no-op after the first successful apply.
+        // Seed fonts before wineboot so its font-registry pass picks them up.
         WinePrefixFonts.Apply();
 
         if (!File.Exists(userReg))
         {
+            // Explicit wineboot first — an implicit one racing with regedit /S clobbers imported keys.
             await RunWineAsync(wine, ct, "wineboot", "--init");
             WinePrefixSanitizer.Sanitize();
         }
@@ -55,12 +124,12 @@ public static class WinePrefixTheme
             try
             {
                 await RunWineAsync(wine, ct, "regedit", "/S", regFile);
-                // wineserver -w waits for the last wine client to exit, which flushes user.reg to disk.
+                // Flush user.reg to disk by waiting for the last wine client to exit.
                 await RunWineserverAsync(wine, ct, "-w");
             }
             catch
             {
-                /* best-effort — theme is cosmetic */
+                // Theme is cosmetic; retry loop below re-verifies via marker.
             }
             finally
             {
@@ -70,7 +139,7 @@ public static class WinePrefixTheme
                 }
                 catch
                 {
-                    /* ignore */
+                    /* temp file; ok if it leaks */
                 }
             }
 
