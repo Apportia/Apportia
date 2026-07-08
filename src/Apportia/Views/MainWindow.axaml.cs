@@ -1601,6 +1601,7 @@ public partial class MainWindow : Window, IInstallUi
     {
         base.OnOpened(e);
         _themeController.ApplyDarkTitlebar(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
+        RunningAppsService.Start();
         _ = CheckOrphanedFilesAsync();
         if (OperatingSystem.IsLinux())
         {

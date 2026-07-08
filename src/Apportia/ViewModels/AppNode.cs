@@ -70,6 +70,21 @@ public sealed class AppNode : INotifyPropertyChanged
                     break;
             }
         };
+
+        IsRunning = RunningAppsService.IsRunning(SectionName);
+        RunningAppsService.Changed += OnRunningChanged;
+    }
+
+    public bool IsRunning
+    {
+        get;
+        private set
+        {
+            if (field == value)
+                return;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRunning)));
+        }
     }
 
     public ColumnWidths Columns { get; }
@@ -268,6 +283,13 @@ public sealed class AppNode : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnRunningChanged(object? sender, string sectionName)
+    {
+        if (!string.Equals(sectionName, SectionName, StringComparison.OrdinalIgnoreCase))
+            return;
+        Dispatcher.UIThread.Post(() => IsRunning = RunningAppsService.IsRunning(SectionName));
+    }
 
     public bool TryBeginLaunchFx()
     {

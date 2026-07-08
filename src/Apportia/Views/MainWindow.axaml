@@ -77,6 +77,10 @@
         <Style Selector="Button#LinuxSetupButton.update:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource AppUpdateBrush}" />
         </Style>
+        <Style Selector="Border.appRow.runningRow">
+            <Setter Property="BorderBrush" Value="#4CAF50" />
+            <Setter Property="BorderThickness" Value="3,0,0,0" />
+        </Style>
         <Style Selector="Border.appRow.launchFxRow">
             <Style.Animations>
                 <Animation Duration="0:0:0.7" IterationCount="INFINITE">
@@ -467,6 +471,7 @@
                                             Classes.queuedRow="{Binding IsQueued}"
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchFxRow="{Binding IsLaunchFx}"
+                                            Classes.runningRow="{Binding IsRunning}"
                                             Classes.indentedRow="{Binding IsIndented}"
                                             Classes.searchFxRow="{Binding IsSearchFx}"
                                             PointerPressed="OnAppRowPointerPressed"
@@ -663,6 +668,7 @@
                                             Classes.queuedRow="{Binding IsQueued}"
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchFxRow="{Binding IsLaunchFx}"
+                                            Classes.runningRow="{Binding IsRunning}"
                                             Classes.searchFxRow="{Binding IsSearchFx}"
                                             Width="{Binding Columns.TileWidth}"
                                             Padding="4,6"
