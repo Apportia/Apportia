@@ -299,7 +299,7 @@ public sealed class AppNode : INotifyPropertyChanged
         if (IsLaunchFx)
             return false;
         IsLaunchFx = true;
-        _ = Task.Delay(5000).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsLaunchFx = false));
+        _ = Task.Delay(2000).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsLaunchFx = false));
         return true;
     }
 
