@@ -122,6 +122,9 @@ public static class WineService
         if (!OperatingSystem.IsLinux())
             return;
         psi.Environment["WINEPREFIX"] = ResolvePrefix();
+        // Prevent winemenubuilder from writing wine-extension-*.desktop into ~/.local/share/applications
+        // and from registering MIME associations for the host user.
+        psi.Environment["WINEDLLOVERRIDES"] = "winemenubuilder.exe=";
         if (!IsBundled())
             return;
         var runner = ResolveActiveRunnerDir();

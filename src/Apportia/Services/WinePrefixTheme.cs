@@ -39,7 +39,10 @@ public static class WinePrefixTheme
         // Ensure wineboot finishes before regedit — implicit wineboot on a fresh or stale prefix
         // races with `regedit /S` and clobbers imported keys.
         if (!File.Exists(userReg))
+        {
             await RunWineAsync(wine, ct, "wineboot", "--init");
+            WinePrefixSanitizer.Sanitize();
+        }
 
         for (var attempt = 0; attempt < VerifyRetries; attempt++)
         {
@@ -68,7 +71,10 @@ public static class WinePrefixTheme
             }
 
             if (MarkerMatches(userReg, variant, user))
+            {
+                WinePrefixSanitizer.Sanitize();
                 return;
+            }
         }
     }
 
