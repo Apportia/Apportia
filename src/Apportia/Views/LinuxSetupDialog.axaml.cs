@@ -13,7 +13,12 @@ public partial class LinuxSetupDialog : Window
     private const long RequiredDiskGib = 2;
     private const long RequiredDiskGibBytes = RequiredDiskGib * 1024L * 1024L * 1024L;
 
+    private const string SaveLabel = "Save";
+    private const string InstallFontsLabel = "Install Fonts";
+
     private CancellationTokenSource? _downloadCts;
+    private string _initialMode = string.Empty;
+    private string _initialVersion = string.Empty;
     private double _lastHeight;
     private IReadOnlyList<WineRunnerRelease> _releases = [];
 
@@ -48,6 +53,8 @@ public partial class LinuxSetupDialog : Window
         Win32Window.ApplyDarkTitlebar(this);
 
         var settings = SettingsService.Load();
+        _initialMode = settings.WineMode;
+        _initialVersion = settings.WineVersion;
         var systemAvailable = WineService.IsSystemWineAvailable();
 
         SystemWinePanel.IsVisible = systemAvailable;
@@ -69,6 +76,40 @@ public partial class LinuxSetupDialog : Window
     private void OnModeChanged(object? sender, RoutedEventArgs e)
     {
         UpdateVersionPanelVisibility();
+        RefreshSaveButtonLabel();
+    }
+
+    private void OnVersionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        RefreshSaveButtonLabel();
+    }
+
+    private void RefreshSaveButtonLabel()
+    {
+        SaveButton.Content = ShouldOfferFontsOnly() ? InstallFontsLabel : SaveLabel;
+    }
+
+    private bool ShouldOfferFontsOnly()
+    {
+        var settings = SettingsService.Load();
+        if (!settings.LinuxSetupCompleted)
+            return false;
+        if (BundledModeRadio.IsChecked != true)
+            return false;
+        if (!_initialMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase))
+            return false;
+        var picked = VersionCombo.SelectedItem as string;
+        if (picked is null || !picked.Equals(_initialVersion, StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (WineService.ResolveWineBinary() is null)
+            return false;
+        return !FontsInstalled();
+    }
+
+    private static bool FontsInstalled()
+    {
+        return Directory.Exists(WineService.FontsDir)
+               && Directory.EnumerateFiles(WineService.FontsDir).Any();
     }
 
     private void UpdateVersionPanelVisibility()
@@ -107,6 +148,7 @@ public partial class LinuxSetupDialog : Window
         var idx = items.FindIndex(v => v.Equals(settings.WineVersion, StringComparison.OrdinalIgnoreCase));
         VersionCombo.SelectedIndex = idx >= 0 ? idx : 0;
         VersionHint.Text = "\"latest\" automatically updates to the newest vanilla build.";
+        RefreshSaveButtonLabel();
     }
 
     private async void OnRetry(object? sender, RoutedEventArgs e)
@@ -137,6 +179,13 @@ public partial class LinuxSetupDialog : Window
 
     private async Task OnSaveAsync()
     {
+        if (ShouldOfferFontsOnly())
+        {
+            await RunFontsDownloadAsync();
+            Close();
+            return;
+        }
+
         var useBundled = BundledModeRadio.IsChecked == true;
         var settings = SettingsService.Load();
         var wasBundled = settings.WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase);
@@ -221,15 +270,7 @@ public partial class LinuxSetupDialog : Window
             "Download", "Skip");
         await fontsPrompt.ShowDialog(this);
         if (fontsPrompt.Result == "Download")
-        {
-            SaveButton.IsEnabled = false;
-            ProgressPanel.IsVisible = true;
-            ProgressText.Text = "Downloading Windows fonts...";
-            ProgressBar.Value = 0;
-            var fontsProgress = new Progress<double>(p => ProgressBar.Value = p * 100);
-            await WineFontsClient.EnsureDownloadedAsync(fontsProgress, _downloadCts.Token);
-            SaveButton.IsEnabled = true;
-        }
+            await RunFontsDownloadAsync();
 
         settings.LinuxSetupCompleted = true;
         SettingsService.Save(settings);
@@ -238,6 +279,20 @@ public partial class LinuxSetupDialog : Window
         _ = WinePrefixTheme.ApplyAsync(isDark, true);
 
         Close();
+    }
+
+    private async Task RunFontsDownloadAsync()
+    {
+        SaveButton.IsEnabled = false;
+        RetryButton.IsVisible = false;
+        ErrorText.IsVisible = false;
+        ProgressPanel.IsVisible = true;
+        ProgressText.Text = "Downloading Windows fonts...";
+        ProgressBar.Value = 0;
+        var fontsProgress = new Progress<double>(p => ProgressBar.Value = p * 100);
+        _downloadCts ??= new CancellationTokenSource();
+        await WineFontsClient.EnsureDownloadedAsync(fontsProgress, _downloadCts.Token);
+        SaveButton.IsEnabled = true;
     }
 
     private void OnCancel(object? sender, RoutedEventArgs e)
