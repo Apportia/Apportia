@@ -262,15 +262,18 @@ public partial class LinuxSetupDialog : Window
         }
 
         ProgressPanel.IsVisible = false;
-        var fontsPrompt = new AppDialog(
-            "Download Windows fonts?",
-            "Wine is installed. Optionally download the original Windows font pack " +
-            "for better rendering in Windows applications.\n\n" +
-            "You can skip this and download it later.",
-            "Download", "Skip");
-        await fontsPrompt.ShowDialog(this);
-        if (fontsPrompt.Result == "Download")
-            await RunFontsDownloadAsync();
+        if (!FontsInstalled())
+        {
+            var fontsPrompt = new AppDialog(
+                "Download Windows fonts?",
+                "Wine is installed. Optionally download the original Windows font pack " +
+                "for better rendering in Windows applications.\n\n" +
+                "You can skip this and download it later.",
+                "Download", "Skip");
+            await fontsPrompt.ShowDialog(this);
+            if (fontsPrompt.Result == "Download")
+                await RunFontsDownloadAsync();
+        }
 
         settings.LinuxSetupCompleted = true;
         SettingsService.Save(settings);
