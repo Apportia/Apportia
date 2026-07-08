@@ -212,7 +212,25 @@ public partial class LinuxSetupDialog : Window
             return;
         }
 
-        Directory.CreateDirectory(WineService.PrefixDir);
+        ProgressPanel.IsVisible = false;
+        var fontsPrompt = new AppDialog(
+            "Download Windows fonts?",
+            "Wine is installed. Optionally download the original Windows font pack " +
+            "for better rendering in Windows applications.\n\n" +
+            "You can skip this and download it later.",
+            "Download", "Skip");
+        await fontsPrompt.ShowDialog(this);
+        if (fontsPrompt.Result == "Download")
+        {
+            SaveButton.IsEnabled = false;
+            ProgressPanel.IsVisible = true;
+            ProgressText.Text = "Downloading Windows fonts...";
+            ProgressBar.Value = 0;
+            var fontsProgress = new Progress<double>(p => ProgressBar.Value = p * 100);
+            await WineFontsClient.EnsureDownloadedAsync(fontsProgress, _downloadCts.Token);
+            SaveButton.IsEnabled = true;
+        }
+
         settings.LinuxSetupCompleted = true;
         SettingsService.Save(settings);
 

@@ -38,6 +38,10 @@ public static class WinePrefixTheme
 
         // Ensure wineboot finishes before regedit — implicit wineboot on a fresh or stale prefix
         // races with `regedit /S` and clobbers imported keys.
+        // Seed the fonts before wineboot so its font-registry pass picks them up.
+        // Guarded by a marker inside the prefix, so this is a no-op after the first successful apply.
+        WinePrefixFonts.Apply();
+
         if (!File.Exists(userReg))
         {
             await RunWineAsync(wine, ct, "wineboot", "--init");
@@ -70,11 +74,10 @@ public static class WinePrefixTheme
                 }
             }
 
-            if (MarkerMatches(userReg, variant, user))
-            {
-                WinePrefixSanitizer.Sanitize();
-                return;
-            }
+            if (!MarkerMatches(userReg, variant, user))
+                continue;
+            WinePrefixSanitizer.Sanitize();
+            return;
         }
     }
 
