@@ -188,15 +188,36 @@ public static class WinePrefixTheme
             sb.AppendLine($"\"{k}\"=\"{v}\"");
         sb.AppendLine();
 
+        var isDark = variant == "Dark";
+
         sb.AppendLine("[HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize]");
-        sb.AppendLine("\"AppsUseLightTheme\"=dword:00000000");
-        sb.AppendLine("\"SystemUsesLightTheme\"=dword:00000000");
+        if (isDark)
+        {
+            sb.AppendLine("\"AppsUseLightTheme\"=dword:00000000");
+            sb.AppendLine("\"SystemUsesLightTheme\"=dword:00000000");
+        }
+        else
+        {
+            sb.AppendLine("\"AppsUseLightTheme\"=dword:00000001");
+            sb.AppendLine("\"SystemUsesLightTheme\"=dword:00000001");
+        }
+
         sb.AppendLine();
 
         sb.AppendLine("[HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\ThemeManager]");
-        sb.AppendLine("\"ThemeActive\"=\"0\"");
-        sb.AppendLine("\"ColorName\"=-");
-        sb.AppendLine("\"DllName\"=-");
+        if (isDark)
+        {
+            sb.AppendLine("\"ThemeActive\"=\"0\"");
+            sb.AppendLine("\"ColorName\"=-");
+            sb.AppendLine("\"DllName\"=-");
+        }
+        else
+        {
+            sb.AppendLine("\"ThemeActive\"=\"1\"");
+            sb.AppendLine("\"ColorName\"=\"Blue\"");
+            sb.AppendLine("\"DllName\"=\"C:\\\\windows\\\\resources\\\\themes\\\\aero\\\\aero.msstyles\"");
+        }
+
         sb.AppendLine();
 
         sb.AppendLine("[HKEY_CURRENT_USER\\Software\\Apportia]");
