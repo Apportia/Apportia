@@ -84,8 +84,11 @@ public sealed class AppNode : INotifyPropertyChanged
                 return;
             field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRunning)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowTerminate)));
         }
     }
+
+    public bool ShowTerminate => IsRunning && !IsPlugin;
 
     public ColumnWidths Columns { get; }
 

@@ -678,6 +678,34 @@ public partial class MainWindow : Window, IInstallUi
         }
     }
 
+    private async void OnMenuTerminate(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (NodeFromMenu(sender) is not { } node)
+                return;
+            var candidates = RunningAppsService.GetKillCandidates(node.SectionName);
+            if (candidates.Count == 0)
+                return;
+
+            var list = string.Join("\n", candidates.Select(c => $"PID {c.Pid}: {c.Label}"));
+            var dialog = new AppDialog(
+                    $"Terminate {node.Name}",
+                    $"The following processes will be killed:\n\n{list}\n\nProceed?",
+                    "Terminate", "Cancel")
+                { Icon = new WindowIcon(node.Icon) };
+            await dialog.ShowDialog(this);
+            if (dialog.Result != "Terminate")
+                return;
+
+            RunningAppsService.KillPids(candidates.Select(c => c.Pid));
+        }
+        catch
+        {
+            /* terminate confirmation failed – no processes were killed */
+        }
+    }
+
     private async void OnMenuRunWithArgs(object? sender, RoutedEventArgs e)
     {
         try

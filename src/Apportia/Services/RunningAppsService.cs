@@ -10,6 +10,20 @@ public static class RunningAppsService
     private static HashSet<string> _running = new(StringComparer.OrdinalIgnoreCase);
     private static Timer? _timer;
 
+    private static readonly string[] WineOnlyExes =
+    [
+        "services.exe", "plugplay.exe", "winedevice.exe",
+        "rpcss.exe", "wineboot.exe"
+    ];
+
+    // An app might ship its own start.exe/explorer.exe/svchost.exe, so match wine's argv shape.
+    private static readonly (string Exe, string Arg)[] WineArgSignatures =
+    [
+        ("start.exe", "/exec"),
+        ("explorer.exe", "/desktop"),
+        ("svchost.exe", "-k")
+    ];
+
     public static event EventHandler<string>? Changed;
 
     public static void Start()
@@ -25,6 +39,198 @@ public static class RunningAppsService
         lock (Gate)
         {
             return _running.Contains(sectionName);
+        }
+    }
+
+    public static List<KillCandidate> GetKillCandidates(string sectionName)
+    {
+        var bases = CollectBaseDirs();
+        if (bases.Count == 0)
+            return [];
+        if (OperatingSystem.IsLinux())
+            return GetKillCandidatesLinux(sectionName, bases);
+        if (OperatingSystem.IsWindows())
+            return GetKillCandidatesWindows(sectionName, bases);
+        return [];
+    }
+
+    public static void KillPids(IEnumerable<int> pids)
+    {
+        foreach (var pid in pids)
+            TryKill(pid);
+        Poll();
+    }
+
+    private static List<KillCandidate> GetKillCandidatesLinux(string sectionName, List<string> bases)
+    {
+        var result = new List<KillCandidate>();
+        var wineBases = bases.Select(b => "Z:" + b.Replace('/', '\\')).ToList();
+        foreach (var procDir in Directory.EnumerateDirectories("/proc"))
+        {
+            var name = Path.GetFileName(procDir);
+            if (name.Length == 0 || !char.IsDigit(name[0]))
+                continue;
+            if (!int.TryParse(name, out var pid))
+                continue;
+
+            try
+            {
+                var cmdlinePath = Path.Combine(procDir, "cmdline");
+                var cmdline = File.Exists(cmdlinePath) ? File.ReadAllText(cmdlinePath) : string.Empty;
+                var cwd = ReadLink(Path.Combine(procDir, "cwd"));
+
+                if (!Matches(cmdline, cwd, sectionName, bases, wineBases))
+                    continue;
+                var comm = ReadComm(procDir);
+                if (IsPortableLauncher(cmdline, comm) || IsWineInternal(cmdline))
+                    continue;
+
+                result.Add(new KillCandidate(pid, DescribeLinux(cmdline, comm)));
+            }
+            catch
+            {
+                /* /proc entry vanished mid-read */
+            }
+        }
+
+        return result;
+    }
+
+    private static List<KillCandidate> GetKillCandidatesWindows(string sectionName, List<string> bases)
+    {
+        var result = new List<KillCandidate>();
+        foreach (var proc in Process.GetProcesses())
+        {
+            try
+            {
+                var path = proc.MainModule?.FileName;
+                if (string.IsNullOrEmpty(path))
+                    continue;
+                var single = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                TryExtractSection(path, bases, Path.DirectorySeparatorChar, single);
+                if (!single.Contains(sectionName))
+                    continue;
+                if (path.EndsWith("Portable.exe", StringComparison.OrdinalIgnoreCase) ||
+                    path.EndsWith("Portable64.exe", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                result.Add(new KillCandidate(proc.Id, Path.GetFileName(path)));
+            }
+            catch
+            {
+                /* process exited or access denied */
+            }
+            finally
+            {
+                proc.Dispose();
+            }
+        }
+
+        return result;
+    }
+
+    private static string DescribeLinux(string cmdline, string comm)
+    {
+        foreach (var token in cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (!token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var sep = token.LastIndexOfAny(['/', '\\']);
+            return sep < 0 ? token : token[(sep + 1)..];
+        }
+
+        return string.IsNullOrEmpty(comm) ? "(unknown)" : comm;
+    }
+
+    private static bool Matches(string cmdline, string? cwd, string sectionName, List<string> bases, List<string> wineBases)
+    {
+        var found = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        TryExtractSection(cmdline, bases, '/', found);
+        TryExtractSection(cmdline, wineBases, '\\', found);
+        if (cwd is not null)
+            TryExtractSection(cwd, bases, '/', found);
+        return found.Contains(sectionName);
+    }
+
+    // Wine helpers inherit cwd from their parent, so path/cwd matching alone catches them.
+    private static bool IsWineInternal(string cmdline)
+    {
+        var tokens = cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+        if (tokens.Length == 0)
+            return false;
+        if (Path.GetFileName(tokens[0]).Equals("wineserver", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        for (var i = 0; i < tokens.Length; i++)
+        {
+            var token = tokens[i];
+            var basename = Basename(token);
+            var underWindows = token.StartsWith("C:\\windows\\", StringComparison.OrdinalIgnoreCase);
+
+            foreach (var only in WineOnlyExes)
+                if (basename.Equals(only, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+            foreach (var (exe, arg) in WineArgSignatures)
+            {
+                if (!basename.Equals(exe, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (underWindows)
+                    return true;
+                for (var j = i + 1; j < tokens.Length; j++)
+                    if (tokens[j].StartsWith(arg, StringComparison.OrdinalIgnoreCase))
+                        return true;
+            }
+        }
+
+        return false;
+
+        static string Basename(string token)
+        {
+            var sep = token.LastIndexOfAny(['/', '\\']);
+            return sep < 0 ? token : token[(sep + 1)..];
+        }
+    }
+
+    private static bool IsPortableLauncher(string cmdline, string comm)
+    {
+        // comm is truncated to 15 chars; wine sets it to the exe basename minus .exe.
+        if (comm.EndsWith("Portable", StringComparison.OrdinalIgnoreCase) ||
+            comm.EndsWith("Portable64", StringComparison.OrdinalIgnoreCase))
+            return true;
+        foreach (var token in cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var sep = token.LastIndexOfAny(['/', '\\']);
+            var basename = sep < 0 ? token : token[(sep + 1)..];
+            if (basename.EndsWith("Portable.exe", StringComparison.OrdinalIgnoreCase) ||
+                basename.EndsWith("Portable64.exe", StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static string ReadComm(string procDir)
+    {
+        try
+        {
+            return File.ReadAllText(Path.Combine(procDir, "comm")).TrimEnd('\n', '\r');
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private static void TryKill(int pid)
+    {
+        try
+        {
+            using var p = Process.GetProcessById(pid);
+            p.Kill();
+        }
+        catch
+        {
+            /* already gone */
         }
     }
 
@@ -80,7 +286,7 @@ public static class RunningAppsService
             }
             catch
             {
-                // path resolution failed — skip this base
+                /* unresolvable base — skip */
             }
         }
     }
@@ -88,7 +294,7 @@ public static class RunningAppsService
     private static HashSet<string> ScanLinux(List<string> bases)
     {
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        // Wine translates unix paths to Z:\... in child argv; match both forms.
+        // Wine child argv uses Z:\... for unix paths.
         var wineBases = bases.Select(b => "Z:" + b.Replace('/', '\\')).ToList();
 
         foreach (var procDir in Directory.EnumerateDirectories("/proc"))
@@ -116,7 +322,7 @@ public static class RunningAppsService
             }
             catch
             {
-                // Process may have died mid-read or /proc entry is inaccessible.
+                /* /proc entry vanished mid-read */
             }
         }
 
@@ -136,7 +342,7 @@ public static class RunningAppsService
             }
             catch
             {
-                // MainModule access denied for protected processes — skip.
+                /* protected process */
             }
             finally
             {
@@ -185,4 +391,6 @@ public static class RunningAppsService
             return null;
         }
     }
+
+    public readonly record struct KillCandidate(int Pid, string Label);
 }

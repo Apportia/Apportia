@@ -519,6 +519,8 @@
                                                         </MultiBinding>
                                                     </MenuItem.IsVisible>
                                                 </MenuItem>
+                                                <MenuItem Header="Terminate" IsVisible="{Binding ShowTerminate}"
+                                                          Click="OnMenuTerminate" />
                                                 <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
                                                           Click="OnMenuOpenFolder" />
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
@@ -717,6 +719,8 @@
                                                         </MultiBinding>
                                                     </MenuItem.IsVisible>
                                                 </MenuItem>
+                                                <MenuItem Header="Terminate" IsVisible="{Binding ShowTerminate}"
+                                                          Click="OnMenuTerminate" />
                                                 <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
                                                           Click="OnMenuOpenFolder" />
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
