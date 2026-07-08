@@ -174,7 +174,7 @@
     "Notice": "HM NIS Edit has been discontinued since approximately 2005 and does not support NSIS 3. It is no longer a practical editor for modern NSIS scripts.",
     "Verified": "2026-06-22",
     "Alternatives": [
-      "NotepadPlusPlusPortable"
+      "Notepad++Portable"
     ]
   },
   "IcoFXPortable": {
@@ -300,7 +300,7 @@
     "Verified": "2026-06-22",
     "Alternatives": [
       "AkelPadPortable",
-      "NotepadPlusPlusPortable"
+      "Notepad++Portable"
     ]
   },
   "OperaMailPortable": {
