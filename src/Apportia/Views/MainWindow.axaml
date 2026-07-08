@@ -236,7 +236,7 @@
                             BorderThickness="0"
                             ToolTip.Tip="Wine Setup"
                             Click="OnLinuxSetupButton">
-                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f427.svg" Width="18" Height="18" />
+                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f377.svg" Width="18" Height="18" />
                     </Button>
                     <Button x:Name="ImportApp"
                             VerticalAlignment="Center"

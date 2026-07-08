@@ -10,19 +10,22 @@
         ShowInTaskbar="False"
         Background="{DynamicResource AppWindowBrush}">
 
+    <Panel>
+        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f377.svg"
+                 Width="128" Height="128"
+                 HorizontalAlignment="Right"
+                 VerticalAlignment="Top"
+                 Margin="0,30,20,0"
+                 IsHitTestVisible="False"
+                 Css="* { opacity: 0.35; }" />
     <StackPanel Margin="20" Spacing="12">
 
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <svg:Svg Path="avares://Apportia/Assets/Emoji/1f427.svg" Width="24" Height="24" />
-            <TextBlock Text="Wine Setup"
-                       FontSize="15" FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       Foreground="{DynamicResource AppTextBrush}" />
-        </StackPanel>
-
-        <TextBlock Text="Windows applications need Wine. Choose which Wine to use."
-                   TextWrapping="Wrap"
-                   Foreground="{DynamicResource AppTextBrush}" />
+        <TextBlock TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppTextBrush}">
+            <Run Text="Wine lets Apportia run Windows applications on Linux." />
+            <LineBreak />
+            <Run Text="Choose how to provide it." />
+        </TextBlock>
 
         <StackPanel x:Name="SystemWinePanel" Spacing="6" IsVisible="False">
             <TextBlock Text="Installation:" FontWeight="SemiBold"
@@ -68,4 +71,5 @@
         </StackPanel>
 
     </StackPanel>
+    </Panel>
 </Window>
