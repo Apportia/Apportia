@@ -8,8 +8,8 @@ namespace Apportia.Services;
 /// - Bundled: uses Data/Linux/runners/&lt;version&gt;/bin/wine and Data/Linux/prefixes/default.
 public static class WineService
 {
-    public static readonly string FallbackPrefixDir = $"/tmp/apportia.{Environment.UserName}.wine";
     public const long FallbackMinFreeBytes = 5L * 1024 * 1024 * 1024;
+    public static readonly string FallbackPrefixDir = $"/tmp/apportia.{Environment.UserName}.wine";
 
     public static readonly string LinuxDir = Path.Combine(AppContext.BaseDirectory, "Data", "Linux");
     public static readonly string RunnersDir = Path.Combine(LinuxDir, "runners");
@@ -17,7 +17,7 @@ public static class WineService
 
     private static readonly HashSet<string> CompatibleFsTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        "ext4", "btrfs", "xfs", "zfs", "f2fs", "tmpfs"
+        "ext4", "ext3", "ext2", "ext2/ext3", "btrfs", "xfs", "zfs", "f2fs", "tmpfs"
     };
 
     public static string PrefixDir => SupportsWinePrefix(DefaultPrefixDir) ? DefaultPrefixDir : FallbackPrefixDir;
@@ -26,6 +26,32 @@ public static class WineService
     {
         var fsType = GetFilesystemType(dir);
         return fsType != null && CompatibleFsTypes.Contains(fsType);
+    }
+
+    private static string? Probe(string command, string[] args)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo(command)
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            foreach (var a in args)
+                psi.ArgumentList.Add(a);
+            using var proc = Process.Start(psi);
+            if (proc is null)
+                return null;
+            var output = proc.StandardOutput.ReadToEnd().Trim();
+            proc.WaitForExit(3000);
+            return proc.ExitCode == 0 && output.Length > 0 ? output : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public static string? GetFilesystemType(string dir)
@@ -41,20 +67,8 @@ public static class WineService
                 probe = parent;
             }
 
-            var psi = new ProcessStartInfo("stat")
-            {
-                ArgumentList = { "-f", "-c", "%T", probe },
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            using var proc = Process.Start(psi);
-            if (proc is null)
-                return null;
-            var output = proc.StandardOutput.ReadToEnd().Trim();
-            proc.WaitForExit(3000);
-            return proc.ExitCode == 0 && output.Length > 0 ? output : null;
+            return Probe("findmnt", ["-n", "-o", "FSTYPE", "-T", probe])
+                   ?? Probe("stat", ["-f", "-c", "%T", probe]);
         }
         catch
         {
