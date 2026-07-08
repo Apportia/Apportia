@@ -10,6 +10,15 @@
         ShowInTaskbar="False"
         Background="{DynamicResource AppWindowBrush}">
 
+    <Window.Styles>
+        <Style Selector="Button.update">
+            <Setter Property="Background" Value="{DynamicResource AppUpdateBrush}" />
+        </Style>
+        <Style Selector="Button.update:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppUpdateBrush}" />
+        </Style>
+    </Window.Styles>
+
     <Panel>
         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f377.svg"
                  Width="128" Height="128"
@@ -44,7 +53,8 @@
             <StackPanel x:Name="VersionPanel" Spacing="6">
                 <TextBlock Text="Bundled Wine version:" FontWeight="SemiBold"
                            Foreground="{DynamicResource AppTextBrush}" />
-                <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch" />
+                <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch"
+                          SelectionChanged="OnVersionChanged" />
                 <TextBlock x:Name="VersionHint"
                            FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource AppTextBrush}"

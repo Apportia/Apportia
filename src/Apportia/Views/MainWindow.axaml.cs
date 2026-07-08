@@ -1273,10 +1273,24 @@ public partial class MainWindow : Window, IInstallUi
         try
         {
             await new LinuxSetupDialog { Icon = Icon }.ShowDialog(this);
+            await CheckWineUpdateAsync();
         }
         catch
         {
             /* window may be closing */
+        }
+    }
+
+    private async Task CheckWineUpdateAsync()
+    {
+        try
+        {
+            var hasUpdate = await WineRunnersClient.HasLatestUpdateAsync();
+            Dispatcher.UIThread.Post(() => LinuxSetupButton.Classes.Set("update", hasUpdate));
+        }
+        catch
+        {
+            // Update check is best-effort — a failed network probe just leaves the button unstyled.
         }
     }
 
@@ -1589,7 +1603,11 @@ public partial class MainWindow : Window, IInstallUi
         _themeController.ApplyDarkTitlebar(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
         _ = CheckOrphanedFilesAsync();
         if (OperatingSystem.IsLinux())
+        {
             LinuxSetupButton.IsVisible = true;
+            _ = CheckWineUpdateAsync();
+        }
+
         var settings = SettingsService.Load();
         if (settings.HasShownTips)
             return;

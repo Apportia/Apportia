@@ -150,7 +150,7 @@ public static class WineService
         return prefix;
     }
 
-    private static string? ResolveActiveRunnerDir()
+    public static string? ResolveActiveRunnerDir()
     {
         if (!Directory.Exists(RunnersDir))
             return null;

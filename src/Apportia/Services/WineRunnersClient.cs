@@ -115,6 +115,28 @@ public static partial class WineRunnersClient
         return releases.FirstOrDefault(r => r.Version.Equals(version, StringComparison.OrdinalIgnoreCase));
     }
 
+    /// True when Bundled+"latest" is configured, a runner is installed, and the newest available
+    /// release doesn't match the installed one. Returns false on any missing precondition or fetch
+    /// failure so background callers can silently skip signalling.
+    public static async Task<bool> HasLatestUpdateAsync(CancellationToken ct = default)
+    {
+        var settings = SettingsService.Load();
+        if (!settings.WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!settings.WineVersion.Equals("latest", StringComparison.OrdinalIgnoreCase))
+            return false;
+        var installed = WineService.ResolveActiveRunnerDir();
+        if (installed is null)
+            return false;
+        var releases = await FetchReleasesAsync(ct);
+        var latest = PickRelease(releases, "latest");
+        if (latest is null)
+            return false;
+        var installedName = Path.GetFileName(installed.TrimEnd(Path.DirectorySeparatorChar));
+        var latestName = StripExtension(latest.ArchiveName);
+        return !installedName.Equals(latestName, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// Downloads the tarball to a temp file, then extracts into Data/Linux/runners/&lt;basename&gt;/.
     /// Removes older sibling runner directories on success. Returns the runner path or null on failure.
     public static async Task<string?> DownloadAndInstallAsync(
@@ -254,7 +276,7 @@ public static partial class WineRunnersClient
         }
     }
 
-    private static string StripExtension(string name)
+    public static string StripExtension(string name)
     {
         if (name.EndsWith(".tar.xz", StringComparison.OrdinalIgnoreCase))
             return name[..^".tar.xz".Length];

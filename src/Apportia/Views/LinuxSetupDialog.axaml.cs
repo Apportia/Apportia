@@ -15,12 +15,14 @@ public partial class LinuxSetupDialog : Window
 
     private const string SaveLabel = "Save";
     private const string InstallFontsLabel = "Install Fonts";
+    private const string UpdateLabel = "Update";
 
     private CancellationTokenSource? _downloadCts;
     private string _initialMode = string.Empty;
     private string _initialVersion = string.Empty;
     private double _lastHeight;
     private IReadOnlyList<WineRunnerRelease> _releases = [];
+    private bool _updateAvailable;
 
     public LinuxSetupDialog()
     {
@@ -86,10 +88,17 @@ public partial class LinuxSetupDialog : Window
 
     private void RefreshSaveButtonLabel()
     {
-        SaveButton.Content = ShouldOfferFontsOnly() ? InstallFontsLabel : SaveLabel;
+        var configUnchanged = IsInitialConfigUnchanged();
+        var showUpdate = configUnchanged && _updateAvailable;
+        SaveButton.Content = showUpdate
+            ? UpdateLabel
+            : configUnchanged && WineService.ResolveWineBinary() is not null && !FontsInstalled()
+                ? InstallFontsLabel
+                : SaveLabel;
+        SaveButton.Classes.Set("update", showUpdate);
     }
 
-    private bool ShouldOfferFontsOnly()
+    private bool IsInitialConfigUnchanged()
     {
         var settings = SettingsService.Load();
         if (!settings.LinuxSetupCompleted)
@@ -99,7 +108,32 @@ public partial class LinuxSetupDialog : Window
         if (!_initialMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase))
             return false;
         var picked = VersionCombo.SelectedItem as string;
-        if (picked is null || !picked.Equals(_initialVersion, StringComparison.OrdinalIgnoreCase))
+        return picked is not null && picked.Equals(_initialVersion, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void CheckForUpdate()
+    {
+        _updateAvailable = false;
+        if (!_initialVersion.Equals(LatestKey, StringComparison.OrdinalIgnoreCase))
+            return;
+        if (!_initialMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase))
+            return;
+        var latest = WineRunnersClient.PickRelease(_releases, LatestKey);
+        if (latest is null)
+            return;
+        var installed = WineService.ResolveActiveRunnerDir();
+        if (installed is null)
+            return;
+        var installedName = Path.GetFileName(installed.TrimEnd(Path.DirectorySeparatorChar));
+        var latestName = WineRunnersClient.StripExtension(latest.ArchiveName);
+        _updateAvailable = !installedName.Equals(latestName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool ShouldOfferFontsOnly()
+    {
+        if (!IsInitialConfigUnchanged())
+            return false;
+        if (_updateAvailable)
             return false;
         if (WineService.ResolveWineBinary() is null)
             return false;
@@ -148,6 +182,7 @@ public partial class LinuxSetupDialog : Window
         var idx = items.FindIndex(v => v.Equals(settings.WineVersion, StringComparison.OrdinalIgnoreCase));
         VersionCombo.SelectedIndex = idx >= 0 ? idx : 0;
         VersionHint.Text = "\"latest\" automatically updates to the newest vanilla build.";
+        CheckForUpdate();
         RefreshSaveButtonLabel();
     }
 
