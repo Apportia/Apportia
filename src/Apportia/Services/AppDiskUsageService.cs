@@ -14,9 +14,13 @@ public static class AppDiskUsageService
         try
         {
             if (File.Exists(CachePath))
-                return JsonSerializer.Deserialize(
+            {
+                var cache = JsonSerializer.Deserialize(
                     File.ReadAllText(CachePath),
                     DiskUsageCacheJsonContext.Default.DiskUsageCache) ?? new DiskUsageCache();
+                cache.Sizes = new Dictionary<string, long>(cache.Sizes, StringComparer.OrdinalIgnoreCase);
+                return cache;
+            }
         }
         catch
         {

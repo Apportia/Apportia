@@ -115,7 +115,7 @@ public sealed class VtResponse
 public sealed class VtStore
 {
     [JsonPropertyName("api_key")] public string? ApiKey { get; set; }
-    [JsonPropertyName("files")] public Dictionary<string, Dictionary<string, string>> Files { get; set; } = new();
+    [JsonPropertyName("files")] public Dictionary<string, Dictionary<string, string>> Files { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed class VtUploadData

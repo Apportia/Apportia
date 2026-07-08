@@ -281,18 +281,17 @@ public partial class MainWindow : Window, IInstallUi
             };
         }).ToList();
 
-        var nodeMap = nodes.ToDictionary(n => n.SectionName, n => n);
+        var nodeLookup = nodes.ToLookup(n => n.SectionName, StringComparer.OrdinalIgnoreCase);
 
         await _iconManager.DownloadAllAsync(
-            nodeMap.Keys,
+            nodeLookup.Select(g => g.Key),
             expectedSize,
             (section, bitmap) =>
             {
-                if (!nodeMap.TryGetValue(section, out var node))
-                    return;
                 if (vm.Columns.IconLoadSize != expectedSize)
                     return;
-                Dispatcher.UIThread.Post(() => node.Icon = bitmap);
+                foreach (var node in nodeLookup[section])
+                    Dispatcher.UIThread.Post(() => node.Icon = bitmap);
             },
             ct);
     }
@@ -1506,7 +1505,9 @@ public partial class MainWindow : Window, IInstallUi
         var altNames = notice.Alternatives;
         if (notice.Alternatives.Count > 0 && DataContext is MainViewModel vm)
         {
-            var nodeMap = vm.AllNodes.ToDictionary(n => n.SectionName, n => n.Name);
+            var nodeMap = vm.AllNodes
+                            .GroupBy(n => n.SectionName, StringComparer.OrdinalIgnoreCase)
+                            .ToDictionary(g => g.Key, g => g.First().Name, StringComparer.OrdinalIgnoreCase);
             altNames = notice.Alternatives
                              .Select(key => nodeMap.GetValueOrDefault(key, key))
                              .ToArray();

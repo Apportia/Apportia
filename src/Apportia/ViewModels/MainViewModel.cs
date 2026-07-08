@@ -86,7 +86,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             var node = new AppNode(entry, iconManager.GetCustomIcon(entry.SectionName, Math.Max(16, iconSize)), Columns, true, true);
             node.PropertyChanged += OnNodePropertyChanged;
-            var group = _grouped.FirstOrDefault(g => g.Category == entry.Category);
+            var group = _grouped.FirstOrDefault(g => string.Equals(g.Category, entry.Category, StringComparison.OrdinalIgnoreCase));
             if (group == null)
             {
                 var catNode = new CategoryNode(entry.Category, Columns);
@@ -219,7 +219,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         node.PropertyChanged += OnNodePropertyChanged;
 
         var category = entry.Category;
-        var group = _grouped.FirstOrDefault(g => g.Category == category);
+        var group = _grouped.FirstOrDefault(g => string.Equals(g.Category, category, StringComparison.OrdinalIgnoreCase));
         if (group == null)
         {
             var catNode = new CategoryNode(category, Columns);
@@ -874,8 +874,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         await foreach (var (sectionName, bytes) in AppDiskUsageService.ScanAllAsync(apps))
         {
             cache.Sizes[sectionName] = bytes;
-            var node = AllNodes.FirstOrDefault(n => n.SectionName == sectionName);
-            if (node != null)
+            foreach (var node in AllNodes.Where(n => string.Equals(n.SectionName, sectionName, StringComparison.OrdinalIgnoreCase)))
                 await Dispatcher.UIThread.InvokeAsync(() => node.SetUsedBytes(bytes));
         }
 
