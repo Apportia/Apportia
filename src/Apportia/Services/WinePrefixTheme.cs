@@ -50,7 +50,7 @@ public static class WinePrefixTheme
 
         for (var attempt = 0; attempt < VerifyRetries; attempt++)
         {
-            var regFile = Path.Combine(Path.GetTempPath(), $"apportia-theme-{Guid.NewGuid():N}.reg");
+            var regFile = Path.Combine(Path.GetTempPath(), $"apportia.wine.theme.{Guid.NewGuid():N}.reg");
             await File.WriteAllTextAsync(regFile, BuildRegContent(colors, variant, user), new UTF8Encoding(false), ct);
             try
             {
@@ -155,11 +155,11 @@ public static class WinePrefixTheme
             ("AppWorkspace", window),
             ("Background", window),
             ("ButtonAlternateFace", separator),
-            ("ButtonDkShadow", category),
+            ("ButtonDkShadow", window),
             ("ButtonFace", window),
             ("ButtonHilight", border),
-            ("ButtonLight", border),
-            ("ButtonShadow", category),
+            ("ButtonLight", window),
+            ("ButtonShadow", border),
             ("ButtonText", text),
             ("GradientActiveTitle", colHeader),
             ("GradientInactiveTitle", category),
@@ -179,7 +179,7 @@ public static class WinePrefixTheme
             ("Scrollbar", window),
             ("TitleText", text),
             ("Window", window),
-            ("WindowFrame", border),
+            ("WindowFrame", hover),
             ("WindowText", text)
         };
 
