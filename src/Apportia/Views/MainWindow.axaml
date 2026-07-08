@@ -480,13 +480,28 @@
                                             <ContextMenu>
                                                 <MenuItem Header="Cancel Installation"
                                                           IsVisible="{Binding ShowCancelInstall}"
-                                                          Click="OnMenuCancelInstall" />
-                                                <MenuItem Header="Add to Install / Update Queue"
+                                                          Click="OnMenuCancelInstall">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/26d4.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Header="Add to Queue"
                                                           IsVisible="{Binding ShowAddToQueue}"
-                                                          Click="OnMenuAddToQueue" />
+                                                          Click="OnMenuAddToQueue">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Remove from Queue"
                                                           IsVisible="{Binding ShowRemoveFromQueue}"
-                                                          Click="OnMenuRemoveFromQueue" />
+                                                          Click="OnMenuRemoveFromQueue">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e4.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <Separator>
                                                     <Separator.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
@@ -497,20 +512,50 @@
                                                     </Separator.IsVisible>
                                                 </Separator>
                                                 <MenuItem Header="Install" IsVisible="{Binding ShowInstallActions}"
-                                                          Click="OnMenuInstall" />
+                                                          Click="OnMenuInstall">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Install &amp; Run"
                                                           IsVisible="{Binding ShowInstallActions}"
-                                                          Click="OnMenuInstallRun" />
+                                                          Click="OnMenuInstallRun">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Update" IsVisible="{Binding ShowUpdateActions}"
-                                                          Click="OnMenuUpdate" />
+                                                          Click="OnMenuUpdate">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Update &amp; Run"
                                                           IsVisible="{Binding ShowUpdateActions}"
-                                                          Click="OnMenuUpdateRun" />
+                                                          Click="OnMenuUpdateRun">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Run" IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuRun" />
+                                                          Click="OnMenuRun">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f3c3.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Run with Parameters..."
                                                           IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuRunWithArgs" />
+                                                          Click="OnMenuRunWithArgs">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f680.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Run as Administrator" Click="OnMenuRunAsAdmin">
                                                     <MenuItem.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
@@ -518,13 +563,32 @@
                                                             <Binding Source="{x:Static views:MainWindow.IsWindows}" />
                                                         </MultiBinding>
                                                     </MenuItem.IsVisible>
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e1.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
                                                 </MenuItem>
                                                 <MenuItem Header="Terminate" IsVisible="{Binding ShowTerminate}"
-                                                          Click="OnMenuTerminate" />
+                                                          Click="OnMenuTerminate">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/2620.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuOpenFolder" />
+                                                          Click="OnMenuOpenFolder">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="{x:Static views:MainWindow.OpenFolderIconPath}"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
-                                                          Click="OnMenuSettings" />
+                                                          Click="OnMenuSettings">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/2699.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <Separator>
                                                     <Separator.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
@@ -536,16 +600,41 @@
                                                     </Separator.IsVisible>
                                                 </Separator>
                                                 <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
-                                                          Click="OnMenuUninstall" />
+                                                          Click="OnMenuUninstall">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f5d1.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <Separator IsVisible="{Binding ShowUninstall}" />
                                                 <MenuItem Header="Preview" IsVisible="{Binding ShowPreview}"
-                                                          Click="OnMenuPreview" />
-                                                <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry" />
+                                                          Click="OnMenuPreview">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f441.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4cb.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="VirusTotal..."
                                                           IsVisible="{Binding ShowVirusTotalActions}"
-                                                          Click="OnMenuVirusTotal" />
+                                                          Click="OnMenuVirusTotal">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f9a0.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
-                                                          Click="OnMenuVisitWebsite" />
+                                                          Click="OnMenuVisitWebsite">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f310.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                             </ContextMenu>
                                         </Border.ContextMenu>
                                         <DockPanel LastChildFill="True">
@@ -680,13 +769,28 @@
                                             <ContextMenu>
                                                 <MenuItem Header="Cancel Installation"
                                                           IsVisible="{Binding ShowCancelInstall}"
-                                                          Click="OnMenuCancelInstall" />
-                                                <MenuItem Header="Add to Install / Update Queue"
+                                                          Click="OnMenuCancelInstall">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/26d4.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Header="Add to Queue"
                                                           IsVisible="{Binding ShowAddToQueue}"
-                                                          Click="OnMenuAddToQueue" />
+                                                          Click="OnMenuAddToQueue">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Remove from Queue"
                                                           IsVisible="{Binding ShowRemoveFromQueue}"
-                                                          Click="OnMenuRemoveFromQueue" />
+                                                          Click="OnMenuRemoveFromQueue">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e4.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <Separator>
                                                     <Separator.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
@@ -697,20 +801,50 @@
                                                     </Separator.IsVisible>
                                                 </Separator>
                                                 <MenuItem Header="Install" IsVisible="{Binding ShowInstallActions}"
-                                                          Click="OnMenuInstall" />
+                                                          Click="OnMenuInstall">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Install &amp; Run"
                                                           IsVisible="{Binding ShowInstallActions}"
-                                                          Click="OnMenuInstallRun" />
+                                                          Click="OnMenuInstallRun">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Update" IsVisible="{Binding ShowUpdateActions}"
-                                                          Click="OnMenuUpdate" />
+                                                          Click="OnMenuUpdate">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Update &amp; Run"
                                                           IsVisible="{Binding ShowUpdateActions}"
-                                                          Click="OnMenuUpdateRun" />
+                                                          Click="OnMenuUpdateRun">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Run" IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuRun" />
+                                                          Click="OnMenuRun">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f3c3.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Run with Parameters..."
                                                           IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuRunWithArgs" />
+                                                          Click="OnMenuRunWithArgs">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f680.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Run as Administrator" Click="OnMenuRunAsAdmin">
                                                     <MenuItem.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
@@ -718,13 +852,32 @@
                                                             <Binding Source="{x:Static views:MainWindow.IsWindows}" />
                                                         </MultiBinding>
                                                     </MenuItem.IsVisible>
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e1.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
                                                 </MenuItem>
                                                 <MenuItem Header="Terminate" IsVisible="{Binding ShowTerminate}"
-                                                          Click="OnMenuTerminate" />
+                                                          Click="OnMenuTerminate">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/2620.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Open Folder" IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuOpenFolder" />
+                                                          Click="OnMenuOpenFolder">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="{x:Static views:MainWindow.OpenFolderIconPath}"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Settings" IsVisible="{Binding IsCustom}"
-                                                          Click="OnMenuSettings" />
+                                                          Click="OnMenuSettings">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/2699.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <Separator>
                                                     <Separator.IsVisible>
                                                         <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
@@ -736,16 +889,41 @@
                                                     </Separator.IsVisible>
                                                 </Separator>
                                                 <MenuItem Header="Uninstall" IsVisible="{Binding ShowUninstall}"
-                                                          Click="OnMenuUninstall" />
+                                                          Click="OnMenuUninstall">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f5d1.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <Separator IsVisible="{Binding ShowUninstall}" />
                                                 <MenuItem Header="Preview" IsVisible="{Binding ShowPreview}"
-                                                          Click="OnMenuPreview" />
-                                                <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry" />
+                                                          Click="OnMenuPreview">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f441.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Header="Properties" Click="OnMenuAppDatabaseEntry">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4cb.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="VirusTotal..."
                                                           IsVisible="{Binding ShowVirusTotalActions}"
-                                                          Click="OnMenuVirusTotal" />
+                                                          Click="OnMenuVirusTotal">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f9a0.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                                 <MenuItem Header="Visit Website" IsVisible="{Binding HasUrl}"
-                                                          Click="OnMenuVisitWebsite" />
+                                                          Click="OnMenuVisitWebsite">
+                                                    <MenuItem.Icon>
+                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f310.svg"
+                                                                 Width="16" Height="16" />
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
                                             </ContextMenu>
                                         </Border.ContextMenu>
                                         <StackPanel HorizontalAlignment="Center" Spacing="4">

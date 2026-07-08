@@ -28,7 +28,7 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets/ProgramIcon.ico" />
-        <AvaloniaResource Include="Assets/Emoji/*.svg" />
+        <AvaloniaResource Include="Assets/Emoji/**/*.svg" />
     </ItemGroup>
 
     <ItemGroup>

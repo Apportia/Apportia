@@ -74,6 +74,11 @@ public partial class MainWindow : Window, IInstallUi
 
     public static bool IsWindows => OperatingSystem.IsWindows();
 
+    // Icons with an OS-specific tint variant live under Assets/Emoji/win/.
+    public static string OpenFolderIconPath => IsWindows
+        ? "avares://Apportia/Assets/Emoji/win/1f4c1.svg"
+        : "avares://Apportia/Assets/Emoji/1f4c1.svg";
+
     private ItemsControl ActiveList =>
         (DataContext as MainViewModel)?.Columns.IsGridView == true ? MainGridList : MainList;
 

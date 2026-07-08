@@ -106,7 +106,7 @@
                         BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f6e1.svg" Width="20" Height="20"
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f9a0.svg" Width="20" Height="20"
                                  VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="VirusTotal — Scan Before You Run" FontWeight="SemiBold"
@@ -143,7 +143,7 @@
                         BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f5bc.svg" Width="20" Height="20"
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f441.svg" Width="20" Height="20"
                                  VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="Preview — See a Screenshot" FontWeight="SemiBold"
@@ -223,7 +223,7 @@
                         BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="3,0,0,0"
                         CornerRadius="0,6,6,0" Padding="12,10">
                     <Grid ColumnDefinitions="32,*">
-                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/2699.svg" Width="20" Height="20"
+                        <svg:Svg Grid.Column="0" Path="avares://Apportia/Assets/Emoji/1f3d7.svg" Width="20" Height="20"
                                  VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2">
                             <TextBlock Text="System Integration — Context Menu" FontWeight="SemiBold"
