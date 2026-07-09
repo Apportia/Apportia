@@ -172,7 +172,9 @@ public partial class MainWindow : Window, IInstallUi
 
         if (File.Exists(AppDatabaseUpdater.CachePath))
         {
-            PopulateFromCache();
+            await PopulateFromCacheAsync();
+            if (await ResolveUnknownAppDirsAsync())
+                await PopulateFromCacheAsync();
             _ = Task.WhenAll(
                 AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
                 MirrorService.TryUpdateAsync(_cts.Token),
@@ -183,9 +185,9 @@ public partial class MainWindow : Window, IInstallUi
         await StartFirstRunAsync();
     }
 
-    private void PopulateFromCache()
+    private async Task PopulateFromCacheAsync()
     {
-        var vm = BuildViewModel();
+        var vm = await Task.Run(BuildViewModel);
         SubscribeViewModel(vm);
         DataContext = vm;
         ApplyViewPreset(vm, false);
@@ -246,7 +248,105 @@ public partial class MainWindow : Window, IInstallUi
             SecurityNoticeService.TryUpdateAsync(_cts.Token));
         if (!File.Exists(AppDatabaseUpdater.CachePath))
             return;
-        await Dispatcher.UIThread.InvokeAsync(PopulateFromCache);
+        await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await PopulateFromCacheAsync();
+            if (await ResolveUnknownAppDirsAsync())
+                await PopulateFromCacheAsync();
+        });
+    }
+
+    private async Task<bool> ResolveUnknownAppDirsAsync()
+    {
+        if (DataContext is not MainViewModel vm)
+            return false;
+        var dirs = CurrentAppService.ConsumePendingUnknownDirs();
+        if (dirs.Count == 0)
+            return false;
+
+        var changed = false;
+        foreach (var dir in dirs)
+        {
+            if (!Directory.Exists(dir))
+                continue;
+            var name = Path.GetFileName(dir);
+            var choose = new AppDialog(
+                "Unknown App Folder",
+                $"Found an app folder that isn't registered in the app database:\n\n{name}\n\nWhat should Apportia do with it?",
+                "Move to CustomApps", "Delete", "Skip");
+            await choose.ShowDialog(this);
+
+            if (choose.Result == "Move to CustomApps")
+            {
+                if (await ImportUnknownAsCustomAsync(dir, vm))
+                    changed = true;
+            }
+            else if (choose.Result == "Delete")
+            {
+                var confirm = new AppDialog(
+                    "Delete Folder",
+                    $"Permanently delete \"{name}\" and everything inside it?",
+                    "Delete", "Cancel");
+                await confirm.ShowDialog(this);
+                if (confirm.Result == "Delete")
+                {
+                    try
+                    {
+                        Directory.Delete(dir, true);
+                    }
+                    catch
+                    {
+                        /* best effort – dir may be in use */
+                    }
+                }
+            }
+        }
+
+        return changed;
+    }
+
+    private async Task<bool> ImportUnknownAsCustomAsync(string dir, MainViewModel vm)
+    {
+        var win = new CustomAppWindow(vm.Categories, vm.SubCategoriesMap, dir);
+        await win.ShowDialog(this);
+        if (!win.Success)
+            return false;
+
+        try
+        {
+            await CustomAppService.ImportAppAsync(
+                win.FolderName,
+                win.ExeFile,
+                win.Name,
+                win.Description,
+                win.Website,
+                win.IconSourcePath,
+                win.Category,
+                win.SubCategory,
+                win.Version,
+                win.VersionSourceExe,
+                win.DisplayVersion,
+                move: true);
+        }
+        catch
+        {
+            return false;
+        }
+
+        var iconPath = win.IconSourcePath;
+        if (iconPath.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                File.Delete(iconPath);
+            }
+            catch
+            {
+                /* file may already be gone */
+            }
+        }
+
+        return true;
     }
 
     private async Task StartIconDownloadsAsync(MainViewModel vm)

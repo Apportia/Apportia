@@ -43,7 +43,8 @@ public partial class CustomAppWindow : Window
 
     public CustomAppWindow(
         IReadOnlyList<string> categories,
-        IReadOnlyDictionary<string, IReadOnlyList<string>> subCategoriesMap) : this()
+        IReadOnlyDictionary<string, IReadOnlyList<string>> subCategoriesMap,
+        string? presetFolder = null) : this()
     {
         _subCategoriesMap = subCategoriesMap;
         Title = "Import App";
@@ -51,6 +52,11 @@ public partial class CustomAppWindow : Window
         CategoryCombo.ItemsSource = categories;
         if (categories.Count > 0)
             CategoryCombo.SelectedIndex = 0;
+
+        if (string.IsNullOrEmpty(presetFolder))
+            return;
+        FolderBrowseButton.IsVisible = false;
+        Dispatcher.UIThread.Post(() => _ = PopulateFromFolderAsync(presetFolder));
     }
 
     public CustomAppWindow(
@@ -160,6 +166,18 @@ public partial class CustomAppWindow : Window
             if (string.IsNullOrEmpty(folder))
                 return;
 
+            await PopulateFromFolderAsync(folder);
+        }
+        catch
+        {
+            /* folder picker or file access failed – leave form unchanged */
+        }
+    }
+
+    private async Task PopulateFromFolderAsync(string folder)
+    {
+        try
+        {
             FolderBox.Text = folder;
             _iconManuallySelected = false;
 
@@ -206,7 +224,7 @@ public partial class CustomAppWindow : Window
         }
         catch
         {
-            /* folder picker or file access failed – leave form unchanged */
+            /* file access failed – leave form unchanged */
         }
     }
 

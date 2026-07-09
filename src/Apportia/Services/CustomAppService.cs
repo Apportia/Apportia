@@ -107,10 +107,12 @@ public static class CustomAppService
         string versionSource = "",
         string displayVersion = "",
         IProgress<CopyProgress>? copyProgress = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool move = false)
     {
         var baseFolderName = Path.GetFileNameWithoutExtension(exeFile);
         var folderName = baseFolderName;
+        Directory.CreateDirectory(CustomAppsDir);
         while (Directory.Exists(Path.Combine(CustomAppsDir, folderName)))
         {
             var suffix = Convert.ToHexString(RandomNumberGenerator.GetBytes(4)).ToLower();
@@ -121,7 +123,30 @@ public static class CustomAppService
 
         try
         {
-            await CopyDirectoryAsync(sourceFolder, destDir, copyProgress, ct);
+            if (move)
+            {
+                try
+                {
+                    await Task.Run(() => Directory.Move(sourceFolder, destDir), ct);
+                }
+                catch (IOException)
+                {
+                    // Cross-volume move isn't supported by Directory.Move – copy + delete source.
+                    await CopyDirectoryAsync(sourceFolder, destDir, copyProgress, ct);
+                    try
+                    {
+                        Directory.Delete(sourceFolder, true);
+                    }
+                    catch
+                    {
+                        /* best effort – source may remain if in use */
+                    }
+                }
+            }
+            else
+            {
+                await CopyDirectoryAsync(sourceFolder, destDir, copyProgress, ct);
+            }
         }
         catch (OperationCanceledException)
         {

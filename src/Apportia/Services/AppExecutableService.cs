@@ -1,54 +1,24 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Apportia.Services;
 
+// Facade over CurrentAppService – kept so existing call sites don't need to know about the
+// consolidation into current_app_database.json.
 public static class AppExecutableService
 {
-    private static readonly string FilePath =
-        Path.Combine(AppContext.BaseDirectory, "Data", "executables.json");
-
-    private static Dictionary<string, string> LoadDict()
-    {
-        if (!File.Exists(FilePath))
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        try
-        {
-            var json = File.ReadAllText(FilePath);
-            return JsonSerializer.Deserialize(json, ExecutablesJsonContext.Default.DictionaryStringString)
-                   ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-        catch
-        {
-            /* corrupt or missing cache file – start with empty mapping */
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-    }
-
-    private static void WriteDict(Dictionary<string, string> dict)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-        var json = JsonSerializer.Serialize(dict, ExecutablesJsonContext.Default.DictionaryStringString);
-        File.WriteAllText(FilePath, json);
-    }
-
     public static void Save(string sectionName, string exeFileName, string defaultName)
     {
-        var dict = LoadDict();
-        if (string.Equals(exeFileName, defaultName, StringComparison.OrdinalIgnoreCase))
-            dict.Remove(sectionName);
-        else
-            dict[sectionName] = exeFileName;
-        WriteDict(dict);
+        var value = string.Equals(exeFileName, defaultName, StringComparison.OrdinalIgnoreCase)
+            ? string.Empty
+            : exeFileName;
+        CurrentAppService.SetExeFile(sectionName, value);
     }
 
     public static void Remove(string sectionName)
     {
-        if (!File.Exists(FilePath))
-            return;
-        var dict = LoadDict();
-        if (dict.Remove(sectionName))
-            WriteDict(dict);
+        // At uninstall this must fully drop the entry so a subsequent background sync doesn't
+        // resurrect it as a phantom installed app.
+        CurrentAppService.Remove(sectionName);
     }
 
     public static (string? ExePath, string[] Candidates) Resolve(string appDir, string sectionName)
@@ -56,16 +26,14 @@ public static class AppExecutableService
         var defaultName = sectionName + ".exe";
         var defaultPath = Path.Combine(appDir, defaultName);
 
-        // Saved override
-        var dict = LoadDict();
-        if (dict.TryGetValue(sectionName, out var saved))
+        var saved = CurrentAppService.GetExeFile(sectionName);
+        if (!string.IsNullOrEmpty(saved))
         {
             var savedPath = Path.Combine(appDir, saved);
             if (File.Exists(savedPath))
                 return (savedPath, []);
-            // Saved exe gone – remove stale entry and fall through
-            dict.Remove(sectionName);
-            WriteDict(dict);
+            // Saved exe gone – clear the stale override and fall through
+            CurrentAppService.SetExeFile(sectionName, string.Empty);
         }
 
         if (File.Exists(defaultPath))
@@ -94,6 +62,7 @@ public static class AppExecutableService
     }
 }
 
+// Retained for the legacy migration in CurrentAppService.MigrateLegacyLayout.
 [JsonSerializable(typeof(Dictionary<string, string>))]
 [JsonSourceGenerationOptions(WriteIndented = true)]
 internal partial class ExecutablesJsonContext : JsonSerializerContext;

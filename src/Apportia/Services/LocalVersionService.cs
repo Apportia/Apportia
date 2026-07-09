@@ -1,69 +1,37 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Apportia.Services;
 
 public sealed record LocalAppVersion(string DisplayVersion, string PackageVersion);
 
+// Facade over CurrentAppService – kept so existing call sites don't need to know about the
+// consolidation into current_app_database.json.
 public static class LocalVersionService
 {
-    private static readonly string FilePath =
-        Path.Combine(AppContext.BaseDirectory, "Data", "local_app_versions.json");
-
-    private static readonly Lock CacheLock = new();
-    private static Dictionary<string, LocalAppVersion>? _cache;
-
     public static IReadOnlyDictionary<string, LocalAppVersion> Load()
     {
-        lock (CacheLock)
+        var db = CurrentAppService.LoadAll();
+        var result = new Dictionary<string, LocalAppVersion>(db.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var (section, info) in db)
         {
-            if (_cache != null)
-                return _cache;
-
-            try
-            {
-                if (File.Exists(FilePath))
-                {
-                    var text = File.ReadAllText(FilePath);
-                    _cache = JsonSerializer.Deserialize(text, LocalVersionJsonContext.Default.DictionaryStringLocalAppVersion);
-                }
-            }
-            catch
-            {
-                /* corrupt or missing file — start fresh */
-            }
-
-            _cache ??= new Dictionary<string, LocalAppVersion>(StringComparer.OrdinalIgnoreCase);
-            return _cache;
+            if (string.IsNullOrEmpty(info.LocalPackageVersion) && string.IsNullOrEmpty(info.LocalDisplayVersion))
+                continue;
+            result[section] = new LocalAppVersion(info.LocalDisplayVersion, info.LocalPackageVersion);
         }
+
+        return result;
     }
 
     public static void Save(string sectionName, string displayVersion, string packageVersion)
     {
-        Load();
-        _cache![sectionName] = new LocalAppVersion(displayVersion, packageVersion);
-        Persist();
+        CurrentAppService.SetLocalVersion(sectionName, displayVersion, packageVersion);
     }
 
     public static void Remove(string sectionName)
     {
-        Load();
-        if (_cache!.Remove(sectionName))
-            Persist();
-    }
-
-    private static void Persist()
-    {
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            File.WriteAllText(FilePath,
-                              JsonSerializer.Serialize(_cache, LocalVersionJsonContext.Default.DictionaryStringLocalAppVersion));
-        }
-        catch
-        {
-            /* non-critical */
-        }
+        // At uninstall this must fully drop the entry so a subsequent background sync doesn't
+        // resurrect it as a phantom installed app.
+        CurrentAppService.Remove(sectionName);
     }
 }
 
