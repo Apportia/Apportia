@@ -5,7 +5,6 @@ namespace Apportia.Services;
 
 public static class CurrentAppService
 {
-    // Reserved section names that must never appear as a registered installed app.
     public static readonly IReadOnlySet<string> ReservedSectionNames =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "PortableApps.com" };
 
@@ -16,8 +15,6 @@ public static class CurrentAppService
     private static string DatabasePath =>
         Path.Combine(AppContext.BaseDirectory, "Data", "current_app_database.json");
 
-    // Directories found under Apps/ during migration that couldn't be matched to app_database.json.
-    // The UI is expected to prompt the user to either move each to CustomApps or delete it.
     public static IReadOnlyList<string> ConsumePendingUnknownDirs()
     {
         lock (DbGate)
@@ -67,16 +64,6 @@ public static class CurrentAppService
         });
     }
 
-    public static void Upsert(string sectionName, CurrentAppInfo info)
-    {
-        lock (DbGate)
-        {
-            var db = LoadDatabaseUnlocked();
-            db[sectionName] = info;
-            SaveDatabaseUnlocked(db);
-        }
-    }
-
     public static void Remove(string sectionName)
     {
         lock (DbGate)
@@ -87,13 +74,76 @@ public static class CurrentAppService
         }
     }
 
-    // Bulk replacement — used by background verify to prune orphans and add newly discovered apps in one write.
-    public static void ReplaceAll(Dictionary<string, CurrentAppInfo> snapshot)
+    public static VerifyResult VerifyAgainstDisk()
     {
         lock (DbGate)
         {
-            var db = new Dictionary<string, CurrentAppInfo>(snapshot, StringComparer.OrdinalIgnoreCase);
-            SaveDatabaseUnlocked(db);
+            var db = LoadDatabaseUnlocked();
+            var appsDir = AppDeployService.AppsDir;
+            var structureChanged = false;
+
+            var orphans = db.Keys.Where(section => !Directory.Exists(Path.Combine(appsDir, section))).ToList();
+            foreach (var section in orphans)
+                db.Remove(section);
+            if (orphans.Count > 0)
+                structureChanged = true;
+
+            var pendingBefore = PendingUnknownDirs.Count;
+            if (Directory.Exists(appsDir))
+            {
+                var upstream = LoadUpstreamByKey();
+                foreach (var dir in Directory.EnumerateDirectories(appsDir))
+                {
+                    var section = Path.GetFileName(dir);
+                    if (string.IsNullOrEmpty(section) || ReservedSectionNames.Contains(section))
+                        continue;
+                    if (db.ContainsKey(section))
+                        continue;
+
+                    if (upstream.TryGetValue(section, out var entry))
+                    {
+                        var info = new CurrentAppInfo();
+                        ApplyReflected(info, entry);
+                        info.LocalPackageVersion = info.PackageVersion;
+                        info.LocalDisplayVersion = info.DisplayVersion;
+                        db[section] = info;
+                        structureChanged = true;
+                    }
+                    else if (!PendingUnknownDirs.Contains(dir))
+                    {
+                        PendingUnknownDirs.Add(dir);
+                    }
+                }
+            }
+
+            if (structureChanged)
+                SaveDatabaseUnlocked(db);
+
+            var dates = new Dictionary<string, string>(db.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var section in db.Keys)
+            {
+                string date;
+                if (PluginService.IsPlugin(section))
+                {
+                    var marker = PluginService.GetMarkerFile(section);
+                    date = File.Exists(marker)
+                        ? File.GetLastWriteTime(marker).ToString("yyyy-MM-dd")
+                        : string.Empty;
+                }
+                else
+                {
+                    var appDir = AppDeployService.GetInstallDir(section);
+                    var (exe, _) = AppExecutableService.Resolve(appDir, section);
+                    date = exe != null
+                        ? File.GetLastWriteTime(exe).ToString("yyyy-MM-dd")
+                        : string.Empty;
+                }
+
+                dates[section] = date;
+            }
+
+            var structureOrPending = structureChanged || PendingUnknownDirs.Count != pendingBefore;
+            return new VerifyResult(structureOrPending, dates);
         }
     }
 
@@ -225,8 +275,7 @@ public static class CurrentAppService
         }
     }
 
-    // WIP: legacy migration – safe to delete this method and its caller in LoadDatabaseUnlocked once
-    // all users have upgraded past the version that introduced current_app_database.json.
+    // TODO: drop once users have migrated past the current_app_database.json rollout.
     private static void MigrateLegacyLayout(Dictionary<string, CurrentAppInfo> target)
     {
         if (target.Count > 0)
@@ -314,8 +363,6 @@ public static class CurrentAppService
                 }
             }
 
-            // Fallback for entries where the legacy version file didn't cover the install:
-            // seed local version from the upstream latest so LocalPackageVersion / LocalDisplayVersion are never empty.
             foreach (var info in target.Values)
             {
                 if (string.IsNullOrEmpty(info.LocalPackageVersion))
@@ -378,3 +425,5 @@ public static class CurrentAppService
         info.JoinedDate = upstream.JoinedDate;
     }
 }
+
+public sealed record VerifyResult(bool StructureChanged, IReadOnlyDictionary<string, string> CurrentDates);

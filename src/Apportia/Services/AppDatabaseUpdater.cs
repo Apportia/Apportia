@@ -10,12 +10,17 @@ public static class AppDatabaseUpdater
     private const double MinEntryRatio = 0.8;
     private const int MinEntryCount = 100;
 
+    private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(3);
     private static readonly TimeSpan[] RetryDelays = [TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(8)];
 
     public static readonly string CachePath = Path.Combine(ResolveDataDir(), "app_database.json");
 
     public static async Task TryUpdateAsync(CancellationToken ct = default)
     {
+        if (File.Exists(CachePath) &&
+            DateTime.UtcNow - File.GetLastWriteTimeUtc(CachePath) < MinRefreshInterval)
+            return;
+
         for (var attempt = 0;; attempt++)
         {
             try

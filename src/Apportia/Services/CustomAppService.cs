@@ -419,7 +419,7 @@ public static class CustomAppService
         }
     }
 
-    // WIP: legacy migration – safe to delete this method and its caller in LoadDatabaseUnlocked once
+    // TODO: legacy migration – safe to delete this method and its caller in LoadDatabaseUnlocked once
     // all users have upgraded past the version that introduced custom_app_database.json.
     private static void MigrateLegacyLayout(Dictionary<string, CustomAppInfo> target)
     {

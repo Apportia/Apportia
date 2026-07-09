@@ -2,8 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace Apportia.Services;
 
-// Facade over CurrentAppService – kept so existing call sites don't need to know about the
-// consolidation into current_app_database.json.
 public static class AppExecutableService
 {
     public static void Save(string sectionName, string exeFileName, string defaultName)
@@ -16,8 +14,7 @@ public static class AppExecutableService
 
     public static void Remove(string sectionName)
     {
-        // At uninstall this must fully drop the entry so a subsequent background sync doesn't
-        // resurrect it as a phantom installed app.
+        // Fully drop the entry so a later sync doesn't resurrect it as a phantom install.
         CurrentAppService.Remove(sectionName);
     }
 
@@ -32,7 +29,6 @@ public static class AppExecutableService
             var savedPath = Path.Combine(appDir, saved);
             if (File.Exists(savedPath))
                 return (savedPath, []);
-            // Saved exe gone – clear the stale override and fall through
             CurrentAppService.SetExeFile(sectionName, string.Empty);
         }
 
@@ -62,7 +58,7 @@ public static class AppExecutableService
     }
 }
 
-// Retained for the legacy migration in CurrentAppService.MigrateLegacyLayout.
+// Used only by CurrentAppService.MigrateLegacyLayout.
 [JsonSerializable(typeof(Dictionary<string, string>))]
 [JsonSourceGenerationOptions(WriteIndented = true)]
 internal partial class ExecutablesJsonContext : JsonSerializerContext;

@@ -925,7 +925,8 @@
                                             </ContextMenu>
                                         </Border.ContextMenu>
                                         <Grid>
-                                            <StackPanel HorizontalAlignment="Center" Spacing="4">
+                                            <StackPanel HorizontalAlignment="Center" Spacing="4"
+                                                        Margin="0,0,0,6">
                                                 <Image Source="{Binding Icon}"
                                                        Width="{Binding Columns.IconSize}"
                                                        Height="{Binding Columns.IconSize}"

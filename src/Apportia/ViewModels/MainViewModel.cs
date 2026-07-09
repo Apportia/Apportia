@@ -12,6 +12,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
 {
     private readonly CategoryNode _advancedCategoryNode;
     private readonly List<CategoryNode> _grouped = [];
+    private readonly AppImageManager _iconManager;
+    private readonly int _iconSize;
     private readonly CategoryNode _legacyCategoryNode;
     private CategoryDisplayMode _categoryDisplay = CategoryDisplayMode.Full;
     private CategoryScope _categoryScope = CategoryScope.Standard;
@@ -24,36 +26,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public MainViewModel(IReadOnlyList<AppEntry> entries, AppImageManager iconManager, int iconSize = 24)
     {
+        _iconManager = iconManager;
+        _iconSize = iconSize;
         var visible = entries.Where(e => !string.Equals(e.Category, "None", StringComparison.OrdinalIgnoreCase)).ToList();
-        // Group by real category (advanced apps are only shown under "Advanced" when not installed)
         var byCategory =
             visible.GroupBy(e => e.Category, StringComparer.OrdinalIgnoreCase)
                    .OrderBy(g => string.Equals(g.Key, "Games", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                    .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase);
 
         var localVersions = LocalVersionService.Load();
+        var installed = CurrentAppService.LoadAll();
 
         foreach (var group in byCategory)
         {
             var nodes = group.Select(entry =>
                              {
-                                 bool exists;
-                                 string currentDate;
-                                 if (PluginService.IsPlugin(entry.SectionName))
-                                 {
-                                     var marker = PluginService.GetMarkerFile(entry.SectionName);
-                                     exists = File.Exists(marker);
-                                     currentDate = exists ? File.GetLastWriteTime(marker).ToString("yyyy-MM-dd") : string.Empty;
-                                 }
-                                 else
-                                 {
-                                     var appDir = AppDeployService.GetInstallDir(entry.SectionName);
-                                     var (resolvedExe, candidates) = AppExecutableService.Resolve(appDir, entry.SectionName);
-                                     exists = resolvedExe != null || candidates.Length > 0;
-                                     currentDate = resolvedExe != null
-                                         ? File.GetLastWriteTime(resolvedExe).ToString("yyyy-MM-dd")
-                                         : string.Empty;
-                                 }
+                                 var isPlugin = PluginService.IsPlugin(entry.SectionName);
+                                 var exists = installed.ContainsKey(entry.SectionName);
 
                                  var node = new AppNode(
                                      entry,
@@ -61,8 +50,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                                      Columns,
                                      exists,
                                      false,
-                                     PluginService.IsPlugin(entry.SectionName),
-                                     currentDate);
+                                     isPlugin);
                                  if (exists && localVersions.TryGetValue(entry.SectionName, out var lv))
                                  {
                                      node.LocalDisplayVersion = lv.DisplayVersion;
@@ -212,6 +200,59 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void MergeUpstreamEntries(IReadOnlyList<AppEntry> entries)
+    {
+        var known = new HashSet<string>(AllNodes.Select(n => n.SectionName), StringComparer.OrdinalIgnoreCase);
+        var iconSize = Math.Max(16, _iconSize);
+
+        foreach (var entry in entries)
+        {
+            if (string.Equals(entry.Category, "None", StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (!known.Add(entry.SectionName))
+                continue;
+
+            var node = new AppNode(
+                entry,
+                _iconManager.GetIcon(entry.SectionName, iconSize),
+                Columns,
+                false,
+                false,
+                PluginService.IsPlugin(entry.SectionName));
+            node.PropertyChanged += OnNodePropertyChanged;
+
+            var group = _grouped.FirstOrDefault(g => string.Equals(g.Category, entry.Category, StringComparison.OrdinalIgnoreCase));
+            if (group == null)
+            {
+                group = new CategoryNode(entry.Category, Columns);
+                group.PropertyChanged += OnCategoryPropertyChanged;
+                group.SubCategoryExpansionChanged += OnSubCategoryExpansionChanged;
+                _grouped.Add(group);
+            }
+
+            group.Nodes.Add(node);
+        }
+
+        _grouped.Sort((a, b) =>
+        {
+            var aGames = string.Equals(a.Category, "Games", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            var bGames = string.Equals(b.Category, "Games", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            return aGames != bGames
+                ? aGames - bGames
+                : StringComparer.OrdinalIgnoreCase.Compare(a.Category, b.Category);
+        });
+
+        UpdateShowCurrentColumn();
+        Notify(nameof(Categories));
+        Notify(nameof(SubCategoriesMap));
+        // Merged entries aren't visible under Installed; skip the rebuild to avoid flicker.
+        if (_installFilter == InstallFilter.Installed)
+            return;
+
+        BeforeRebuildRows?.Invoke();
+        RebuildRows();
+    }
 
     public AppNode AddCustomApp(AppEntry entry, Bitmap icon)
     {
@@ -657,7 +698,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (rows.Count == 0)
             return;
 
-        const int firstBatch = 40;
+        const int firstBatch = 200;
         FlatRows.AddRange(rows[..Math.Min(firstBatch, rows.Count)]);
 
         if (rows.Count > firstBatch)

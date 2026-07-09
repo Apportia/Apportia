@@ -69,12 +69,15 @@ public partial class MainWindow : Window, IInstallUi
         var dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
         _ = Task.Run(() => AtomicFile.SweepStaleTempFiles(dataDir, TimeSpan.FromMinutes(5)));
 
+        // Sync build so the window appears already populated instead of empty-then-filled.
+        if (File.Exists(AppDatabaseUpdater.CachePath))
+            PopulateFromCache();
+
         _ = StartupAsync();
     }
 
     public static bool IsWindows => OperatingSystem.IsWindows();
 
-    // Icons with an OS-specific tint variant live under Assets/Emoji/win/.
     public static string OpenFolderIconPath => IsWindows
         ? "avares://Apportia/Assets/Emoji/win/1f4c1.svg"
         : "avares://Apportia/Assets/Emoji/1f4c1.svg";
@@ -167,30 +170,69 @@ public partial class MainWindow : Window, IInstallUi
 
     private async Task StartupAsync()
     {
-        // Yield so the window renders before we touch the JSON or filesystem.
-        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
-
-        if (File.Exists(AppDatabaseUpdater.CachePath))
+        if (DataContext is MainViewModel)
         {
-            await PopulateFromCacheAsync();
             if (await ResolveUnknownAppDirsAsync())
-                await PopulateFromCacheAsync();
+                PopulateFromCache();
             _ = Task.WhenAll(
                 AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
                 MirrorService.TryUpdateAsync(_cts.Token),
                 SecurityNoticeService.TryUpdateAsync(_cts.Token));
+            _ = VerifyInstalledAppsAsync();
             return;
         }
 
         await StartFirstRunAsync();
     }
 
-    private async Task PopulateFromCacheAsync()
+    private async Task VerifyInstalledAppsAsync()
     {
-        var vm = await Task.Run(BuildViewModel);
+        var result = await Task.Run(CurrentAppService.VerifyAgainstDisk);
+
+        if (result.StructureChanged)
+        {
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                var moved = await ResolveUnknownAppDirsAsync();
+                if (moved || result.StructureChanged)
+                    PopulateFromCache();
+            });
+        }
+
+        if (result.CurrentDates.Count > 0)
+            Dispatcher.UIThread.Post(() => ApplyCurrentDates(result.CurrentDates));
+    }
+
+    private void ApplyCurrentDates(IReadOnlyDictionary<string, string> dates)
+    {
+        if (DataContext is not MainViewModel vm)
+            return;
+        foreach (var node in vm.AllNodes)
+            if (dates.TryGetValue(node.SectionName, out var d) && node.CurrentDate != d)
+                node.CurrentDate = d;
+    }
+
+    private void PopulateFromCache()
+    {
+        var vm = BuildViewModel();
         SubscribeViewModel(vm);
         DataContext = vm;
         ApplyViewPreset(vm, false);
+        // In All/NotInstalled the merge flickers, so only stream upstream in for Installed.
+        if (vm.InstallFilter == InstallFilter.Installed)
+            _ = MergeUpstreamAsync(vm);
+    }
+
+    private async Task MergeUpstreamAsync(MainViewModel vm)
+    {
+        var installedSet = new HashSet<string>(
+            vm.AllNodes.Select(n => n.SectionName), StringComparer.OrdinalIgnoreCase);
+        var upstream = await Task.Run(() =>
+                                          AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath)
+                                                           .Where(e => !installedSet.Contains(e.SectionName))
+                                                           .ToList());
+        vm.MergeUpstreamEntries(upstream);
+        _ = StartIconDownloadsAsync(vm);
     }
 
     private MainViewModel BuildViewModel()
@@ -198,7 +240,15 @@ public partial class MainWindow : Window, IInstallUi
         var settings = SettingsService.Load();
         _defaultView = FilterViewSettings.Default;
 
-        var vm = new MainViewModel(AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath), _iconManager, _defaultView.IconSize)
+        var initialFilter = CurrentAppService.LoadAll().Count > 0
+            ? InstallFilter.Installed
+            : InstallFilter.All;
+
+        var entries = initialFilter == InstallFilter.Installed
+            ? BuildInstalledEntries()
+            : AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath);
+
+        var vm = new MainViewModel(entries, _iconManager, _defaultView.IconSize)
         {
             Columns =
             {
@@ -218,15 +268,46 @@ public partial class MainWindow : Window, IInstallUi
         vm.CategoryDisplay = _defaultView.CategoryDisplay;
         vm.CategoryScope = _defaultView.CategoryScope;
         vm.Columns.IsGridView = _defaultView.IsGridView;
-        vm.InstallFilter = settings.InstallFilter;
+        vm.InstallFilter = initialFilter;
 
         return vm;
+    }
+
+    private static IReadOnlyList<AppEntry> BuildInstalledEntries()
+    {
+        var db = CurrentAppService.LoadAll();
+        var result = new List<AppEntry>(db.Count);
+        foreach (var (section, info) in db)
+        {
+            result.Add(new AppEntry(
+                           section,
+                           info.Name,
+                           info.Description,
+                           info.Website,
+                           string.IsNullOrEmpty(info.Category) ? "Advanced" : info.Category,
+                           info.SubCategory,
+                           info.JoinedDate,
+                           info.DisplayVersion,
+                           info.PackageVersion,
+                           info.UpdateDate,
+                           info.DownloadFile,
+                           string.Empty,
+                           string.Empty,
+                           string.Empty,
+                           string.Empty,
+                           string.Empty));
+        }
+
+        return result;
     }
 
     private void ApplyPersistedShell()
     {
         var settings = SettingsService.Load();
-        settings.ViewPresets.TryGetValue(settings.InstallFilter.ToString(), out var preset);
+        var shellFilter = CurrentAppService.LoadAll().Count > 0
+            ? InstallFilter.Installed
+            : InstallFilter.All;
+        settings.ViewPresets.TryGetValue(shellFilter.ToString(), out var preset);
         preset ??= FilterViewSettings.Default;
         Width = preset.WindowWidth;
         Height = preset.WindowHeight;
@@ -250,10 +331,11 @@ public partial class MainWindow : Window, IInstallUi
             return;
         await Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            await PopulateFromCacheAsync();
+            PopulateFromCache();
             if (await ResolveUnknownAppDirsAsync())
-                await PopulateFromCacheAsync();
+                PopulateFromCache();
         });
+        _ = VerifyInstalledAppsAsync();
     }
 
     private async Task<bool> ResolveUnknownAppDirsAsync()
@@ -2330,7 +2412,6 @@ public partial class MainWindow : Window, IInstallUi
         var theme = Application.Current?.RequestedThemeVariant;
         var settings = SettingsService.Load();
         settings.ViewPresets.Remove("Default");
-        settings.InstallFilter = vm.InstallFilter;
         settings.SortColumn = vm.Columns.SortColumn;
         settings.SortDescending = vm.Columns.SortDescending;
         settings.ColumnName = vm.Columns.Name;

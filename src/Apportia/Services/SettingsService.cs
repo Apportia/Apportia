@@ -39,7 +39,6 @@ public sealed class FilterViewSettings
 
 public sealed class AppSettings
 {
-    public InstallFilter InstallFilter { get; set; } = InstallFilter.All;
     public string SortColumn { get; set; } = "Name";
     public bool SortDescending { get; set; }
     public double ColumnName { get; set; } = 200;
