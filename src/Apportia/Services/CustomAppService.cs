@@ -9,90 +9,87 @@ namespace Apportia.Services;
 
 public static class CustomAppService
 {
+    private static readonly Lock DbGate = new();
+    private static Dictionary<string, CustomAppInfo>? _cache;
+
     public static string CustomAppsDir =>
         Path.Combine(AppContext.BaseDirectory, "CustomApps");
 
-    private static string DataCustomAppsDir =>
-        Path.Combine(AppContext.BaseDirectory, "Data", "CustomApps");
+    private static string DatabasePath =>
+        Path.Combine(AppContext.BaseDirectory, "Data", "custom_app_database.json");
 
     public static string CustomAppImagesDir =>
         Path.Combine(AppContext.BaseDirectory, "Data", "CustomAppImages");
 
     public static IReadOnlyList<AppEntry> LoadAll()
     {
-        var result = new List<AppEntry>();
         var appsDir = CustomAppsDir;
-        var dataDir = DataCustomAppsDir;
-
         if (!Directory.Exists(appsDir))
-            return result;
+            return [];
 
-        Directory.CreateDirectory(dataDir);
+        var db = LoadDatabase();
+        var dirty = false;
+        var result = new List<AppEntry>();
 
-        CleanOrphanedJsons(appsDir, dataDir);
-
-        foreach (var jsonPath in Directory.GetFiles(dataDir, "*.json"))
+        foreach (var folderName in db.Keys.ToList())
         {
-            var folderName = Path.GetFileNameWithoutExtension(jsonPath);
+            var info = db[folderName];
             var appDir = Path.Combine(appsDir, folderName);
-
-            try
+            if (!Directory.Exists(appDir))
             {
-                var info = JsonSerializer.Deserialize(
-                    File.ReadAllText(jsonPath),
-                    CustomAppJsonContext.Default.CustomAppInfo);
-                if (info is null)
-                    continue;
+                db.Remove(folderName);
+                dirty = true;
+                continue;
+            }
 
-                var exePath = Path.Combine(appDir, info.ExeFile);
-                var versionExePath = string.IsNullOrEmpty(info.VersionSource)
-                    ? exePath
-                    : Path.Combine(appDir, info.VersionSource);
-                var version = info.PackageVersion;
+            var exePath = Path.Combine(appDir, info.ExeFile);
+            var versionExePath = string.IsNullOrEmpty(info.VersionSource)
+                ? exePath
+                : Path.Combine(appDir, info.VersionSource);
+            var version = info.PackageVersion;
 
-                if (File.Exists(versionExePath))
+            if (File.Exists(versionExePath))
+            {
+                var actualDate = File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd");
+                if (actualDate != info.UpdateDate || string.IsNullOrEmpty(version))
                 {
-                    var actualDate = File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd");
-
-                    if (actualDate != info.UpdateDate || string.IsNullOrEmpty(version))
-                    {
-                        var rawVersion = ReadExeVersion(versionExePath);
-                        info.DisplayVersion = rawVersion;
-                        info.PackageVersion = NormalizePackageVersion(rawVersion);
-                        version = info.PackageVersion;
-                        info.UpdateDate = actualDate;
-                        SaveInfo(jsonPath, info);
-                    }
+                    var rawVersion = ReadExeVersion(versionExePath);
+                    info.DisplayVersion = rawVersion;
+                    info.PackageVersion = NormalizePackageVersion(rawVersion);
+                    version = info.PackageVersion;
+                    info.UpdateDate = actualDate;
+                    dirty = true;
                 }
-
-                var joinedDate = string.IsNullOrEmpty(info.JoinedDate)
-                    ? File.GetCreationTime(jsonPath).ToString("yyyy-MM-dd")
-                    : info.JoinedDate;
-
-                result.Add(new AppEntry(
-                               folderName,
-                               info.Name,
-                               info.Description,
-                               info.Website,
-                               string.IsNullOrWhiteSpace(info.Category) ? "Advanced" : info.Category,
-                               info.SubCategory,
-                               joinedDate,
-                               string.IsNullOrEmpty(info.DisplayVersion) ? version : info.DisplayVersion,
-                               version,
-                               info.UpdateDate,
-                               info.ExeFile,
-                               string.Empty,
-                               string.Empty,
-                               string.Empty,
-                               string.Empty,
-                               string.Empty
-                           ));
             }
-            catch
+
+            if (string.IsNullOrEmpty(info.JoinedDate))
             {
-                /* skip corrupt entries – other apps should still load */
+                info.JoinedDate = DateTime.Today.ToString("yyyy-MM-dd");
+                dirty = true;
             }
+
+            result.Add(new AppEntry(
+                           folderName,
+                           info.Name,
+                           info.Description,
+                           info.Website,
+                           string.IsNullOrWhiteSpace(info.Category) ? "Advanced" : info.Category,
+                           info.SubCategory,
+                           info.JoinedDate,
+                           string.IsNullOrEmpty(info.DisplayVersion) ? version : info.DisplayVersion,
+                           version,
+                           info.UpdateDate,
+                           info.ExeFile,
+                           string.Empty,
+                           string.Empty,
+                           string.Empty,
+                           string.Empty,
+                           string.Empty
+                       ));
         }
+
+        if (dirty)
+            SaveDatabase(db);
 
         return result;
     }
@@ -167,15 +164,11 @@ public static class CustomAppService
             VersionSource = versionSource,
             UpdateDate = updateDate
         };
-        Directory.CreateDirectory(DataCustomAppsDir);
-        await File.WriteAllTextAsync(
-            Path.Combine(DataCustomAppsDir, folderName + ".json"),
-            JsonSerializer.Serialize(info, CustomAppJsonContext.Default.CustomAppInfo),
-            ct);
+        UpsertEntry(folderName, info);
         return folderName;
     }
 
-    public static async Task UpdateAppAsync(
+    public static Task UpdateAppAsync(
         string sectionName,
         string exeFile,
         string name,
@@ -192,23 +185,34 @@ public static class CustomAppService
         {
             Directory.CreateDirectory(CustomAppImagesDir);
             var iconDest = Path.Combine(CustomAppImagesDir, sectionName + ".png");
-            await Task.Run(() => SaveIcon(iconSourcePath, iconDest));
+            return Task.Run(() =>
+            {
+                SaveIcon(iconSourcePath, iconDest);
+                WriteUpdatedEntry(sectionName, exeFile, name, description, website, category, subCategory, version, versionSource, displayVersion);
+            });
         }
 
-        var jsonPath = Path.Combine(DataCustomAppsDir, sectionName + ".json");
-        var joinedDate = string.Empty;
-        try
-        {
-            var existing = JsonSerializer.Deserialize(await File.ReadAllTextAsync(jsonPath), CustomAppJsonContext.Default.CustomAppInfo);
-            joinedDate = existing?.JoinedDate ?? string.Empty;
-        }
-        catch
-        {
-            /* use birthtime fallback */
-        }
+        WriteUpdatedEntry(sectionName, exeFile, name, description, website, category, subCategory, version, versionSource, displayVersion);
+        return Task.CompletedTask;
+    }
 
-        if (string.IsNullOrEmpty(joinedDate) && File.Exists(jsonPath))
-            joinedDate = File.GetCreationTime(jsonPath).ToString("yyyy-MM-dd");
+    private static void WriteUpdatedEntry(
+        string sectionName,
+        string exeFile,
+        string name,
+        string description,
+        string website,
+        string category,
+        string subCategory,
+        string version,
+        string versionSource,
+        string displayVersion)
+    {
+        var db = LoadDatabase();
+        db.TryGetValue(sectionName, out var existing);
+        var joinedDate = existing?.JoinedDate;
+        if (string.IsNullOrEmpty(joinedDate))
+            joinedDate = DateTime.Today.ToString("yyyy-MM-dd");
 
         var versionExeRelPath = string.IsNullOrEmpty(versionSource) ? exeFile : versionSource;
         var versionExePath = Path.Combine(CustomAppsDir, sectionName, versionExeRelPath);
@@ -230,38 +234,28 @@ public static class CustomAppService
             VersionSource = versionSource,
             UpdateDate = updateDate
         };
-        Directory.CreateDirectory(DataCustomAppsDir);
-        await File.WriteAllTextAsync(
-            Path.Combine(DataCustomAppsDir, sectionName + ".json"),
-            JsonSerializer.Serialize(info, CustomAppJsonContext.Default.CustomAppInfo));
+        UpsertEntry(sectionName, info);
     }
 
     public static (string Version, string VersionSource, string DisplayVersion) LoadVersionInfo(string sectionName)
     {
-        var jsonPath = Path.Combine(DataCustomAppsDir, sectionName + ".json");
-        if (!File.Exists(jsonPath))
-            return (string.Empty, string.Empty, string.Empty);
-        try
-        {
-            var info = JsonSerializer.Deserialize(
-                File.ReadAllText(jsonPath),
-                CustomAppJsonContext.Default.CustomAppInfo);
-            return (info?.PackageVersion ?? string.Empty, info?.VersionSource ?? string.Empty, info?.DisplayVersion ?? string.Empty);
-        }
-        catch
-        {
-            /* corrupt json */
-            return (string.Empty, string.Empty, string.Empty);
-        }
+        var db = LoadDatabase();
+        return db.TryGetValue(sectionName, out var info)
+            ? (info.PackageVersion, info.VersionSource, info.DisplayVersion)
+            : (string.Empty, string.Empty, string.Empty);
     }
 
     public static void DeleteData(string sectionName)
     {
         try
         {
-            var jsonPath = Path.Combine(DataCustomAppsDir, sectionName + ".json");
-            if (File.Exists(jsonPath))
-                File.Delete(jsonPath);
+            lock (DbGate)
+            {
+                var db = LoadDatabaseUnlocked();
+                if (db.Remove(sectionName))
+                    SaveDatabaseUnlocked(db);
+            }
+
             var iconPath = Path.Combine(CustomAppImagesDir, sectionName + ".png");
             if (File.Exists(iconPath))
                 File.Delete(iconPath);
@@ -272,21 +266,170 @@ public static class CustomAppService
         }
     }
 
-    // Delete JSONs in DataCustomAppsDir whose corresponding app folder no longer exists
-    private static void CleanOrphanedJsons(string appsDir, string dataDir)
+    private static Dictionary<string, CustomAppInfo> LoadDatabase()
+    {
+        lock (DbGate)
+        {
+            return LoadDatabaseUnlocked();
+        }
+    }
+
+    private static Dictionary<string, CustomAppInfo> LoadDatabaseUnlocked()
+    {
+        if (_cache is not null)
+            return _cache;
+        _cache = ReadDatabaseFile();
+        MigrateLegacyLayout(_cache);
+        return _cache;
+    }
+
+    private static Dictionary<string, CustomAppInfo> ReadDatabaseFile()
     {
         try
         {
-            foreach (var jsonPath in Directory.GetFiles(dataDir, "*.json"))
-            {
-                var folderName = Path.GetFileNameWithoutExtension(jsonPath);
-                if (!Directory.Exists(Path.Combine(appsDir, folderName)))
-                    File.Delete(jsonPath);
-            }
+            if (!File.Exists(DatabasePath))
+                return new Dictionary<string, CustomAppInfo>(StringComparer.OrdinalIgnoreCase);
+            var dict = JsonSerializer.Deserialize(
+                File.ReadAllText(DatabasePath),
+                CustomAppJsonContext.Default.DictionaryStringCustomAppInfo);
+            return dict is null
+                ? new Dictionary<string, CustomAppInfo>(StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, CustomAppInfo>(dict, StringComparer.OrdinalIgnoreCase);
         }
         catch
         {
-            /* cleanup failure is non-fatal */
+            return new Dictionary<string, CustomAppInfo>(StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    private static void UpsertEntry(string sectionName, CustomAppInfo info)
+    {
+        lock (DbGate)
+        {
+            var db = LoadDatabaseUnlocked();
+            db[sectionName] = info;
+            SaveDatabaseUnlocked(db);
+        }
+    }
+
+    private static void SaveDatabase(Dictionary<string, CustomAppInfo> dict)
+    {
+        lock (DbGate)
+        {
+            SaveDatabaseUnlocked(dict);
+        }
+    }
+
+    private static void SaveDatabaseUnlocked(Dictionary<string, CustomAppInfo> dict)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
+        var tmp = DatabasePath + ".tmp";
+        File.WriteAllText(
+            tmp,
+            JsonSerializer.Serialize(dict, CustomAppJsonContext.Default.DictionaryStringCustomAppInfo));
+        if (!VerifyRoundTrip(tmp, dict))
+        {
+            TryDelete(tmp);
+            throw new IOException($"Custom app database write verification failed: {tmp}");
+        }
+
+        File.Move(tmp, DatabasePath, true);
+        _cache = dict;
+    }
+
+    private static bool VerifyRoundTrip(string path, Dictionary<string, CustomAppInfo> expected)
+    {
+        Dictionary<string, CustomAppInfo>? read;
+        try
+        {
+            read = JsonSerializer.Deserialize(
+                File.ReadAllText(path),
+                CustomAppJsonContext.Default.DictionaryStringCustomAppInfo);
+        }
+        catch
+        {
+            return false;
+        }
+
+        if (read is null || read.Count != expected.Count)
+            return false;
+
+        var wrapped = new Dictionary<string, CustomAppInfo>(read, StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, expInfo) in expected)
+        {
+            if (!wrapped.TryGetValue(key, out var actInfo))
+                return false;
+            if (!InfosEqual(expInfo, actInfo))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool InfosEqual(CustomAppInfo a, CustomAppInfo b)
+    {
+        return a.Name == b.Name &&
+               a.Description == b.Description &&
+               a.ExeFile == b.ExeFile &&
+               a.Website == b.Website &&
+               a.Category == b.Category &&
+               a.SubCategory == b.SubCategory &&
+               a.JoinedDate == b.JoinedDate &&
+               a.DisplayVersion == b.DisplayVersion &&
+               a.PackageVersion == b.PackageVersion &&
+               a.VersionSource == b.VersionSource &&
+               a.UpdateDate == b.UpdateDate;
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            /* best effort */
+        }
+    }
+
+    // WIP: legacy migration – safe to delete this method and its caller in LoadDatabaseUnlocked once
+    // all users have upgraded past the version that introduced custom_app_database.json.
+    private static void MigrateLegacyLayout(Dictionary<string, CustomAppInfo> target)
+    {
+        var legacyDir = Path.Combine(AppContext.BaseDirectory, "Data", "CustomApps");
+        if (!Directory.Exists(legacyDir))
+            return;
+        try
+        {
+            var found = false;
+            foreach (var jsonPath in Directory.GetFiles(legacyDir, "*.json"))
+            {
+                try
+                {
+                    var info = JsonSerializer.Deserialize(
+                        File.ReadAllText(jsonPath),
+                        CustomAppJsonContext.Default.CustomAppInfo);
+                    if (info is null)
+                        continue;
+                    var folderName = Path.GetFileNameWithoutExtension(jsonPath);
+                    target[folderName] = info;
+                    found = true;
+                }
+                catch
+                {
+                    /* skip corrupt legacy entry */
+                }
+            }
+
+            if (found)
+                SaveDatabaseUnlocked(target);
+            Directory.Delete(legacyDir, true);
+        }
+        catch
+        {
+            /* migration failure – leave legacy in place for next run */
         }
     }
 
@@ -330,20 +473,6 @@ public static class CustomAppService
         while (result.Count < 4)
             result.Add("0");
         return string.Join('.', result);
-    }
-
-    private static void SaveInfo(string jsonPath, CustomAppInfo info)
-    {
-        try
-        {
-            File.WriteAllText(
-                jsonPath,
-                JsonSerializer.Serialize(info, CustomAppJsonContext.Default.CustomAppInfo));
-        }
-        catch
-        {
-            /* version cache save failure must not abort loading */
-        }
     }
 
     private static void SaveIcon(string sourcePath, string destPath)

@@ -18,5 +18,6 @@ public sealed class CustomAppInfo
 }
 
 [JsonSerializable(typeof(CustomAppInfo))]
+[JsonSerializable(typeof(Dictionary<string, CustomAppInfo>))]
 [JsonSourceGenerationOptions(WriteIndented = true)]
 internal partial class CustomAppJsonContext : JsonSerializerContext;
