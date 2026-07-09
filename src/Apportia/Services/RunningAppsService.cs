@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Runtime.Versioning;
+using Apportia.Platform;
 
 namespace Apportia.Services;
 
@@ -9,6 +11,7 @@ public static class RunningAppsService
     private static readonly Lock Gate = new();
     private static HashSet<string> _running = new(StringComparer.OrdinalIgnoreCase);
     private static Timer? _timer;
+    private static int _pollBusy;
 
     private static readonly string[] WineOnlyExes =
     [
@@ -58,7 +61,7 @@ public static class RunningAppsService
     {
         foreach (var pid in pids)
             TryKill(pid);
-        Poll();
+        _ = Task.Run(Poll);
     }
 
     private static List<KillCandidate> GetKillCandidatesLinux(string sectionName, List<string> bases)
@@ -85,7 +88,8 @@ public static class RunningAppsService
                 if (IsPortableLauncher(cmdline, comm) || IsWineInternal(cmdline))
                     continue;
 
-                result.Add(new KillCandidate(pid, DescribeLinux(cmdline, comm)));
+                var pretty = cmdline.Replace('\0', ' ').TrimEnd();
+                result.Add(new KillCandidate(pid, DescribeLinux(cmdline, comm), pretty, TryGetStartTime(pid)));
             }
             catch
             {
@@ -96,6 +100,7 @@ public static class RunningAppsService
         return result;
     }
 
+    [SupportedOSPlatform("windows")]
     private static List<KillCandidate> GetKillCandidatesWindows(string sectionName, List<string> bases)
     {
         var result = new List<KillCandidate>();
@@ -113,7 +118,18 @@ public static class RunningAppsService
                 if (path.EndsWith("Portable.exe", StringComparison.OrdinalIgnoreCase) ||
                     path.EndsWith("Portable64.exe", StringComparison.OrdinalIgnoreCase))
                     continue;
-                result.Add(new KillCandidate(proc.Id, Path.GetFileName(path)));
+                DateTime? started = null;
+                try
+                {
+                    started = proc.StartTime;
+                }
+                catch
+                {
+                    /* access denied */
+                }
+
+                var cmd = WindowsCommandLine.TryGet(proc.Id) ?? path;
+                result.Add(new KillCandidate(proc.Id, Path.GetFileName(path), cmd, started));
             }
             catch
             {
@@ -221,6 +237,19 @@ public static class RunningAppsService
         }
     }
 
+    private static DateTime? TryGetStartTime(int pid)
+    {
+        try
+        {
+            using var p = Process.GetProcessById(pid);
+            return p.StartTime;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static void TryKill(int pid)
     {
         try
@@ -236,26 +265,44 @@ public static class RunningAppsService
 
     private static void Poll()
     {
-        HashSet<string> current;
+        if (Interlocked.Exchange(ref _pollBusy, 1) == 1)
+            return;
         try
         {
-            current = Scan();
-        }
-        catch
-        {
-            return;
-        }
+            HashSet<string> current;
+            try
+            {
+                current = Scan();
+            }
+            catch
+            {
+                return;
+            }
 
-        HashSet<string> diff;
-        lock (Gate)
-        {
-            diff = new HashSet<string>(_running, StringComparer.OrdinalIgnoreCase);
-            diff.SymmetricExceptWith(current);
-            _running = current;
-        }
+            HashSet<string> diff;
+            lock (Gate)
+            {
+                diff = new HashSet<string>(_running, StringComparer.OrdinalIgnoreCase);
+                diff.SymmetricExceptWith(current);
+                _running = current;
+            }
 
-        foreach (var section in diff)
-            Changed?.Invoke(null, section);
+            foreach (var section in diff)
+            {
+                try
+                {
+                    Changed?.Invoke(null, section);
+                }
+                catch
+                {
+                    /* handler threw – keep polling */
+                }
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _pollBusy, 0);
+        }
     }
 
     private static HashSet<string> Scan()
@@ -392,5 +439,5 @@ public static class RunningAppsService
         }
     }
 
-    public readonly record struct KillCandidate(int Pid, string Label);
+    public sealed record KillCandidate(int Pid, string Exe, string CommandLine, DateTime? StartTime);
 }

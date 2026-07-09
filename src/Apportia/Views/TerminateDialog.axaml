@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:svg="using:Avalonia.Svg.Skia"
+        xmlns:views="using:Apportia.Views"
+        x:Class="Apportia.Views.TerminateDialog"
+        Title="Terminate"
+        Width="640"
+        Height="360"
+        MinWidth="480"
+        MinHeight="260"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <Panel>
+        <svg:Svg Path="avares://Apportia/Assets/Emoji/2620.svg"
+                 Width="256" Height="256"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Bottom"
+                 Margin="10,0,0,10"
+                 IsHitTestVisible="False"
+                 Css="* { opacity: 0.3; }" />
+
+        <DockPanel Margin="20">
+
+            <TextBlock DockPanel.Dock="Top"
+                       x:Name="HeaderText"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,10"
+                       Foreground="{DynamicResource AppTextBrush}" />
+
+            <StackPanel DockPanel.Dock="Bottom"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8"
+                        Margin="0,12,0,0">
+                <Button Content="Terminate" Click="OnTerminate" IsDefault="True" />
+                <Button Content="Cancel" Click="OnCancel" IsCancel="True" />
+            </StackPanel>
+
+            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Background="Transparent">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top"
+                          ColumnDefinitions="70,*,120,2*"
+                          Background="{DynamicResource AppColHeaderBrush}">
+                        <TextBlock Grid.Column="0" Text="PID"
+                                   Padding="8,4" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                        <TextBlock Grid.Column="1" Text="Executable"
+                                   Padding="8,4" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                        <TextBlock Grid.Column="2" Text="Started"
+                                   Padding="8,4" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                        <TextBlock Grid.Column="3" Text="Command"
+                                   Padding="8,4" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                    </Grid>
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ProcessList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="views:TerminateRow">
+                                    <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                            BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="70,*,120,2*">
+                                            <TextBlock Grid.Column="0" Text="{Binding PidText}"
+                                                       Padding="8,4"
+                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Exe}"
+                                                       Padding="8,4"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding Exe}"
+                                                       Foreground="{DynamicResource AppTextBrush}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding StartedText}"
+                                                       Padding="8,4"
+                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock Grid.Column="3" Text="{Binding CommandLine}"
+                                                       Padding="8,4"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip.Tip="{Binding CommandLine}"
+                                                       Foreground="{DynamicResource AppSubTextBrush}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+        </DockPanel>
+    </Panel>
+</Window>
