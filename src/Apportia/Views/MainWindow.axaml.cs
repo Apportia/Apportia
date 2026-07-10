@@ -1025,6 +1025,7 @@ public partial class MainWindow : Window, IInstallUi
 
                 if (node.IsPlugin)
                 {
+                    CurrentAppService.Remove(node.SectionName);
                     var commonDir = PluginService.GetInstallDir();
                     if (Directory.Exists(commonDir) && !Directory.EnumerateFileSystemEntries(commonDir).Any())
                         Directory.Delete(commonDir);
@@ -1047,6 +1048,7 @@ public partial class MainWindow : Window, IInstallUi
                     var javaDir = PluginService.GetInstallDir(javaNode.SectionName);
                     if (Directory.Exists(javaDir))
                         Directory.Delete(javaDir, true);
+                    CurrentAppService.Remove(javaNode.SectionName);
                     javaNode.IsInstalled = false;
                 }
 
@@ -1164,10 +1166,9 @@ public partial class MainWindow : Window, IInstallUi
 
             if (Directory.Exists(appDir))
                 Directory.Delete(appDir, true);
+            CurrentAppService.Remove(node.SectionName);
             if (!node.IsPlugin)
             {
-                AppExecutableService.Remove(node.SectionName);
-                LocalVersionService.Remove(node.SectionName);
                 node.LocalDisplayVersion = null;
                 node.LocalPackageVersion = null;
             }

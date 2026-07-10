@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Apportia.Services;
 
@@ -20,6 +21,10 @@ public static class WineService
     {
         "ext4", "ext3", "ext2", "ext2/ext3", "btrfs", "xfs", "zfs", "f2fs", "tmpfs"
     };
+
+    private static readonly Regex SharedObjectRegex = new(
+        @"/[\w./+\-]*\.so(?:\.\d+)*",
+        RegexOptions.Compiled);
 
     public static string PrefixDir => SupportsWinePrefix(DefaultPrefixDir) ? DefaultPrefixDir : FallbackPrefixDir;
 
@@ -118,13 +123,122 @@ public static class WineService
         return File.Exists(bin) ? bin : null;
     }
 
+    public static async Task EnsurePrefixReadyAsync(CancellationToken ct = default)
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+
+        var wine = ResolveWineBinary()
+                   ?? throw new InvalidOperationException(
+                       "Wine is not available. Install Wine or configure a bundled runner.");
+        var prefix = ResolvePrefix();
+
+        if (IsPrefixValid(prefix))
+            return;
+
+        Directory.CreateDirectory(prefix);
+        var psi = new ProcessStartInfo(wine)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        psi.ArgumentList.Add("wineboot");
+        psi.ArgumentList.Add("-u");
+        ApplyEnv(psi);
+
+        using var proc = Process.Start(psi)
+                         ?? throw new InvalidOperationException(
+                             $"Failed to launch Wine ('{wine}') to initialize the prefix at '{prefix}'.");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, ct);
+        var stderrTask = proc.StandardError.ReadToEndAsync(linked.Token);
+        var stdoutTask = proc.StandardOutput.ReadToEndAsync(linked.Token);
+        try
+        {
+            await proc.WaitForExitAsync(linked.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                proc.Kill(true);
+            }
+            catch
+            {
+                /* process may have already exited before the kill request */
+            }
+
+            throw new InvalidOperationException(
+                $"Wine prefix initialization timed out at '{prefix}'.");
+        }
+
+        if (IsPrefixValid(prefix))
+            return;
+
+        var stderr = string.Empty;
+        var stdout = string.Empty;
+        try
+        {
+            stderr = await stderrTask;
+        }
+        catch
+        {
+            /* pipe closed or read cancelled – diagnose with whatever we have */
+        }
+
+        try
+        {
+            stdout = await stdoutTask;
+        }
+        catch
+        {
+            /* pipe closed or read cancelled – diagnose with whatever we have */
+        }
+
+        var combined = stderr + "\n" + stdout;
+
+        throw new InvalidOperationException(DiagnosePrefixFailure(prefix, combined));
+    }
+
+    private static string DiagnosePrefixFailure(string prefix, string wineOutput)
+    {
+        var missing = ExtractMissingSharedObjects(wineOutput);
+        if (missing.Count > 0)
+        {
+            var list = string.Join('\n', missing.Select(m => "• " + m));
+            return "Wine could not start because these shared libraries are missing:\n\n" + list;
+        }
+
+        return $"Wine prefix at '{prefix}' could not be initialized. Check your Wine installation.";
+    }
+
+    private static List<string> ExtractMissingSharedObjects(string wineOutput)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var result = new List<string>();
+        foreach (Match m in SharedObjectRegex.Matches(wineOutput))
+            if (seen.Add(m.Value))
+                result.Add(m.Value);
+        return result;
+    }
+
+    private static bool IsPrefixValid(string prefix)
+    {
+        return File.Exists(Path.Combine(prefix, "system.reg"))
+               && File.Exists(Path.Combine(prefix, "user.reg"))
+               && Directory.Exists(Path.Combine(prefix, "drive_c", "windows", "system32"));
+    }
+
     public static void ApplyEnv(ProcessStartInfo psi)
     {
         if (!OperatingSystem.IsLinux())
             return;
         psi.Environment["WINEPREFIX"] = ResolvePrefix();
-        // Prevent winemenubuilder from writing wine-extension-*.desktop into ~/.local/share/applications
-        // and from registering MIME associations for the host user.
+        // Prevent winemenubuilder from writing wine-extension-*.desktop
+        // into ~/.local/share/applications and from registering MIME
+        // associations for the host user.
         psi.Environment["WINEDLLOVERRIDES"] = "winemenubuilder.exe=";
         if (!IsBundled())
             return;

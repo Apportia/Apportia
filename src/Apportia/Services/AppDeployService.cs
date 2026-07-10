@@ -149,6 +149,8 @@ public sealed class AppDeployService : IDisposable
         var platformExe = Path.Combine(appsBaseDir, "PortableApps.com", "PortableAppsPlatform.exe");
         Directory.CreateDirectory(appsBaseDir);
 
+        await WineService.EnsurePrefixReadyAsync(ct);
+
         // Start platform first (fire and forget – we kill it later)
         Process? platform = null;
         if (File.Exists(platformExe))
@@ -192,6 +194,8 @@ public sealed class AppDeployService : IDisposable
 
             ActiveInstaller = null;
             installer.Dispose();
+
+            await WaitForInstallerChildrenAsync(installerPath, ct);
         }
 
         try
@@ -254,6 +258,91 @@ public sealed class AppDeployService : IDisposable
                 Directory.Move(entry, dest);
             else
                 File.Move(entry, dest, true);
+        }
+    }
+
+    private static async Task WaitForInstallerChildrenAsync(string installerPath, CancellationToken ct)
+    {
+        var basename = Path.GetFileName(installerPath);
+        if (string.IsNullOrEmpty(basename))
+            return;
+        // Wine argv uses Z:\... for unix paths; also match the raw unix path.
+        var wineHaystack = "Z:" + installerPath.Replace('/', '\\');
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(30));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, ct);
+        while (!linked.IsCancellationRequested)
+        {
+            if (!IsInstallerRunning(installerPath, wineHaystack, basename))
+                return;
+            try
+            {
+                await Task.Delay(500, linked.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+    }
+
+    private static bool IsInstallerRunning(string installerPath, string wineHaystack, string basename)
+    {
+        if (OperatingSystem.IsLinux())
+            return IsInstallerRunningLinux(installerPath, wineHaystack);
+        if (OperatingSystem.IsWindows())
+            return IsInstallerRunningWindows(basename);
+        return false;
+    }
+
+    private static bool IsInstallerRunningLinux(string unixPath, string winePath)
+    {
+        try
+        {
+            foreach (var procDir in Directory.EnumerateDirectories("/proc"))
+            {
+                var name = Path.GetFileName(procDir);
+                if (name.Length == 0 || !char.IsDigit(name[0]) || !int.TryParse(name, out _))
+                    continue;
+                try
+                {
+                    var cmdlinePath = Path.Combine(procDir, "cmdline");
+                    if (!File.Exists(cmdlinePath))
+                        continue;
+                    var cmdline = File.ReadAllText(cmdlinePath);
+                    if (cmdline.Contains(unixPath, StringComparison.OrdinalIgnoreCase) ||
+                        cmdline.Contains(winePath, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                catch
+                {
+                    /* /proc entry vanished mid-read */
+                }
+            }
+        }
+        catch
+        {
+            /* enumeration failed – treat as no running installer */
+        }
+
+        return false;
+    }
+
+    private static bool IsInstallerRunningWindows(string basename)
+    {
+        var name = Path.GetFileNameWithoutExtension(basename);
+        if (string.IsNullOrEmpty(name))
+            return false;
+        try
+        {
+            var procs = Process.GetProcessesByName(name);
+            var any = procs.Length > 0;
+            foreach (var p in procs)
+                p.Dispose();
+            return any;
+        }
+        catch
+        {
+            return false;
         }
     }
 

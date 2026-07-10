@@ -6,10 +6,8 @@ public static class AppExecutableService
 {
     public static void Save(string sectionName, string exeFileName, string defaultName)
     {
-        var value = string.Equals(exeFileName, defaultName, StringComparison.OrdinalIgnoreCase)
-            ? string.Empty
-            : exeFileName;
-        CurrentAppService.SetExeFile(sectionName, value);
+        _ = defaultName;
+        CurrentAppService.SetExeFile(sectionName, exeFileName);
     }
 
     public static void Remove(string sectionName)
@@ -33,7 +31,10 @@ public static class AppExecutableService
         }
 
         if (File.Exists(defaultPath))
+        {
+            Save(sectionName, defaultName, defaultName);
             return (defaultPath, []);
+        }
 
         if (!Directory.Exists(appDir))
             return (null, []);
@@ -45,9 +46,7 @@ public static class AppExecutableService
             case 1:
             {
                 var exePath = candidates[0];
-                var exeName = Path.GetFileName(exePath);
-                if (!string.Equals(exeName, defaultName, StringComparison.OrdinalIgnoreCase))
-                    Save(sectionName, exeName, defaultName);
+                Save(sectionName, Path.GetFileName(exePath), defaultName);
                 return (exePath, []);
             }
             case > 1:

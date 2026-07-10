@@ -6,7 +6,7 @@ namespace Apportia.Services;
 public static class CurrentAppService
 {
     public static readonly IReadOnlySet<string> ReservedSectionNames =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "PortableApps.com" };
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "PortableApps.com", "CommonFiles" };
 
     private static readonly Lock DbGate = new();
     private static Dictionary<string, CurrentAppInfo>? _cache;
@@ -74,6 +74,38 @@ public static class CurrentAppService
         }
     }
 
+    public static void Register(string sectionName)
+    {
+        lock (DbGate)
+        {
+            if (string.IsNullOrEmpty(sectionName) || ReservedSectionNames.Contains(sectionName))
+                return;
+
+            var db = LoadDatabaseUnlocked();
+            if (!db.TryGetValue(sectionName, out var info))
+            {
+                info = new CurrentAppInfo();
+                db[sectionName] = info;
+            }
+
+            var upstream = LoadUpstreamByKey();
+            if (upstream.TryGetValue(sectionName, out var entry))
+            {
+                ApplyReflected(info, entry);
+                if (string.IsNullOrEmpty(info.LocalPackageVersion))
+                    info.LocalPackageVersion = info.PackageVersion;
+                if (string.IsNullOrEmpty(info.LocalDisplayVersion))
+                    info.LocalDisplayVersion = info.DisplayVersion;
+            }
+            else if (string.IsNullOrEmpty(info.Name))
+            {
+                info.Name = sectionName;
+            }
+
+            SaveDatabaseUnlocked(db);
+        }
+    }
+
     public static VerifyResult VerifyAgainstDisk()
     {
         lock (DbGate)
@@ -82,7 +114,9 @@ public static class CurrentAppService
             var appsDir = AppDeployService.AppsDir;
             var structureChanged = false;
 
-            var orphans = db.Keys.Where(section => !Directory.Exists(Path.Combine(appsDir, section))).ToList();
+            var orphans = db.Keys
+                            .Where(section => !EntryIsInstalled(section, appsDir))
+                            .ToList();
             foreach (var section in orphans)
                 db.Remove(section);
             if (orphans.Count > 0)
@@ -98,6 +132,9 @@ public static class CurrentAppService
                     if (string.IsNullOrEmpty(section) || ReservedSectionNames.Contains(section))
                         continue;
                     if (db.ContainsKey(section))
+                        continue;
+                    var (exe, _) = AppExecutableService.Resolve(dir, section);
+                    if (exe == null)
                         continue;
 
                     if (upstream.TryGetValue(section, out var entry))
@@ -147,6 +184,17 @@ public static class CurrentAppService
         }
     }
 
+    private static bool EntryIsInstalled(string section, string appsDir)
+    {
+        if (PluginService.IsPlugin(section))
+            return File.Exists(PluginService.GetMarkerFile(section));
+        var dir = Path.Combine(appsDir, section);
+        if (!Directory.Exists(dir))
+            return false;
+        var (exe, _) = AppExecutableService.Resolve(dir, section);
+        return exe != null;
+    }
+
     private static void MutateEntry(string sectionName, Action<CurrentAppInfo> mutator)
     {
         lock (DbGate)
@@ -156,6 +204,9 @@ public static class CurrentAppService
             {
                 info = new CurrentAppInfo();
                 db[sectionName] = info;
+                var upstream = LoadUpstreamByKey();
+                if (upstream.TryGetValue(sectionName, out var entry))
+                    ApplyReflected(info, entry);
             }
 
             mutator(info);
@@ -201,65 +252,20 @@ public static class CurrentAppService
 
     private static void SaveDatabaseUnlocked(Dictionary<string, CurrentAppInfo> dict)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
-        var tmp = DatabasePath + ".tmp";
-        File.WriteAllText(
-            tmp,
-            JsonSerializer.Serialize(dict, CurrentAppJsonContext.Default.DictionaryStringCurrentAppInfo));
-        if (!VerifyRoundTrip(tmp, dict))
-        {
-            TryDelete(tmp);
-            throw new IOException($"Current app database write verification failed: {tmp}");
-        }
-
-        File.Move(tmp, DatabasePath, true);
-        _cache = dict;
-    }
-
-    private static bool VerifyRoundTrip(string path, Dictionary<string, CurrentAppInfo> expected)
-    {
-        Dictionary<string, CurrentAppInfo>? read;
         try
         {
-            read = JsonSerializer.Deserialize(
-                File.ReadAllText(path),
-                CurrentAppJsonContext.Default.DictionaryStringCurrentAppInfo);
+            Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
+            var tmp = DatabasePath + ".tmp";
+            File.WriteAllText(
+                tmp,
+                JsonSerializer.Serialize(dict, CurrentAppJsonContext.Default.DictionaryStringCurrentAppInfo));
+            File.Move(tmp, DatabasePath, true);
+            _cache = dict;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            Log.Write($"Failed to save current_app_database.json: {ex.Message}");
         }
-
-        if (read is null || read.Count != expected.Count)
-            return false;
-
-        var wrapped = new Dictionary<string, CurrentAppInfo>(read, StringComparer.OrdinalIgnoreCase);
-        foreach (var (key, exp) in expected)
-        {
-            if (!wrapped.TryGetValue(key, out var act))
-                return false;
-            if (!InfosEqual(exp, act))
-                return false;
-        }
-
-        return true;
-    }
-
-    private static bool InfosEqual(CurrentAppInfo a, CurrentAppInfo b)
-    {
-        return a.LocalPackageVersion == b.LocalPackageVersion &&
-               a.LocalDisplayVersion == b.LocalDisplayVersion &&
-               a.ExeFile == b.ExeFile &&
-               a.Name == b.Name &&
-               a.Description == b.Description &&
-               a.Website == b.Website &&
-               a.Category == b.Category &&
-               a.SubCategory == b.SubCategory &&
-               a.DisplayVersion == b.DisplayVersion &&
-               a.PackageVersion == b.PackageVersion &&
-               a.UpdateDate == b.UpdateDate &&
-               a.DownloadFile == b.DownloadFile &&
-               a.JoinedDate == b.JoinedDate;
     }
 
     private static void TryDelete(string path)
@@ -310,6 +316,19 @@ public static class CurrentAppService
                     var info = Get(target, section);
                     ApplyReflected(info, entry);
                 }
+
+                var commonFilesDir = PluginService.GetInstallDir();
+                if (Directory.Exists(commonFilesDir))
+                    foreach (var dir in Directory.EnumerateDirectories(commonFilesDir))
+                    {
+                        var section = Path.GetFileName(dir);
+                        if (string.IsNullOrEmpty(section) || !upstream.TryGetValue(section, out var entry))
+                            continue;
+                        var info = Get(target, section);
+                        ApplyReflected(info, entry);
+                        info.LocalPackageVersion = info.PackageVersion;
+                        info.LocalDisplayVersion = info.DisplayVersion;
+                    }
             }
 
             if (File.Exists(executablesPath))

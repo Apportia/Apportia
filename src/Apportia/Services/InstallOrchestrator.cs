@@ -99,6 +99,7 @@ public sealed class InstallOrchestrator(
         }
 
         var wasInstalled = node.IsInstalled;
+        var installSucceeded = false;
         queue.IsRunning = true;
         queue.InSetupPhase = false;
         queue.Cts = new CancellationTokenSource();
@@ -308,11 +309,21 @@ public sealed class InstallOrchestrator(
                     appExeAfter = await ui.ResolveAppExeAsync(node, appsBaseDir);
                 }
 
-                if (appExeAfter != null)
+                if (appExeAfter == null)
                 {
+                    await ui.ShowDialogAsync(
+                        node,
+                        "Installation Failed",
+                        $"'{node.Name}' was not installed correctly. No executable was found after installation. The incomplete installation has been removed.",
+                        "OK");
+                }
+                else
+                {
+                    installSucceeded = true;
                     if (chosenLanguage != null)
                         AppLanguageService.Save(node.SectionName, chosenLanguage);
                     node.IsInstalled = true;
+                    CurrentAppService.Register(node.SectionName);
                     if (!node.IsPlugin)
                     {
                         LocalVersionService.Save(node.SectionName, node.DisplayVersion, node.PackageVersion);
@@ -359,7 +370,7 @@ public sealed class InstallOrchestrator(
             queue.InSetupPhase = false;
             node.IsBeingInstalled = false;
 
-            if (queue.Cts?.IsCancellationRequested == true)
+            if (!installSucceeded)
             {
                 var downloadedFile = Path.Combine(appsBaseDir, queue.ActiveDownloadFile ?? string.Empty);
                 try
@@ -385,6 +396,8 @@ public sealed class InstallOrchestrator(
                     {
                         /* partial dir may be locked */
                     }
+
+                    CurrentAppService.Remove(node.SectionName);
                 }
             }
 
