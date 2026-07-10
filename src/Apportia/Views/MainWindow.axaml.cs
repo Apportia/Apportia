@@ -1829,11 +1829,31 @@ public partial class MainWindow : Window, IInstallUi
             return;
         settings.HasShownTips = true;
         SettingsService.Save(settings);
-        _ = Dispatcher.UIThread.InvokeAsync(async () =>
+        ShowTipsWhenIdle();
+    }
+
+    private void ShowTipsWhenIdle()
+    {
+        void OnLayoutUpdated(object? _, EventArgs __)
         {
-            await Task.Delay(600);
-            await new TipsDialog { Icon = Icon }.ShowDialog(this);
-        });
+            if (Bounds.Width <= 0 || Bounds.Height <= 0)
+                return;
+            LayoutUpdated -= OnLayoutUpdated;
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.Delay(2000);
+                try
+                {
+                    await new TipsDialog { Icon = Icon }.ShowDialog(this);
+                }
+                catch
+                {
+                    /* window may be closing before the dialog opens */
+                }
+            }, DispatcherPriority.Background);
+        }
+
+        LayoutUpdated += OnLayoutUpdated;
     }
 
     private async Task CheckOrphanedFilesAsync()
