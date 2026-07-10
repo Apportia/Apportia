@@ -46,6 +46,8 @@ public partial class MainWindow : Window, IInstallUi
 
     private SelfUpdateCoordinator _selfUpdate = null!;
 
+    private bool _suppressWindowTransition;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -73,12 +75,6 @@ public partial class MainWindow : Window, IInstallUi
 
         BuildSkeletons();
         PreloadToolbarLabels();
-
-        MainGridList.PropertyChanged += (_, e) =>
-        {
-            if (e.Property == BoundsProperty)
-                UpdateGridItemWidth();
-        };
 
         _ = Dispatcher.UIThread.InvokeAsync(async () =>
         {
@@ -213,30 +209,22 @@ public partial class MainWindow : Window, IInstallUi
         };
     }
 
-    private void UpdateGridItemWidth()
+    private void BuildSkeletons(FilterViewSettings? presetOverride = null)
     {
-        if (MainGridList.Presenter?.Panel is not WrapPanel panel)
-            return;
-        if (DataContext is not MainViewModel vm)
-            return;
-
-        var viewport = MainGridList.Bounds.Width;
-        if (viewport <= 0)
-            return;
-
-        var minTile = vm.Columns.TileWidth;
-        var cols = Math.Max(1, (int)(viewport / minTile));
-        panel.ItemWidth = viewport / cols;
-    }
-
-    private void BuildSkeletons()
-    {
-        var settings = SettingsService.Load();
-        var preset = settings.ViewPresets.GetValueOrDefault(
+        FilterViewSettings preset;
+        if (presetOverride != null)
+        {
+            preset = presetOverride;
+        }
+        else
+        {
+            var settings = SettingsService.Load();
+            preset = settings.ViewPresets.GetValueOrDefault(
                          (CurrentAppService.LoadAll().Count > 0
                              ? InstallFilter.Installed
                              : InstallFilter.All).ToString())
                      ?? FilterViewSettings.Default;
+        }
 
         var isGrid = preset.IsGridView;
         ListSkeleton.IsVisible = !isGrid;
@@ -387,6 +375,56 @@ public partial class MainWindow : Window, IInstallUi
             vm.RowsFullyLoaded -= Handler;
             tcs.TrySetResult();
         }
+    }
+
+    private void ShowLoadingOverlay(FilterViewSettings? preset = null)
+    {
+        BuildSkeletons(preset);
+        LoadingOverlay.Opacity = 1;
+        LoadingOverlay.IsVisible = true;
+        TopToolbar.IsEnabled = false;
+    }
+
+    private async Task SwitchFilterAsync(MainViewModel vm, InstallFilter target)
+    {
+        if (vm.InstallFilter == target)
+            return;
+
+        var targetPreset = SettingsService.Load().ViewPresets.GetValueOrDefault(target.ToString())
+                           ?? _defaultView;
+        ShowLoadingOverlay(targetPreset);
+        await Task.Yield();
+
+        MainScroller.IsVisible = false;
+        try
+        {
+            await StartWindowTransitionToPreset(targetPreset, true);
+        }
+        finally
+        {
+            MainScroller.IsVisible = true;
+        }
+
+        _suppressWindowTransition = true;
+        try
+        {
+            vm.BeginPresetUpdate();
+            try
+            {
+                vm.InstallFilter = target;
+            }
+            finally
+            {
+                vm.EndPresetUpdate();
+            }
+        }
+        finally
+        {
+            _suppressWindowTransition = false;
+        }
+
+        await Task.WhenAny(WaitForRowsFullyLoadedAsync(), Task.Delay(250));
+        HideLoadingOverlay();
     }
 
     private void HideLoadingOverlay()
@@ -2183,13 +2221,6 @@ public partial class MainWindow : Window, IInstallUi
 
     private void SubscribeViewModel(MainViewModel vm)
     {
-        vm.Columns.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(ColumnWidths.TileWidth))
-                UpdateGridItemWidth();
-        };
-        UpdateGridItemWidth();
-
         vm.PropertyChanged += (sender, e) =>
         {
             switch (e.PropertyName)
@@ -2409,30 +2440,46 @@ public partial class MainWindow : Window, IInstallUi
         };
     }
 
-    private void OnInstallFilterCycle(object? sender, RoutedEventArgs e)
+    private async void OnInstallFilterCycle(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not MainViewModel vm)
-            return;
-        vm.InstallFilter = vm.InstallFilter switch
+        try
         {
-            InstallFilter.All => InstallFilter.Installed,
-            InstallFilter.Installed => InstallFilter.NotInstalled,
-            _ => InstallFilter.All
-        };
-        UpdateInstallFilterButton();
+            if (DataContext is not MainViewModel vm)
+                return;
+            var target = vm.InstallFilter switch
+            {
+                InstallFilter.All => InstallFilter.Installed,
+                InstallFilter.Installed => InstallFilter.NotInstalled,
+                _ => InstallFilter.All
+            };
+            await SwitchFilterAsync(vm, target);
+            UpdateInstallFilterButton();
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"OnInstallFilterCycle failed: {ex}");
+        }
     }
 
-    private void OnInstallFilterPointerReleased(object? sender, PointerReleasedEventArgs e)
+    private async void OnInstallFilterPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (e.InitialPressMouseButton != MouseButton.Right || DataContext is not MainViewModel vm)
-            return;
-        vm.InstallFilter = vm.InstallFilter switch
+        try
         {
-            InstallFilter.All => InstallFilter.NotInstalled,
-            InstallFilter.Installed => InstallFilter.All,
-            _ => InstallFilter.Installed
-        };
-        UpdateInstallFilterButton();
+            if (e.InitialPressMouseButton != MouseButton.Right || DataContext is not MainViewModel vm)
+                return;
+            var target = vm.InstallFilter switch
+            {
+                InstallFilter.All => InstallFilter.NotInstalled,
+                InstallFilter.Installed => InstallFilter.All,
+                _ => InstallFilter.Installed
+            };
+            await SwitchFilterAsync(vm, target);
+            UpdateInstallFilterButton();
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"OnInstallFilterPointerReleased failed: {ex}");
+        }
     }
 
     private void UpdateInstallFilterButton()
@@ -2763,16 +2810,19 @@ public partial class MainWindow : Window, IInstallUi
         settings.ViewPresets.TryGetValue(vm.InstallFilter.ToString(), out var preset);
         preset ??= _defaultView;
 
-        vm.CategoryDisplay = preset.CategoryDisplay;
-        vm.Columns.FontSize = preset.FontSize;
-        vm.Columns.IconSize = preset.IconSize;
-        vm.Columns.IsGridView = preset.IsGridView;
-        vm.CategoryScope = preset.CategoryScope;
-
-        var deltaX = (int)((preset.WindowWidth - Width) / 2);
-        var deltaY = (int)((preset.WindowHeight - Height) / 2);
-        Width = preset.WindowWidth;
-        Height = preset.WindowHeight;
+        vm.BeginPresetUpdate();
+        try
+        {
+            vm.CategoryDisplay = preset.CategoryDisplay;
+            vm.Columns.FontSize = preset.FontSize;
+            vm.Columns.IconSize = preset.IconSize;
+            vm.Columns.IsGridView = preset.IsGridView;
+            vm.CategoryScope = preset.CategoryScope;
+        }
+        finally
+        {
+            vm.EndPresetUpdate();
+        }
 
         UpdateIconSizeButton();
         UpdateViewModeButton();
@@ -2782,24 +2832,80 @@ public partial class MainWindow : Window, IInstallUi
         (IconSizeButton.Parent as Control)?.InvalidateMeasure();
         _ = ReloadIconsForSizeAsync(vm);
 
+        if (_suppressWindowTransition)
+            return;
+
+        StartWindowTransitionToPreset(preset, centerWindow);
+    }
+
+    private Task StartWindowTransitionToPreset(FilterViewSettings preset, bool centerWindow)
+    {
+        var targetWidth = preset.WindowWidth;
+        var targetHeight = preset.WindowHeight;
+
         if (!centerWindow)
-            return;
+        {
+            Width = targetWidth;
+            Height = targetHeight;
+            return Task.CompletedTask;
+        }
 
-        var posX = Position.X - deltaX;
-        var posY = Position.Y - deltaY;
+        var deltaX = (int)((targetWidth - Width) / 2);
+        var deltaY = (int)((targetHeight - Height) / 2);
 
+        PixelPoint? targetPosition = null;
         var screen = Screens.ScreenFromWindow(this);
-        if (screen == null)
-            return;
+        if (screen != null)
+        {
+            var wa = screen.WorkingArea;
+            var scale = RenderScaling;
+            var physW = (int)(targetWidth * scale);
+            var physH = (int)(targetHeight * scale);
+            var posX = Position.X - deltaX;
+            var posY = Position.Y - deltaY;
+            var x = Math.Clamp(posX, wa.X, wa.X + wa.Width - physW);
+            var y = Math.Clamp(posY, wa.Y, wa.Y + wa.Height - physH);
+            targetPosition = new PixelPoint(x, y);
+        }
 
-        var wa = screen.WorkingArea;
-        var scale = RenderScaling;
-        var physW = (int)(Width * scale);
-        var physH = (int)(Height * scale);
-        var x = Math.Clamp(posX, wa.X, wa.X + wa.Width - physW);
-        var y = Math.Clamp(posY, wa.Y, wa.Y + wa.Height - physH);
-        var target = new PixelPoint(x, y);
-        Dispatcher.UIThread.Post(() => Position = target, DispatcherPriority.Background);
+        return AnimateWindowTransitionAsync(targetWidth, targetHeight, targetPosition);
+    }
+
+    private Task AnimateWindowTransitionAsync(double targetWidth, double targetHeight, PixelPoint? targetPosition)
+    {
+        const int durationMs = 500;
+        var startWidth = Width;
+        var startHeight = Height;
+        var startPos = Position;
+        var endPos = targetPosition ?? Position;
+        var sw = Stopwatch.StartNew();
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var timer = new DispatcherTimer(DispatcherPriority.Render)
+        {
+            Interval = TimeSpan.FromMilliseconds(16)
+        };
+        timer.Tick += (_, _) =>
+        {
+            var t = Math.Min(1.0, sw.ElapsedMilliseconds / (double)durationMs);
+            var eased = 1 - Math.Pow(1 - t, 3);
+
+            Width = startWidth + (targetWidth - startWidth) * eased;
+            Height = startHeight + (targetHeight - startHeight) * eased;
+            if (targetPosition != null)
+            {
+                var x = (int)(startPos.X + (endPos.X - startPos.X) * eased);
+                var y = (int)(startPos.Y + (endPos.Y - startPos.Y) * eased);
+                Position = new PixelPoint(x, y);
+            }
+
+            if (t < 1.0)
+                return;
+            timer.Stop();
+            tcs.TrySetResult();
+        };
+        timer.Start();
+        return tcs.Task;
     }
 
     private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)

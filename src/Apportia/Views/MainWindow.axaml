@@ -783,6 +783,7 @@
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchFxRow="{Binding IsLaunchFx}"
                                             Classes.searchFxRow="{Binding IsSearchFx}"
+                                            Width="{Binding Columns.TileWidth}"
                                             Padding="4,6"
                                             PointerPressed="OnAppRowPointerPressed"
                                             Tapped="OnAppRowTapped">

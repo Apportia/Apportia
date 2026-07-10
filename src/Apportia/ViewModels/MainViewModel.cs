@@ -15,6 +15,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly AppImageManager _iconManager;
     private readonly int _iconSize;
     private readonly CategoryNode _legacyCategoryNode;
+    private int _batchDepth;
+    private bool _batchDirty;
     private CategoryDisplayMode _categoryDisplay = CategoryDisplayMode.Full;
     private CategoryScope _categoryScope = CategoryScope.Standard;
 
@@ -156,7 +158,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _categoryDisplay = value;
             Notify();
-            RebuildRows();
+            RequestRebuild();
         }
     }
 
@@ -170,7 +172,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Columns.ShowUsedColumn = value == InstallFilter.Installed;
             UpdateShowMetaColumns();
             Notify();
-            RebuildRows();
+            RequestRebuild();
         }
     }
 
@@ -181,6 +183,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _categoryScope = value;
             Notify();
+            if (_batchDepth > 0)
+            {
+                _batchDirty = true;
+                return;
+            }
+
             if (_categoryDisplay == CategoryDisplayMode.None)
                 RebuildRows();
             else
@@ -685,6 +693,33 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public event Action? BeforeRebuildRows;
     public event Action? RowsFullyLoaded;
+
+    public void BeginPresetUpdate()
+    {
+        _batchDepth++;
+    }
+
+    public void EndPresetUpdate()
+    {
+        if (_batchDepth == 0)
+            return;
+        _batchDepth--;
+        if (_batchDepth > 0 || !_batchDirty)
+            return;
+        _batchDirty = false;
+        RebuildRows();
+    }
+
+    private void RequestRebuild()
+    {
+        if (_batchDepth > 0)
+        {
+            _batchDirty = true;
+            return;
+        }
+
+        RebuildRows();
+    }
 
     private void RebuildRows()
     {
