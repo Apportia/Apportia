@@ -15,6 +15,30 @@
         Background="{DynamicResource AppWindowBrush}">
 
     <Window.Styles>
+        <Style Selector="#TopToolbar Button:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="#TopToolbar TextBox:disabled /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+        </Style>
+        <Style Selector="Border.skeleton">
+            <Setter Property="Background" Value="{DynamicResource AppCategoryBrush}" />
+            <Style.Animations>
+                <Animation Duration="0:0:0.8"
+                           IterationCount="INFINITE"
+                           PlaybackDirection="Alternate"
+                           Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="0.3" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
         <Style Selector="Border.categoryHeader">
             <Setter Property="Background" Value="{DynamicResource AppCategoryBrush}" />
             <Setter Property="Padding" Value="8,5" />
@@ -142,7 +166,7 @@
 
     <DockPanel>
 
-        <Border DockPanel.Dock="Top" Padding="8,6">
+        <Border x:Name="TopToolbar" DockPanel.Dock="Top" Padding="8,6" IsEnabled="False">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
@@ -313,8 +337,8 @@
         <Grid RowDefinitions="Auto,*">
 
             <!-- Fixed column header (detail mode only) -->
-            <Border Grid.Row="0" Classes="columnHeader" Margin="8,0"
-                    IsVisible="{Binding !Columns.IsGridView}">
+            <Border x:Name="ColumnHeaderBar" Grid.Row="0" Classes="columnHeader" Margin="8,0"
+                    IsVisible="{Binding !Columns.IsGridView, FallbackValue=False, TargetNullValue=False}">
                 <DockPanel LastChildFill="True">
                     <TextBlock DockPanel.Dock="Left" Width="36" Text="" />
 
@@ -759,7 +783,6 @@
                                             Classes.activeInstallRow="{Binding IsBeingInstalled}"
                                             Classes.launchFxRow="{Binding IsLaunchFx}"
                                             Classes.searchFxRow="{Binding IsSearchFx}"
-                                            Width="{Binding Columns.TileWidth}"
                                             Padding="4,6"
                                             PointerPressed="OnAppRowPointerPressed"
                                             Tapped="OnAppRowTapped">
@@ -966,6 +989,18 @@
                                FontWeight="SemiBold"
                                FontSize="13"
                                Foreground="{DynamicResource AppTextBrush}" />
+                </Border>
+
+                <Border x:Name="LoadingOverlay"
+                        ZIndex="2"
+                        ClipToBounds="True"
+                        Background="{DynamicResource AppWindowBrush}">
+                    <Grid>
+                        <StackPanel x:Name="ListSkeleton" Margin="8,4,8,8" Spacing="4"
+                                    HorizontalAlignment="Stretch" />
+                        <UniformGrid x:Name="GridSkeleton" Margin="8,4,8,8" IsVisible="False"
+                                     HorizontalAlignment="Stretch" />
+                    </Grid>
                 </Border>
             </Grid>
 

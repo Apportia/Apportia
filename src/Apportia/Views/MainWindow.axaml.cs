@@ -4,10 +4,12 @@ using Apportia.Platform;
 using Apportia.Services;
 using Apportia.ViewModels;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -69,11 +71,23 @@ public partial class MainWindow : Window, IInstallUi
         var dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
         _ = Task.Run(() => AtomicFile.SweepStaleTempFiles(dataDir, TimeSpan.FromMinutes(5)));
 
-        // Sync build so the window appears already populated instead of empty-then-filled.
-        if (File.Exists(AppDatabaseUpdater.CachePath))
-            PopulateFromCache();
+        BuildSkeletons();
+        PreloadToolbarLabels();
 
-        _ = StartupAsync();
+        MainGridList.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == BoundsProperty)
+                UpdateGridItemWidth();
+        };
+
+        _ = Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            if (File.Exists(AppDatabaseUpdater.CachePath))
+                await PopulateFromCache();
+            await StartupAsync();
+            await WaitForRowsFullyLoadedAsync();
+            Dispatcher.UIThread.Post(HideLoadingOverlay, DispatcherPriority.Loaded);
+        }, DispatcherPriority.Background);
     }
 
     public static bool IsWindows => OperatingSystem.IsWindows();
@@ -168,17 +182,252 @@ public partial class MainWindow : Window, IInstallUi
         return EnsureWineReadyAsync();
     }
 
+    private void PreloadToolbarLabels()
+    {
+        var settings = SettingsService.Load();
+        var initialFilter = CurrentAppService.LoadAll().Count > 0
+            ? InstallFilter.Installed
+            : InstallFilter.All;
+        var preset = settings.ViewPresets.GetValueOrDefault(initialFilter.ToString())
+                     ?? FilterViewSettings.Default;
+
+        IconSizeButton.Content = $"{preset.IconSize}px";
+        ViewModeButton.Content = preset.IsGridView ? "Grid" : "List";
+        FontSizeButton.Content = $"{preset.FontSize}pt";
+        CategoryScopeButton.Content = preset.CategoryScope switch
+        {
+            CategoryScope.Full => "Full",
+            CategoryScope.Extended => "Extended",
+            _ => "Standard"
+        };
+        CategoryDisplayButton.Content = preset.CategoryDisplay switch
+        {
+            CategoryDisplayMode.Categories => "Categories",
+            CategoryDisplayMode.None => "No Groups",
+            _ => "Tree"
+        };
+        InstallFilterButton.Content = initialFilter switch
+        {
+            InstallFilter.Installed => "Installed",
+            _ => "All Apps"
+        };
+    }
+
+    private void UpdateGridItemWidth()
+    {
+        if (MainGridList.Presenter?.Panel is not WrapPanel panel)
+            return;
+        if (DataContext is not MainViewModel vm)
+            return;
+
+        var viewport = MainGridList.Bounds.Width;
+        if (viewport <= 0)
+            return;
+
+        var minTile = vm.Columns.TileWidth;
+        var cols = Math.Max(1, (int)(viewport / minTile));
+        panel.ItemWidth = viewport / cols;
+    }
+
+    private void BuildSkeletons()
+    {
+        var settings = SettingsService.Load();
+        var preset = settings.ViewPresets.GetValueOrDefault(
+                         (CurrentAppService.LoadAll().Count > 0
+                             ? InstallFilter.Installed
+                             : InstallFilter.All).ToString())
+                     ?? FilterViewSettings.Default;
+
+        var isGrid = preset.IsGridView;
+        ListSkeleton.IsVisible = !isGrid;
+        GridSkeleton.IsVisible = isGrid;
+
+        var viewportW = ResolveViewport(Bounds.Width, Width, MinWidth);
+        var viewportH = ResolveViewport(Bounds.Height, Height, MinHeight);
+
+        if (isGrid)
+        {
+            GridSkeleton.Children.Clear();
+            var tileSide = Math.Max(preset.IconSize + 40, 140);
+            var cols = Math.Max(1, (int)(viewportW / tileSide));
+            var rowsCount = (int)Math.Ceiling(viewportH / tileSide) + 2;
+            GridSkeleton.Columns = cols;
+            var count = cols * rowsCount;
+            for (var i = 0; i < count; i++)
+                GridSkeleton.Children.Add(BuildGridSkeletonCard(preset.IconSize));
+        }
+        else
+        {
+            ListSkeleton.Children.Clear();
+            const int rowHeight = 46;
+            var count = (int)Math.Ceiling(viewportH / rowHeight) + 4;
+            for (var i = 0; i < count; i++)
+                ListSkeleton.Children.Add(BuildListSkeletonRow(preset.IconSize, i));
+        }
+
+        return;
+
+        static double ResolveViewport(double bounds, double requested, double min)
+        {
+            foreach (var v in new[] { bounds, requested, min })
+                if (!double.IsNaN(v) && v > 0)
+                    return v;
+            return 0;
+        }
+    }
+
+    private static Border BuildGridSkeletonCard(int iconSize)
+    {
+        var iconSide = Math.Max(48, iconSize);
+        var iconPlaceholder = new Border
+        {
+            Width = iconSide,
+            Height = iconSide,
+            CornerRadius = new CornerRadius(6),
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        iconPlaceholder.Classes.Add("skeleton");
+        var titleBar = new Border
+        {
+            Height = 10,
+            Margin = new Thickness(8, 8, 8, 4),
+            CornerRadius = new CornerRadius(3)
+        };
+        titleBar.Classes.Add("skeleton");
+        var subBar = new Border
+        {
+            Height = 8,
+            Margin = new Thickness(16, 0, 16, 8),
+            CornerRadius = new CornerRadius(3)
+        };
+        subBar.Classes.Add("skeleton");
+        var stack = new StackPanel { Spacing = 0 };
+        stack.Children.Add(iconPlaceholder);
+        stack.Children.Add(titleBar);
+        stack.Children.Add(subBar);
+        return new Border
+        {
+            Padding = new Thickness(8, 12),
+            Child = stack
+        };
+    }
+
+    private static Border BuildListSkeletonRow(int iconSize, int index)
+    {
+        var iconSide = Math.Max(20, Math.Min(iconSize, 32));
+        var iconPlaceholder = new Border
+        {
+            Width = iconSide,
+            Height = iconSide,
+            CornerRadius = new CornerRadius(4),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        iconPlaceholder.Classes.Add("skeleton");
+        var titleWidths = new[] { 0.35, 0.42, 0.28, 0.5, 0.38 };
+        var titleBar = new Border
+        {
+            Height = 10,
+            CornerRadius = new CornerRadius(3),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(0, 0, 0, 6)
+        };
+        titleBar.Classes.Add("skeleton");
+        var subBar = new Border
+        {
+            Height = 8,
+            CornerRadius = new CornerRadius(3),
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+        subBar.Classes.Add("skeleton");
+        var textStack = new StackPanel
+        {
+            Margin = new Thickness(10, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        textStack.Children.Add(BuildProportionalBar(titleBar, titleWidths[index % titleWidths.Length]));
+        textStack.Children.Add(subBar);
+        var panel = new DockPanel { LastChildFill = true, Height = 42 };
+        DockPanel.SetDock(iconPlaceholder, Dock.Left);
+        panel.Children.Add(iconPlaceholder);
+        panel.Children.Add(textStack);
+        return new Border
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Child = panel
+        };
+    }
+
+    private static Grid BuildProportionalBar(Border bar, double fraction)
+    {
+        var grid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(fraction, GridUnitType.Star),
+                new ColumnDefinition(1 - fraction, GridUnitType.Star)
+            },
+            Margin = new Thickness(0, 0, 0, 4)
+        };
+        Grid.SetColumn(bar, 0);
+        grid.Children.Add(bar);
+        return grid;
+    }
+
+    private Task WaitForRowsFullyLoadedAsync()
+    {
+        if (DataContext is not MainViewModel { IsBuildingRows: true } vm)
+            return Task.CompletedTask;
+
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        vm.RowsFullyLoaded += Handler;
+        return tcs.Task;
+
+        void Handler()
+        {
+            vm.RowsFullyLoaded -= Handler;
+            tcs.TrySetResult();
+        }
+    }
+
+    private void HideLoadingOverlay()
+    {
+        var anim = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(250),
+            FillMode = FillMode.Forward,
+            Children =
+            {
+                new KeyFrame
+                {
+                    Cue = new Cue(0d),
+                    Setters = { new Setter(OpacityProperty, 1d) }
+                },
+                new KeyFrame
+                {
+                    Cue = new Cue(1d),
+                    Setters = { new Setter(OpacityProperty, 0d) }
+                }
+            }
+        };
+        _ = Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await anim.RunAsync(LoadingOverlay);
+            LoadingOverlay.IsVisible = false;
+            TopToolbar.IsEnabled = true;
+        });
+    }
+
     private async Task StartupAsync()
     {
         if (DataContext is MainViewModel)
         {
             if (await ResolveUnknownAppDirsAsync())
-                PopulateFromCache();
+                await PopulateFromCache();
             _ = Task.WhenAll(
                 AppDatabaseUpdater.TryUpdateAsync(_cts.Token),
                 MirrorService.TryUpdateAsync(_cts.Token),
                 SecurityNoticeService.TryUpdateAsync(_cts.Token));
-            _ = VerifyInstalledAppsAsync();
+            await VerifyInstalledAppsAsync();
             return;
         }
 
@@ -195,12 +444,12 @@ public partial class MainWindow : Window, IInstallUi
             {
                 var moved = await ResolveUnknownAppDirsAsync();
                 if (moved || result.StructureChanged)
-                    PopulateFromCache();
+                    await PopulateFromCache();
             });
         }
 
         if (result.CurrentDates.Count > 0)
-            Dispatcher.UIThread.Post(() => ApplyCurrentDates(result.CurrentDates));
+            await Dispatcher.UIThread.InvokeAsync(() => ApplyCurrentDates(result.CurrentDates));
     }
 
     private void ApplyCurrentDates(IReadOnlyDictionary<string, string> dates)
@@ -212,15 +461,16 @@ public partial class MainWindow : Window, IInstallUi
                 node.CurrentDate = d;
     }
 
-    private void PopulateFromCache()
+    private Task PopulateFromCache()
     {
         var vm = BuildViewModel();
         SubscribeViewModel(vm);
         DataContext = vm;
         ApplyViewPreset(vm, false);
         // In All/NotInstalled the merge flickers, so only stream upstream in for Installed.
-        if (vm.InstallFilter == InstallFilter.Installed)
-            _ = MergeUpstreamAsync(vm);
+        return vm.InstallFilter == InstallFilter.Installed
+            ? MergeUpstreamAsync(vm)
+            : Task.CompletedTask;
     }
 
     private async Task MergeUpstreamAsync(MainViewModel vm)
@@ -331,9 +581,9 @@ public partial class MainWindow : Window, IInstallUi
             return;
         await Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            PopulateFromCache();
+            await PopulateFromCache();
             if (await ResolveUnknownAppDirsAsync())
-                PopulateFromCache();
+                await PopulateFromCache();
         });
         _ = VerifyInstalledAppsAsync();
     }
@@ -1834,14 +2084,17 @@ public partial class MainWindow : Window, IInstallUi
 
     private void ShowTipsWhenIdle()
     {
-        void OnLayoutUpdated(object? _, EventArgs __)
+        LayoutUpdated += OnLayoutUpdated;
+        return;
+
+        void OnLayoutUpdated(object? sender, EventArgs e)
         {
             if (Bounds.Width <= 0 || Bounds.Height <= 0)
                 return;
             LayoutUpdated -= OnLayoutUpdated;
             _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                await Task.Delay(2000);
+                await Task.Delay(1000);
                 try
                 {
                     await new TipsDialog { Icon = Icon }.ShowDialog(this);
@@ -1852,8 +2105,6 @@ public partial class MainWindow : Window, IInstallUi
                 }
             }, DispatcherPriority.Background);
         }
-
-        LayoutUpdated += OnLayoutUpdated;
     }
 
     private async Task CheckOrphanedFilesAsync()
@@ -1932,6 +2183,13 @@ public partial class MainWindow : Window, IInstallUi
 
     private void SubscribeViewModel(MainViewModel vm)
     {
+        vm.Columns.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ColumnWidths.TileWidth))
+                UpdateGridItemWidth();
+        };
+        UpdateGridItemWidth();
+
         vm.PropertyChanged += (sender, e) =>
         {
             switch (e.PropertyName)

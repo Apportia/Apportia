@@ -21,7 +21,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _hasInstalledApps;
     private InstallFilter _installFilter = InstallFilter.All;
     private CancellationTokenSource _rebuildCts = new();
-    private bool _rebuildInProgress;
     private List<AppNode> _visibleNodes = [];
 
     public MainViewModel(IReadOnlyList<AppEntry> entries, AppImageManager iconManager, int iconSize = 24)
@@ -198,6 +197,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Notify();
         }
     }
+
+    public bool IsBuildingRows { get; private set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -377,7 +378,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void ToggleSubCategoryInPlace(SubCategoryNode subNode)
     {
-        if (_rebuildInProgress)
+        if (IsBuildingRows)
         {
             RebuildRows();
             return;
@@ -444,7 +445,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void ToggleCategoryInPlace(CategoryNode catNode)
     {
-        if (_rebuildInProgress)
+        if (IsBuildingRows)
         {
             RebuildRows();
             return;
@@ -482,7 +483,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void UpdateScopeTailInPlace()
     {
-        if (_rebuildInProgress)
+        if (IsBuildingRows)
         {
             RebuildRows();
             return;
@@ -703,7 +704,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         if (rows.Count > firstBatch)
         {
-            _rebuildInProgress = true;
+            IsBuildingRows = true;
             _ = AddRemainingRowsAsync(rows, firstBatch, ct);
         }
         else
@@ -719,21 +720,21 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             if (ct.IsCancellationRequested)
             {
-                _rebuildInProgress = false;
+                IsBuildingRows = false;
                 return;
             }
 
             await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background, ct);
             if (ct.IsCancellationRequested)
             {
-                _rebuildInProgress = false;
+                IsBuildingRows = false;
                 return;
             }
 
             FlatRows.AddRange(rows[i..Math.Min(i + batchSize, rows.Count)]);
         }
 
-        _rebuildInProgress = false;
+        IsBuildingRows = false;
         if (!ct.IsCancellationRequested)
         {
             // One extra yield so layout (higher priority) runs before signalling
