@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.SecurityNoticeDialog"
-        Title="Security Notice"
+        Title="{x:Static text:UiText+Dialog.SecurityTitle}"
         SizeToContent="Height"
         MinWidth="360"
         MaxWidth="800"
@@ -28,8 +29,8 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         Spacing="8">
-                <Button Content="Proceed" Click="OnProceed" />
-                <Button Content="Cancel" Click="OnCancel" />
+                <Button Content="{x:Static text:UiText+Button.Proceed}" Click="OnProceed" />
+                <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" />
             </StackPanel>
         </Border>
 
@@ -70,7 +71,7 @@
                             Spacing="4">
                     <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                             BorderThickness="0,0,0,1" />
-                    <TextBlock Classes="field-label" Text="ALTERNATIVES" />
+                    <TextBlock Classes="field-label" Text="{x:Static text:UiText+Dialog.SecurityAlternativesHeader}" />
                     <TextBlock x:Name="AlternativesText"
                                TextWrapping="Wrap"
                                FontSize="13"

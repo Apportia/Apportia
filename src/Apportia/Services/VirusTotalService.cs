@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Apportia.Models;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -144,15 +145,15 @@ public static class VirusTotalService
                 return (null, null, true);
             var body = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
-                return (null, $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}", false);
+                return (null, string.Format(UiText.Dialog.VtHttpErrorFormat, (int)response.StatusCode, response.ReasonPhrase), false);
             var result = JsonSerializer.Deserialize(body, VirusTotalJsonContext.Default.VtResponse);
             SaveResult(sha256, body);
             return (result, null, false);
         }
         catch (Exception ex)
         {
-            Log.Write($"VirusTotal lookup failed for '{sha256}': {ex}");
-            return (null, ex.ToString(), false);
+            Log.Write(string.Format(LogText.VirusTotal.LookupFailedFormat, sha256, ex.Message));
+            return (null, ex.Message, false);
         }
     }
 
@@ -162,7 +163,7 @@ public static class VirusTotalService
         try
         {
             if (new FileInfo(filePath).Length > maxUploadBytes)
-                return (null, "File exceeds the 32 MB upload limit for VirusTotal.");
+                return (null, UiText.Dialog.VtUploadTooLargeBody);
 
             using var content = new MultipartFormDataContent();
             await using var fs = File.OpenRead(filePath);
@@ -179,8 +180,8 @@ public static class VirusTotalService
         }
         catch (Exception ex)
         {
-            Log.Write($"VirusTotal upload failed for '{filePath}': {ex}");
-            return (null, ex.ToString());
+            Log.Write(string.Format(LogText.VirusTotal.UploadFailedFormat, filePath, ex.Message));
+            return (null, ex.Message);
         }
     }
 
@@ -196,7 +197,7 @@ public static class VirusTotalService
             }
             catch (OperationCanceledException)
             {
-                return (null, "Cancelled.");
+                return (null, UiText.Dialog.VtAnalysisCancelled);
             }
 
             try
@@ -214,7 +215,7 @@ public static class VirusTotalService
             }
             catch (OperationCanceledException)
             {
-                return (null, "Cancelled.");
+                return (null, UiText.Dialog.VtAnalysisCancelled);
             }
             catch
             {
@@ -222,7 +223,7 @@ public static class VirusTotalService
             }
         }
 
-        return (null, "Analysis timed out after 5 minutes.");
+        return (null, UiText.Dialog.VtAnalysisTimedOut);
     }
 
     private static void SaveResult(string sha256, string json)

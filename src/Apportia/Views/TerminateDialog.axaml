@@ -2,8 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:svg="using:Avalonia.Svg.Skia"
         xmlns:views="using:Apportia.Views"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.TerminateDialog"
-        Title="Terminate"
+        Title="{x:Static text:UiText+Dialog.TerminateTitle}"
         Width="640"
         Height="360"
         MinWidth="480"
@@ -34,8 +35,8 @@
                         HorizontalAlignment="Right"
                         Spacing="8"
                         Margin="0,12,0,0">
-                <Button Content="Terminate" Click="OnTerminate" IsDefault="True" />
-                <Button Content="Cancel" Click="OnCancel" IsCancel="True" />
+                <Button Content="{x:Static text:UiText+Button.Terminate}" Click="OnTerminate" IsDefault="True" />
+                <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" IsCancel="True" />
             </StackPanel>
 
             <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
@@ -46,16 +47,16 @@
                     <Grid DockPanel.Dock="Top"
                           ColumnDefinitions="70,*,120,2*"
                           Background="{DynamicResource AppColHeaderBrush}">
-                        <TextBlock Grid.Column="0" Text="PID"
+                        <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminatePid}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="1" Text="Executable"
+                        <TextBlock Grid.Column="1" Text="{x:Static text:UiText+Column.TerminateExecutable}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="2" Text="Started"
+                        <TextBlock Grid.Column="2" Text="{x:Static text:UiText+Column.TerminateStarted}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="3" Text="Command"
+                        <TextBlock Grid.Column="3" Text="{x:Static text:UiText+Column.TerminateCommand}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
                     </Grid>

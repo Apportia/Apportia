@@ -1,6 +1,7 @@
 using System.Globalization;
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -23,7 +24,7 @@ public partial class SecurityNoticeDialog : Window
         TitleText.Text = notice.Title;
         NoticeText.Text = notice.Notice;
         Width = MeasureTextWidth(TitleText.Text, TitleText.FontSize + 2, FontWeight.SemiBold + 56, MinWidth, MaxWidth);
-        UpdatedText.Text = $"Last verified {FormatDate(notice.Verified)}";
+        UpdatedText.Text = string.Format(UiText.Dialog.SecurityVerifiedFormat, FormatDate(notice.Verified));
 
         if (alternativeNames.Count == 0)
             return;

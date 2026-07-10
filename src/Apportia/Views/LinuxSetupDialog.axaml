@@ -1,8 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:svg="using:Avalonia.Svg.Skia"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.LinuxSetupDialog"
-        Title="Wine Setup"
+        Title="{x:Static text:UiText+Dialog.LinuxSetupTitle}"
         Width="460"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
@@ -31,27 +32,27 @@
 
             <TextBlock TextWrapping="Wrap"
                        Foreground="{DynamicResource AppTextBrush}">
-                <Run Text="Wine lets Apportia run Windows applications on Linux." />
+                <Run Text="{x:Static text:UiText+Dialog.LinuxPromptLine1}" />
                 <LineBreak />
-                <Run Text="Choose how to provide it." />
+                <Run Text="{x:Static text:UiText+Dialog.LinuxPromptLine2}" />
             </TextBlock>
 
             <StackPanel x:Name="SystemWinePanel" Spacing="6" IsVisible="False">
-                <TextBlock Text="Installation:" FontWeight="SemiBold"
+                <TextBlock Text="{x:Static text:UiText+Dialog.LinuxSystemModeInstallation}" FontWeight="SemiBold"
                            Foreground="{DynamicResource AppTextBrush}" />
                 <RadioButton x:Name="SystemModeRadio"
                              GroupName="Mode"
-                             Content="Use system Wine and ~/.wine"
+                             Content="{x:Static text:UiText+Dialog.LinuxSystemModeSystem}"
                              Foreground="{DynamicResource AppTextBrush}" />
                 <RadioButton x:Name="BundledModeRadio"
                              GroupName="Mode"
-                             Content="Use bundled Wine in Data/Linux (isolated)"
+                             Content="{x:Static text:UiText+Dialog.LinuxSystemModeBundled}"
                              Foreground="{DynamicResource AppTextBrush}"
                              IsCheckedChanged="OnModeChanged" />
             </StackPanel>
 
             <StackPanel x:Name="VersionPanel" Spacing="6">
-                <TextBlock Text="Bundled Wine version:" FontWeight="SemiBold"
+                <TextBlock Text="{x:Static text:UiText+Dialog.LinuxVersionHeader}" FontWeight="SemiBold"
                            Foreground="{DynamicResource AppTextBrush}" />
                 <ComboBox x:Name="VersionCombo" HorizontalAlignment="Stretch"
                           SelectionChanged="OnVersionChanged" />
@@ -75,9 +76,11 @@
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Spacing="8" Margin="0,4,0,0">
-                <Button x:Name="RetryButton" Content="Retry" IsVisible="False" Click="OnRetry" />
-                <Button x:Name="SaveButton" Content="Save" Click="OnSave" IsDefault="True" />
-                <Button Content="Cancel" Click="OnCancel" IsCancel="True" />
+                <Button x:Name="RetryButton" Content="{x:Static text:UiText+Button.Retry}" IsVisible="False"
+                        Click="OnRetry" />
+                <Button x:Name="SaveButton" Content="{x:Static text:UiText+Button.Save}" Click="OnSave"
+                        IsDefault="True" />
+                <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" IsCancel="True" />
             </StackPanel>
 
         </StackPanel>

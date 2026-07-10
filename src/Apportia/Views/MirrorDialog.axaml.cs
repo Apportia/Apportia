@@ -1,4 +1,5 @@
 using Apportia.Platform;
+using Apportia.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -21,8 +22,8 @@ public partial class MirrorDialog : Window
         _mirrors = mirrors;
         AppLabel.Text = appName;
         FailedMirrorText.Text = failedMirror != null
-            ? $"The download from {failedMirror} failed.\n\nSelect a different mirror to retry:"
-            : "The download failed.\n\nSelect a mirror to retry:";
+            ? string.Format(UiText.Dialog.MirrorFailedNamedFormat, failedMirror)
+            : UiText.Dialog.MirrorFailedGeneric;
 
         MirrorList.ItemsSource = mirrors.Select(m => m.Label).ToList();
 

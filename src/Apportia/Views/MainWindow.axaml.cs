@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Apportia.ViewModels;
 using Avalonia;
 using Avalonia.Animation;
@@ -187,25 +188,25 @@ public partial class MainWindow : Window, IInstallUi
         var preset = settings.ViewPresets.GetValueOrDefault(initialFilter.ToString())
                      ?? FilterViewSettings.Default;
 
-        IconSizeButton.Content = $"{preset.IconSize}px";
-        ViewModeButton.Content = preset.IsGridView ? "Grid" : "List";
-        FontSizeButton.Content = $"{preset.FontSize}pt";
+        IconSizeButton.Content = string.Format(UiText.Status.IconSizeFormat, preset.IconSize);
+        ViewModeButton.Content = preset.IsGridView ? UiText.Status.ViewModeGrid : UiText.Status.ViewModeList;
+        FontSizeButton.Content = string.Format(UiText.Status.FontSizeFormat, preset.FontSize);
         CategoryScopeButton.Content = preset.CategoryScope switch
         {
-            CategoryScope.Full => "Full",
-            CategoryScope.Extended => "Extended",
-            _ => "Standard"
+            CategoryScope.Full => UiText.Status.CategoryScopeFull,
+            CategoryScope.Extended => UiText.Status.CategoryScopeExtended,
+            _ => UiText.Status.CategoryScopeStandard
         };
         CategoryDisplayButton.Content = preset.CategoryDisplay switch
         {
-            CategoryDisplayMode.Categories => "Categories",
-            CategoryDisplayMode.None => "No Groups",
-            _ => "Tree"
+            CategoryDisplayMode.Categories => UiText.Status.CategoryDisplayCategories,
+            CategoryDisplayMode.None => UiText.Status.CategoryDisplayNoGroups,
+            _ => UiText.Status.CategoryDisplayTree
         };
         InstallFilterButton.Content = initialFilter switch
         {
-            InstallFilter.Installed => "Installed",
-            _ => "All Apps"
+            InstallFilter.Installed => UiText.Status.InstallFilterInstalled,
+            _ => UiText.Status.InstallFilterAll
         };
     }
 
@@ -572,7 +573,7 @@ public partial class MainWindow : Window, IInstallUi
                            info.Name,
                            info.Description,
                            info.Website,
-                           string.IsNullOrEmpty(info.Category) ? "Advanced" : info.Category,
+                           string.IsNullOrEmpty(info.Category) ? UiText.Dialog.MainCategoryAdvanced : info.Category,
                            info.SubCategory,
                            info.JoinedDate,
                            info.DisplayVersion,
@@ -641,24 +642,24 @@ public partial class MainWindow : Window, IInstallUi
                 continue;
             var name = Path.GetFileName(dir);
             var choose = new AppDialog(
-                "Unknown App Folder",
-                $"Found an app folder that isn't registered in the app database:\n\n{name}\n\nWhat should Apportia do with it?",
-                "Move to CustomApps", "Delete", "Skip");
+                UiText.Dialog.MainUnknownAppFolderTitle,
+                string.Format(UiText.Dialog.MainUnknownAppFolderBodyFormat, name),
+                UiText.Button.MoveToCustomApps, UiText.Button.Delete, UiText.Button.Skip);
             await choose.ShowDialog(this);
 
-            if (choose.Result == "Move to CustomApps")
+            if (choose.Result == UiText.Button.MoveToCustomApps)
             {
                 if (await ImportUnknownAsCustomAsync(dir, vm))
                     changed = true;
             }
-            else if (choose.Result == "Delete")
+            else if (choose.Result == UiText.Button.Delete)
             {
                 var confirm = new AppDialog(
-                    "Delete Folder",
-                    $"Permanently delete \"{name}\" and everything inside it?",
-                    "Delete", "Cancel");
+                    UiText.Dialog.MainDeleteFolderTitle,
+                    string.Format(UiText.Dialog.MainDeleteFolderBodyFormat, name),
+                    UiText.Button.Delete, UiText.Button.Cancel);
                 await confirm.ShowDialog(this);
-                if (confirm.Result == "Delete")
+                if (confirm.Result == UiText.Button.Delete)
                 {
                     try
                     {
@@ -700,7 +701,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"ImportUnknownAsCustomAsync failed: {ex}");
+            Log.Write(string.Format(LogText.Main.ImportUnknownAsCustomFailedFormat, ex.Message));
             return false;
         }
 
@@ -747,7 +748,7 @@ public partial class MainWindow : Window, IInstallUi
             {
                 false when n.IsAdvanced && vm.CategoryScope == CategoryScope.Standard => false,
                 false when n.IsLegacy && vm.CategoryScope != CategoryScope.Full => false,
-                false when string.Equals(n.Category, "Games", StringComparison.OrdinalIgnoreCase) && hideGames => false,
+                false when string.Equals(n.Category, UiText.Dialog.MainCategoryGames, StringComparison.OrdinalIgnoreCase) && hideGames => false,
                 _ => true
             };
         }).ToList();
@@ -811,7 +812,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnAppRowTapped activation failed: {ex}");
+            Log.Write(string.Format(LogText.Main.RowTappedActivationFailedFormat, ex.Message));
         }
     }
 
@@ -836,9 +837,9 @@ public partial class MainWindow : Window, IInstallUi
             {
                 var remove = await ShowDialog(
                     node, node.Name,
-                    $"{node.Name} is currently in the installation queue.\n\nWould you like to remove it?",
-                    "Remove from Queue", "Cancel");
-                if (remove != "Remove from Queue")
+                    string.Format(UiText.Dialog.MainQueuedRemoveFormat, node.Name),
+                    UiText.Button.RemoveFromQueue, UiText.Button.Cancel);
+                if (remove != UiText.Button.RemoveFromQueue)
                     return;
                 _installQueue.Remove(node);
                 if (_installQueue.IsRunning && node == _installQueue.ActiveNode && _installQueue.Cts != null)
@@ -854,9 +855,9 @@ public partial class MainWindow : Window, IInstallUi
                 {
                     var cancel = await ShowDialog(
                         node, node.Name,
-                        $"{node.Name} is currently being downloaded.\n\nWould you like to cancel the installation?",
-                        "Cancel Installation", "Keep Running");
-                    if (cancel != "Cancel Installation")
+                        string.Format(UiText.Dialog.MainCancelInstallInProgressFormat, node.Name),
+                        UiText.Button.CancelInstallation, UiText.Button.KeepRunning);
+                    if (cancel != UiText.Button.CancelInstallation)
                         return;
                     await CancelInstallAsync();
                     if (node.IsInstalled)
@@ -873,12 +874,12 @@ public partial class MainWindow : Window, IInstallUi
                     return;
                 }
 
-                var action = File.Exists(marker) ? "update" : "install";
+                var action = File.Exists(marker) ? UiText.Dialog.MainVerbUpdate : UiText.Dialog.MainVerbInstall;
                 var queue = await ShowDialog(
                     node, node.Name,
-                    $"An installation is already in progress.\n\nAdd {node.Name} to the queue to {action} it afterward?",
-                    "Add to Queue", "Cancel");
-                if (queue != "Add to Queue")
+                    string.Format(UiText.Dialog.MainAddToQueueFormat, node.Name, action),
+                    UiText.Button.AddToQueue, UiText.Button.Cancel);
+                if (queue != UiText.Button.AddToQueue)
                     return;
                 _installQueue.Enqueue(node, false);
                 if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
@@ -896,10 +897,10 @@ public partial class MainWindow : Window, IInstallUi
                 }
 
                 var choice = await ShowDialog(
-                    node, $"Update Available \u2014 {node.Name}",
-                    $"A newer version of {node.Name} is available.\n\nWould you like to update now?",
-                    "Update", "Cancel");
-                if (choice == "Update")
+                    node, string.Format(UiText.Dialog.MainUpdateAvailableFormat, node.Name),
+                    string.Format(UiText.Dialog.MainUpdateAvailableBodyFormat, node.Name),
+                    UiText.Button.Update, UiText.Button.Cancel);
+                if (choice == UiText.Button.Update)
                     await _installer.InstallAsync(node, appsBaseDir, false);
             }
             else
@@ -915,9 +916,9 @@ public partial class MainWindow : Window, IInstallUi
 
                 var choice = await ShowDialog(
                     node, node.Name,
-                    $"Would you like to install {node.Name}?",
-                    "Install", "Cancel");
-                if (choice == "Install")
+                    string.Format(UiText.Dialog.MainInstallPromptFormat, node.Name),
+                    UiText.Button.Install, UiText.Button.Cancel);
+                if (choice == UiText.Button.Install)
                     await _installer.InstallAsync(node, appsBaseDir, false);
             }
 
@@ -944,9 +945,9 @@ public partial class MainWindow : Window, IInstallUi
         {
             var remove = await ShowDialog(
                 node, node.Name,
-                $"{node.Name} is currently in the installation queue.\n\nWould you like to remove it?",
-                "Remove from Queue", "Cancel");
-            if (remove != "Remove from Queue")
+                string.Format(UiText.Dialog.MainQueuedRemoveFormat, node.Name),
+                UiText.Button.RemoveFromQueue, UiText.Button.Cancel);
+            if (remove != UiText.Button.RemoveFromQueue)
                 return;
 
             _installQueue.Remove(node);
@@ -963,9 +964,9 @@ public partial class MainWindow : Window, IInstallUi
             {
                 var cancel = await ShowDialog(
                     node, node.Name,
-                    $"{node.Name} is currently being downloaded.\n\nWould you like to cancel the installation?",
-                    "Cancel Installation", "Keep Running");
-                if (cancel != "Cancel Installation")
+                    string.Format(UiText.Dialog.MainCancelInstallInProgressFormat, node.Name),
+                    UiText.Button.CancelInstallation, UiText.Button.KeepRunning);
+                if (cancel != UiText.Button.CancelInstallation)
                     return;
                 await CancelInstallAsync();
                 if (node.IsInstalled)
@@ -982,12 +983,12 @@ public partial class MainWindow : Window, IInstallUi
                 return;
             }
 
-            var action = appExe != null ? "update" : "install";
+            var action = appExe != null ? UiText.Dialog.MainVerbUpdate : UiText.Dialog.MainVerbInstall;
             var queue = await ShowDialog(
                 node, node.Name,
-                $"An installation is already in progress.\n\nAdd {node.Name} to the queue to {action} it afterward?",
-                "Add to Queue", "Cancel");
-            if (queue != "Add to Queue")
+                string.Format(UiText.Dialog.MainAddToQueueFormat, node.Name, action),
+                UiText.Button.AddToQueue, UiText.Button.Cancel);
+            if (queue != UiText.Button.AddToQueue)
                 return;
             _installQueue.Enqueue(node, false);
             if (_installQueue.IsRunning || !_installQueue.TryDequeue(out var nextNode, out var nextLaunch))
@@ -1005,19 +1006,19 @@ public partial class MainWindow : Window, IInstallUi
             }
 
             var choice = await ShowDialog(
-                node, $"Update Available \u2014 {node.Name}",
-                $"A newer version of {node.Name} is available.\n\nWould you like to update now?",
-                "Update & Run", "Update", "Run", "Cancel");
+                node, string.Format(UiText.Dialog.MainUpdateAvailableFormat, node.Name),
+                string.Format(UiText.Dialog.MainUpdateAvailableBodyFormat, node.Name),
+                UiText.Button.UpdateAndRun, UiText.Button.Update, UiText.Button.Run, UiText.Button.Cancel);
 
             switch (choice)
             {
-                case "Update & Run":
+                case UiText.Button.UpdateAndRun:
                     await _installer.InstallAsync(node, appsBaseDir, true);
                     break;
-                case "Update":
+                case UiText.Button.Update:
                     await _installer.InstallAsync(node, appsBaseDir, false);
                     break;
-                case "Run":
+                case UiText.Button.Run:
                     await TryLaunchWithArgsAsync(node);
                     break;
             }
@@ -1036,15 +1037,15 @@ public partial class MainWindow : Window, IInstallUi
 
         var installChoice = await ShowDialog(
             node, node.Name,
-            $"Would you like to install {node.Name}?",
-            "Install", "Install & Run", "Cancel");
+            string.Format(UiText.Dialog.MainInstallPromptFormat, node.Name),
+            UiText.Button.Install, UiText.Button.InstallAndRun, UiText.Button.Cancel);
 
         switch (installChoice)
         {
-            case "Install":
+            case UiText.Button.Install:
                 await _installer.InstallAsync(node, appsBaseDir, false);
                 break;
-            case "Install & Run":
+            case UiText.Button.InstallAndRun:
                 await _installer.InstallAsync(node, appsBaseDir, true);
                 break;
         }
@@ -1098,7 +1099,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnMenuCancelInstall failed: {ex}");
+            Log.Write(string.Format(LogText.Main.MenuCancelInstallFailedFormat, ex.Message));
         }
     }
 
@@ -1112,11 +1113,10 @@ public partial class MainWindow : Window, IInstallUi
             var watchCts = new CancellationTokenSource();
             var watchToken = watchCts.Token;
             var dialog = new AppDialog(
-                    "Installation Running",
-                    $"{_installQueue.ActiveNode.Name} is currently being installed.\n\n" +
-                    "Canceling now may leave the application in a corrupt state.\n\n" +
-                    "Are you sure you want to cancel?",
-                    "Cancel Installation", "Keep Running")
+                    UiText.Dialog.MainInstallInProgressTitle,
+                    string.Format(UiText.Dialog.MainCancelInstallActiveFormat, _installQueue.ActiveNode.Name) +
+                    UiText.Dialog.MainCancelInstallBody,
+                    UiText.Button.CancelInstallation, UiText.Button.KeepRunning)
                 { Icon = new WindowIcon(_installQueue.ActiveNode.Icon) };
 
             var watchTask = Task.Run(async () =>
@@ -1132,7 +1132,7 @@ public partial class MainWindow : Window, IInstallUi
             await watchTask;
             watchCts.Dispose();
 
-            if (dialog.Result != "Cancel Installation")
+            if (dialog.Result != UiText.Button.CancelInstallation)
                 return;
         }
 
@@ -1149,7 +1149,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnMenuRun failed: {ex}");
+            Log.Write(string.Format(LogText.Main.MenuRunFailedFormat, ex.Message));
         }
     }
 
@@ -1175,7 +1175,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnMenuTerminate failed: {ex}");
+            Log.Write(string.Format(LogText.Main.MenuTerminateFailedFormat, ex.Message));
         }
     }
 
@@ -1206,7 +1206,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnMenuRunWithArgs failed: {ex}");
+            Log.Write(string.Format(LogText.Main.MenuRunWithArgsFailedFormat, ex.Message));
         }
     }
 
@@ -1236,13 +1236,12 @@ public partial class MainWindow : Window, IInstallUi
             }
 
             var message = javaPluginsToRemove.Count > 0
-                ? $"Remove {node.Name} and all its data?\n\n" +
-                  $"This is the last app requiring Java.\n\nThe following Java plugins will also be uninstalled:\n" +
-                  string.Join("\n", javaPluginsToRemove.Select(n => $"\u2022 {n.Name}"))
-                : $"Remove {node.Name} and all its data?";
+                ? string.Format(UiText.Dialog.MainUninstallJavaExtraFormat, node.Name,
+                                string.Join("\n", javaPluginsToRemove.Select(n => $"\u2022 {n.Name}")))
+                : string.Format(UiText.Dialog.MainUninstallSimpleFormat, node.Name);
 
-            var confirmed = await ShowDialog(node, "Uninstall", message, "Uninstall", "Cancel");
-            if (confirmed != "Uninstall")
+            var confirmed = await ShowDialog(node, UiText.Dialog.MainUninstallTitle, message, UiText.Button.Uninstall, UiText.Button.Cancel);
+            if (confirmed != UiText.Button.Uninstall)
                 return;
 
             var appDir = node.IsCustom
@@ -1256,10 +1255,10 @@ public partial class MainWindow : Window, IInstallUi
             {
                 var names = string.Join("\n", running.Select(p => $"\u2022 {p.ProcessName}").Distinct());
                 var forceQuit = await ShowDialog(
-                    node, "App is Running",
-                    $"{node.Name} has running processes:\n\n{names}\n\nForce-quit them to proceed?",
-                    "Force Quit & Uninstall", "Cancel");
-                if (forceQuit != "Force Quit & Uninstall")
+                    node, UiText.Dialog.MainAppRunningTitle,
+                    string.Format(UiText.Dialog.MainAppRunningProcessesFormat, node.Name, names),
+                    UiText.Button.ForceQuitUninstall, UiText.Button.Cancel);
+                if (forceQuit != UiText.Button.ForceQuitUninstall)
                     return;
                 foreach (var p in running)
                     try
@@ -1280,20 +1279,20 @@ public partial class MainWindow : Window, IInstallUi
                 if (Directory.Exists(sourceDataDir))
                 {
                     var doBackup = await ShowDialog(
-                        node, "Backup User Data",
-                        $"Do you want to save a backup of your {node.Name} data before uninstalling?",
-                        "Save Backup", "Skip");
+                        node, UiText.Dialog.MainBackupUserDataTitle,
+                        string.Format(UiText.Dialog.MainBackupUserDataBodyFormat, node.Name),
+                        UiText.Button.SaveBackup, UiText.Button.Skip);
 
-                    if (doBackup == "Save Backup")
+                    if (doBackup == UiText.Button.SaveBackup)
                     {
                         if (AppBackupService.HasBackup(node.SectionName))
                         {
                             var choice = await ShowDialog(
-                                node, "Backup Already Exists",
-                                $"A backup of {node.Name}'s data already exists.\n\nWhich backup do you want to keep?",
-                                "Keep New", "Keep Existing");
+                                node, UiText.Dialog.MainBackupAlreadyExistsTitle,
+                                string.Format(UiText.Dialog.MainBackupExistsBodyFormat, node.Name),
+                                UiText.Button.KeepNew, UiText.Button.KeepExisting);
 
-                            if (choice == "Keep New")
+                            if (choice == UiText.Button.KeepNew)
                             {
                                 AppBackupService.DeleteBackup(node.SectionName);
                                 AppBackupService.MoveToBackup(sourceDataDir, node.SectionName);
@@ -1350,13 +1349,13 @@ public partial class MainWindow : Window, IInstallUi
             }
             catch (Exception ex)
             {
-                Log.Write($"Uninstall failed for '{node.SectionName}': {ex}");
-                await ShowDialog(node, "Uninstall Failed", ex.ToString(), "OK");
+                Log.Write(string.Format(LogText.Main.UninstallFailedFormat, node.SectionName, ex.Message));
+                await ShowDialog(node, UiText.Dialog.MainUninstallFailedTitle, ex.Message, UiText.Button.Ok);
             }
         }
         catch (Exception ex)
         {
-            Log.Write($"OnMenuUninstall confirmation failed: {ex}");
+            Log.Write(string.Format(LogText.Main.MenuUninstallConfirmationFailedFormat, ex.Message));
         }
     }
 
@@ -1467,8 +1466,8 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"Uninstall failed for '{node.SectionName}': {ex}");
-            await ShowDialog(node, "Uninstall Failed", ex.ToString(), "OK");
+            Log.Write(string.Format(LogText.Main.UninstallFailedFormat, node.SectionName, ex.Message));
+            await ShowDialog(node, UiText.Dialog.MainUninstallFailedTitle, ex.Message, UiText.Button.Ok);
         }
     }
 
@@ -1543,13 +1542,13 @@ public partial class MainWindow : Window, IInstallUi
             }
             catch (Exception ex)
             {
-                Log.Write($"Custom app update failed for '{node.SectionName}': {ex}");
-                await ShowDialog(node, "Update Failed", ex.ToString(), "OK");
+                Log.Write(string.Format(LogText.Main.CustomAppUpdateFailedFormat, node.SectionName, ex.Message));
+                await ShowDialog(node, UiText.Dialog.MainUpdateFailedTitle, ex.Message, UiText.Button.Ok);
             }
         }
         catch (Exception ex)
         {
-            Log.Write($"OnMenuSettings custom app edit failed: {ex}");
+            Log.Write(string.Format(LogText.Main.MenuSettingsCustomAppEditFailedFormat, ex.Message));
         }
     }
 
@@ -1637,7 +1636,7 @@ public partial class MainWindow : Window, IInstallUi
             var preview = await _iconManager.GetPreviewAsync(node.SectionName, _cts.Token);
             if (preview is null)
             {
-                var msg = new AppDialog("No Preview", $"No preview available for {node.Name}.", "OK");
+                var msg = new AppDialog(UiText.Dialog.MainNoPreviewTitle, string.Format(UiText.Dialog.MainNoPreviewBodyFormat, node.Name), UiText.Button.Ok);
                 await msg.ShowDialog(this);
                 return;
             }
@@ -1843,7 +1842,7 @@ public partial class MainWindow : Window, IInstallUi
                     if (available < required)
                     {
                         var choice = await ShowDiskSpaceDialog(null, win.Name, required, available);
-                        if (choice == "Retry")
+                        if (choice == UiText.Button.Retry)
                             continue;
                         return;
                     }
@@ -1917,13 +1916,13 @@ public partial class MainWindow : Window, IInstallUi
             }
             catch (Exception ex)
             {
-                Log.Write($"Add custom app failed: {ex}");
-                await ShowDialog("Add App Failed", ex.ToString(), "OK");
+                Log.Write(string.Format(LogText.Main.AddCustomAppFailedFormat, ex.Message));
+                await ShowDialog(UiText.Dialog.MainAddCustomAppFailed, ex.Message, UiText.Button.Ok);
             }
         }
         catch (Exception ex)
         {
-            Log.Write($"OnMenuAdd import dialog failed: {ex}");
+            Log.Write(string.Format(LogText.Main.MenuAddImportDialogFailedFormat, ex.Message));
         }
     }
 
@@ -1961,13 +1960,12 @@ public partial class MainWindow : Window, IInstallUi
 
     private Task<string?> ShowDiskSpaceDialog(AppNode? node, string appName, long required, long available)
     {
-        var msg = $"Not enough disk space to install {appName}.\n\n" +
-                  $"Required:   {AppDiskUsageService.FormatSize(required)}\n" +
-                  $"Available:  {AppDiskUsageService.FormatSize(available)}\n\n" +
-                  "Free up disk space and click Retry, or Cancel to abort.";
+        var msg = string.Format(UiText.Dialog.MainNotEnoughSpaceBody, appName,
+                                AppDiskUsageService.FormatSize(required), AppDiskUsageService.FormatSize(available));
+        var title = string.Format(UiText.Dialog.MainNotEnoughSpaceTitleFormat, appName);
         return node != null
-            ? ShowDialog(node, $"{appName} \u2014 Not Enough Space", msg, "Retry", "Cancel")
-            : ShowDialog($"{appName} \u2014 Not Enough Space", msg, "Retry", "Cancel");
+            ? ShowDialog(node, title, msg, UiText.Button.Retry, UiText.Button.Cancel)
+            : ShowDialog(title, msg, UiText.Button.Retry, UiText.Button.Cancel);
     }
 
     private async Task<bool> CheckSecurityNoticeAsync(AppNode node)
@@ -1989,7 +1987,7 @@ public partial class MainWindow : Window, IInstallUi
 
         var dlg = new SecurityNoticeDialog(notice, altNames)
         {
-            Title = $"Security Notice \u2014 {node.Name}",
+            Title = string.Format(UiText.Dialog.MainSecurityNoticeTitleFormat, node.Name),
             Icon = new WindowIcon(node.Icon)
         };
         await dlg.ShowDialog(this);
@@ -2063,10 +2061,10 @@ public partial class MainWindow : Window, IInstallUi
             const int maxDisplay = 5;
             var preview = args.Length <= maxDisplay
                 ? string.Join("\n", args)
-                : string.Join("\n", args.Take(maxDisplay)) + $"\n... and {args.Length - maxDisplay} more";
-            await ShowDialog("Arguments Updated",
-                             $"A second instance was launched with new CLI arguments:\n\n{preview}\n\nThese have replaced the current arguments.",
-                             "OK");
+                : string.Join("\n", args.Take(maxDisplay)) + string.Format(UiText.Dialog.MainIpcArgsMoreFormat, args.Length - maxDisplay);
+            await ShowDialog(UiText.Dialog.MainArgsUpdatedTitle,
+                             string.Format(UiText.Dialog.MainIpcArgsBodyFormat, preview),
+                             UiText.Button.Ok);
         }
         catch
         {
@@ -2401,9 +2399,9 @@ public partial class MainWindow : Window, IInstallUi
             return;
         CategoryScopeButton.Content = vm.CategoryScope switch
         {
-            CategoryScope.Full => "Full",
-            CategoryScope.Extended => "Extended",
-            _ => "Standard"
+            CategoryScope.Full => UiText.Status.CategoryScopeFull,
+            CategoryScope.Extended => UiText.Status.CategoryScopeExtended,
+            _ => UiText.Status.CategoryScopeStandard
         };
     }
 
@@ -2439,9 +2437,9 @@ public partial class MainWindow : Window, IInstallUi
             return;
         CategoryDisplayButton.Content = vm.CategoryDisplay switch
         {
-            CategoryDisplayMode.Categories => "Categories",
-            CategoryDisplayMode.None => "No Groups",
-            _ => "Tree"
+            CategoryDisplayMode.Categories => UiText.Status.CategoryDisplayCategories,
+            CategoryDisplayMode.None => UiText.Status.CategoryDisplayNoGroups,
+            _ => UiText.Status.CategoryDisplayTree
         };
     }
 
@@ -2462,7 +2460,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnInstallFilterCycle failed: {ex}");
+            Log.Write(string.Format(LogText.Main.InstallFilterCycleFailedFormat, ex.Message));
         }
     }
 
@@ -2483,7 +2481,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnInstallFilterPointerReleased failed: {ex}");
+            Log.Write(string.Format(LogText.Main.InstallFilterPointerReleasedFailedFormat, ex.Message));
         }
     }
 
@@ -2493,9 +2491,9 @@ public partial class MainWindow : Window, IInstallUi
             return;
         InstallFilterButton.Content = vm.InstallFilter switch
         {
-            InstallFilter.Installed => "Installed",
-            InstallFilter.NotInstalled => "Not Installed",
-            _ => "All Apps"
+            InstallFilter.Installed => UiText.Status.InstallFilterInstalled,
+            InstallFilter.NotInstalled => UiText.Status.InstallFilterNotInstalled,
+            _ => UiText.Status.InstallFilterAll
         };
     }
 
@@ -2505,7 +2503,7 @@ public partial class MainWindow : Window, IInstallUi
         if (info == null)
             return;
         UpdateButton.IsVisible = true;
-        UpdateButton.Content = $"Update {info.Version}";
+        UpdateButton.Content = string.Format(UiText.Status.UpdateVersionFormat, info.Version);
     }
 
     private async void OnUpdateApp(object? sender, RoutedEventArgs e)
@@ -2524,7 +2522,7 @@ public partial class MainWindow : Window, IInstallUi
             UpdateButton.IsEnabled = false;
             ShowDownloadBar(true);
             DownloadProgressBar.IsIndeterminate = false;
-            DownloadSizeText.Text = $"Downloading update {info.Version}...";
+            DownloadSizeText.Text = string.Format(UiText.Status.DownloadingUpdateFormat, info.Version);
             DownloadSpeedText.Text = string.Empty;
 
             try
@@ -2532,7 +2530,7 @@ public partial class MainWindow : Window, IInstallUi
                 var progress = new Progress<int>(p =>
                 {
                     DownloadProgressBar.Value = p;
-                    DownloadSizeText.Text = $"Downloading update {info.Version}... {p}%";
+                    DownloadSizeText.Text = string.Format(UiText.Status.DownloadingUpdateProgressFormat, info.Version, p);
                 });
                 await _selfUpdate.ApplyAsync(progress);
             }
@@ -2540,12 +2538,12 @@ public partial class MainWindow : Window, IInstallUi
             {
                 ShowDownloadBar(false);
                 UpdateButton.IsEnabled = true;
-                Log.Write($"Self-update failed: {ex}");
+                Log.Write(string.Format(LogText.Main.SelfUpdateFailedFormat, ex.Message));
             }
         }
         catch (Exception ex)
         {
-            Log.Write($"Self-update setup failed: {ex}");
+            Log.Write(string.Format(LogText.Main.SelfUpdateSetupFailedFormat, ex.Message));
         }
     }
 
@@ -2567,7 +2565,7 @@ public partial class MainWindow : Window, IInstallUi
     {
         if (DataContext is not MainViewModel vm)
             return;
-        ViewModeButton.Content = vm.Columns.IsGridView ? "Grid" : "List";
+        ViewModeButton.Content = vm.Columns.IsGridView ? UiText.Status.ViewModeGrid : UiText.Status.ViewModeList;
     }
 
     private void OnFontSizeCycle(object? sender, RoutedEventArgs e)
@@ -2765,7 +2763,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"OnSaveView failed: {ex}");
+            Log.Write(string.Format(LogText.Main.SaveViewFailedFormat, ex.Message));
         }
     }
 
@@ -2923,17 +2921,16 @@ public partial class MainWindow : Window, IInstallUi
             if (_installQueue.IsRunning)
             {
                 e.Cancel = true;
-                var appName = _installQueue.ActiveNode?.Name ?? "the current app";
+                var appName = _installQueue.ActiveNode?.Name ?? UiText.Dialog.MainCloseInProgressCurrentApp;
                 var confirmDialog = new AppDialog(
-                    "Installation in Progress",
-                    $"{appName} is currently being installed.\n\n" +
-                    "Closing now will abort the installation and may leave it in a corrupt state.\n\n" +
-                    "Are you sure you want to close?",
-                    "Close Anyway", "Keep Running");
+                    UiText.Dialog.MainCloseInProgressTitle,
+                    string.Format(UiText.Dialog.MainCloseInProgressActiveFormat, appName) +
+                    UiText.Dialog.MainCloseInProgressBody,
+                    UiText.Button.CloseAnyway, UiText.Button.KeepRunning);
                 if (_installQueue.ActiveNode != null)
                     confirmDialog.Icon = new WindowIcon(_installQueue.ActiveNode.Icon);
                 await confirmDialog.ShowDialog(this);
-                if (confirmDialog.Result != "Close Anyway")
+                if (confirmDialog.Result != UiText.Button.CloseAnyway)
                     return;
                 await _installQueue.Cts?.CancelAsync()!;
                 AppDeployService.KillActiveInstaller();
@@ -2959,7 +2956,7 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            Log.Write($"Close confirmation failed, forcing shutdown: {ex}");
+            Log.Write(string.Format(LogText.Main.CloseConfirmationFailedFormat, ex.Message));
             _forceClose = true;
             Close();
         }

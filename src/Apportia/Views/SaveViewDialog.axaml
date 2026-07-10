@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.SaveViewDialog"
-        Title="Save View"
+        Title="{x:Static text:UiText+Dialog.SaveViewTitle}"
         SizeToContent="Height"
         Width="300"
         WindowStartupLocation="CenterOwner"
@@ -9,25 +10,25 @@
         ShowInTaskbar="False"
         Background="{DynamicResource AppWindowBrush}">
     <StackPanel Margin="20" Spacing="16">
-        <TextBlock Text="Save current view settings for:"
+        <TextBlock Text="{x:Static text:UiText+Dialog.SaveViewPrompt}"
                    Foreground="{DynamicResource AppTextBrush}" />
         <StackPanel Spacing="8">
             <CheckBox x:Name="AllAppsCheck"
-                      Content="All Apps"
+                      Content="{x:Static text:UiText+Dialog.SaveViewFilterAll}"
                       Foreground="{DynamicResource AppTextBrush}" />
             <CheckBox x:Name="InstalledCheck"
-                      Content="Installed"
+                      Content="{x:Static text:UiText+Dialog.SaveViewFilterInstalled}"
                       Foreground="{DynamicResource AppTextBrush}" />
             <CheckBox x:Name="NotInstalledCheck"
-                      Content="Not Installed"
+                      Content="{x:Static text:UiText+Dialog.SaveViewFilterNotInstalled}"
                       Foreground="{DynamicResource AppTextBrush}" />
         </StackPanel>
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Spacing="8">
-            <Button Content="Save" Click="OnSave" />
-            <Button Content="Reset" Click="OnReset" />
-            <Button Content="Cancel" Click="OnCancel" />
+            <Button Content="{x:Static text:UiText+Button.Save}" Click="OnSave" />
+            <Button Content="{x:Static text:UiText+Button.Reset}" Click="OnReset" />
+            <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" />
         </StackPanel>
     </StackPanel>
 </Window>

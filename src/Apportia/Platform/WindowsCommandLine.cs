@@ -58,7 +58,7 @@ internal static partial class WindowsCommandLine
         }
 
         var length = BitConverter.ToUInt16(header[..2]);
-        if (length == 0 || length > 32 * 1024)
+        if (length is 0 or > 32 * 1024)
             return false;
 
         var bufferPtrOffset = IntPtr.Size == 8 ? 8 : 4;

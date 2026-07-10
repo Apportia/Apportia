@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -90,7 +91,7 @@ public static class SettingsService
         }
         catch (Exception ex)
         {
-            Log.Write($"Failed to save settings to '{FilePath}': {ex}");
+            Log.Write(string.Format(LogText.Settings.SaveFailedFormat, FilePath, ex.Message));
         }
     }
 }

@@ -1,8 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:Apportia.Views"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.VirusTotalDialog"
-        Title="VirusTotal Analysis"
+        Title="{x:Static text:UiText+Dialog.VtTitle}"
         Width="480"
         Height="250"
         MinWidth="480"
@@ -139,19 +140,19 @@
                 BorderBrush="{DynamicResource AppSeparatorBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="16,10">
-            <Button Content="Close" HorizontalAlignment="Right" Click="OnClose" />
+            <Button Content="{x:Static text:UiText+Button.Close}" HorizontalAlignment="Right" Click="OnClose" />
         </Border>
 
         <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="16,14,16,0">
 
             <Grid ColumnDefinitions="70,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="10">
-                <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="API Key" />
+                <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="{x:Static text:UiText+Header.VtApiKey}" />
                 <TextBox Grid.Row="0" Grid.Column="1" x:Name="ApiKeyBox" PasswordChar="*"
-                         PlaceholderText="Enter your VirusTotal API key" />
-                <Button Grid.Row="0" Grid.Column="2" Content="Save"
+                         PlaceholderText="{x:Static text:UiText+Placeholder.VtApiKey}" />
+                <Button Grid.Row="0" Grid.Column="2" Content="{x:Static text:UiText+Button.Save}"
                         Margin="8,0,0,0" Click="OnSaveApiKey" />
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="File" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="{x:Static text:UiText+Header.VtFile}" />
                 <ComboBox Grid.Row="1" Grid.Column="1" x:Name="FileCombo"
                           HorizontalAlignment="Stretch"
                           SelectionChanged="OnFileSelectionChanged">
@@ -161,11 +162,11 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Button Grid.Row="1" Grid.Column="2" x:Name="ScanButton" Content="Scan"
+                <Button Grid.Row="1" Grid.Column="2" x:Name="ScanButton" Content="{x:Static text:UiText+Button.Scan}"
                         Margin="8,0,0,0" IsEnabled="False" Click="OnScan" />
             </Grid>
 
-            <Button Content="Open on VirusTotal.com" HorizontalAlignment="Right"
+            <Button Content="{x:Static text:UiText+Dialog.VtOpenWebsite}" HorizontalAlignment="Right"
                     Click="OnOpenWebsite" />
 
             <Border x:Name="StatusBorder" IsVisible="False"
@@ -206,48 +207,48 @@
                 </Grid>
 
                 <!-- File Info -->
-                <TextBlock Classes="sectionHeader" Text="File Info" />
+                <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionFileInfo}" />
                 <Border Classes="sectionSep" Margin="0,0,0,6" />
                 <ItemsControl x:Name="FileInfoList" ItemTemplate="{StaticResource EntryRowTemplate}" />
 
                 <!-- Hashes -->
-                <TextBlock Classes="sectionHeader" Text="Hashes" />
+                <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionHashes}" />
                 <Border Classes="sectionSep" Margin="0,0,0,6" />
                 <ItemsControl x:Name="HashList" ItemTemplate="{StaticResource EntryRowTemplate}" />
 
                 <!-- Submission -->
-                <TextBlock Classes="sectionHeader" Text="Submission" />
+                <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionSubmission}" />
                 <Border Classes="sectionSep" Margin="0,0,0,6" />
                 <ItemsControl x:Name="SubmissionList" ItemTemplate="{StaticResource EntryRowTemplate}" />
 
                 <!-- Community -->
-                <TextBlock Classes="sectionHeader" Text="Community" />
+                <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionCommunity}" />
                 <Border Classes="sectionSep" Margin="0,0,0,6" />
                 <ItemsControl x:Name="CommunityList" ItemTemplate="{StaticResource EntryRowTemplate}" />
 
                 <!-- Signature (conditional) -->
                 <StackPanel x:Name="SignatureSection" IsVisible="False">
-                    <TextBlock Classes="sectionHeader" Text="Signature" />
+                    <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionSignature}" />
                     <Border Classes="sectionSep" Margin="0,0,0,6" />
                     <ItemsControl x:Name="SignatureList" ItemTemplate="{StaticResource EntryRowTemplate}" />
                 </StackPanel>
 
                 <!-- Sandbox Verdicts (conditional) -->
                 <StackPanel x:Name="SandboxSection" IsVisible="False" Spacing="0">
-                    <TextBlock Classes="sectionHeader" Text="Sandbox Verdicts" />
+                    <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionSandbox}" />
                     <Border Classes="sectionSep" Margin="0,0,0,6" />
                     <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                             BorderThickness="1" CornerRadius="4">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,100,*"
                                   Background="{DynamicResource AppColHeaderBrush}">
-                                <TextBlock Grid.Column="0" Text="Sandbox"
+                                <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.VtSandbox}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
-                                <TextBlock Grid.Column="1" Text="Category"
+                                <TextBlock Grid.Column="1" Text="{x:Static text:UiText+Column.VtCategory}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
-                                <TextBlock Grid.Column="2" Text="Classification"
+                                <TextBlock Grid.Column="2" Text="{x:Static text:UiText+Column.VtClassification}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
                             </Grid>
@@ -290,17 +291,17 @@
 
                 <!-- TrID (conditional) -->
                 <StackPanel x:Name="TridSection" IsVisible="False" Spacing="0">
-                    <TextBlock Classes="sectionHeader" Text="File Type Analysis (TrID)" />
+                    <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionTrid}" />
                     <Border Classes="sectionSep" Margin="0,0,0,6" />
                     <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                             BorderThickness="1" CornerRadius="4">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,80"
                                   Background="{DynamicResource AppColHeaderBrush}">
-                                <TextBlock Grid.Column="0" Text="File Type"
+                                <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.VtFileType}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
-                                <TextBlock Grid.Column="1" Text="Match %"
+                                <TextBlock Grid.Column="1" Text="{x:Static text:UiText+Column.VtMatchPercent}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
                             </Grid>
@@ -329,22 +330,23 @@
                 </StackPanel>
 
                 <!-- Engine Results -->
-                <TextBlock Classes="sectionHeader" Text="Engine Results" />
+                <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Dialog.VtSectionEngineResults}" />
                 <Border Classes="sectionSep" Margin="0,0,0,6" />
                 <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                         BorderThickness="1" CornerRadius="4">
                     <StackPanel>
                         <Grid x:Name="EngineHeaderGrid" ColumnDefinitions="160,*,160"
                               Background="{DynamicResource AppColHeaderBrush}">
-                            <TextBlock Grid.Column="0" Text="Engine"
+                            <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.VtEngine}"
                                        FontWeight="SemiBold" Padding="8,5"
                                        Foreground="{DynamicResource AppSubTextBrush}" />
-                            <TextBlock Grid.Column="1" x:Name="EngineResultHeader" Text="Result"
+                            <TextBlock Grid.Column="1" x:Name="EngineResultHeader"
+                                       Text="{x:Static text:UiText+Column.VtResult}"
                                        FontWeight="SemiBold" Padding="8,5"
                                        TextAlignment="Center"
                                        HorizontalAlignment="Center"
                                        Foreground="{DynamicResource AppSubTextBrush}" />
-                            <TextBlock Grid.Column="2" Text="Category"
+                            <TextBlock Grid.Column="2" Text="{x:Static text:UiText+Column.VtCategory}"
                                        FontWeight="SemiBold" Padding="8,5"
                                        HorizontalAlignment="Left"
                                        Foreground="{DynamicResource AppSubTextBrush}" />

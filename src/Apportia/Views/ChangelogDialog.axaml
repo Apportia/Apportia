@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.ChangelogDialog"
-        Title="Update Available"
+        Title="{x:Static text:UiText+Dialog.ChangelogTitle}"
         Width="640"
         Height="560"
         WindowStartupLocation="CenterOwner"
@@ -15,7 +16,7 @@
             <TextBlock x:Name="VersionText"
                        FontSize="16" FontWeight="SemiBold"
                        Foreground="{DynamicResource AppTextBrush}" />
-            <TextBlock Text="Review the changes below before installing."
+            <TextBlock Text="{x:Static text:UiText+Dialog.ChangelogSubtitle}"
                        FontSize="13"
                        Foreground="{DynamicResource AppSubTextBrush}" />
         </StackPanel>
@@ -35,8 +36,8 @@
         <Border Grid.Row="3" BorderBrush="{DynamicResource AppSeparatorBrush}" BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="20,12" Spacing="8">
-                <Button Content="Install Update" Click="OnInstall" />
-                <Button Content="Cancel" Click="OnCancel" />
+                <Button Content="{x:Static text:UiText+Button.InstallUpdate}" Click="OnInstall" />
+                <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" />
             </StackPanel>
         </Border>
 

@@ -1,5 +1,6 @@
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -13,9 +14,9 @@ public partial class LinuxSetupDialog : Window
     private const long RequiredDiskGib = 2;
     private const long RequiredDiskGibBytes = RequiredDiskGib * 1024L * 1024L * 1024L;
 
-    private const string SaveLabel = "Save";
-    private const string InstallFontsLabel = "Install Fonts";
-    private const string UpdateLabel = "Update";
+    private const string SaveLabel = UiText.Button.Save;
+    private const string InstallFontsLabel = UiText.Button.InstallFonts;
+    private const string UpdateLabel = UiText.Button.Update;
 
     private CancellationTokenSource? _downloadCts;
     private string _initialMode = string.Empty;
@@ -156,7 +157,7 @@ public partial class LinuxSetupDialog : Window
     {
         ErrorText.IsVisible = false;
         RetryButton.IsVisible = false;
-        VersionHint.Text = "Fetching Wine releases...";
+        VersionHint.Text = UiText.Dialog.LinuxFetchingReleases;
         try
         {
             var releases = await WineRunnersClient.FetchReleasesAsync();
@@ -165,9 +166,9 @@ public partial class LinuxSetupDialog : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"Could not fetch Wine releases: {ex}");
+            Log.Write(string.Format(LogText.Wine.ReleasesFetchFailedFormat, ex.Message));
             VersionHint.Text = string.Empty;
-            ErrorText.Text = $"Could not fetch Wine releases: {ex}";
+            ErrorText.Text = string.Format(UiText.Dialog.LinuxReleasesFetchFailedFormat, ex.Message);
             ErrorText.IsVisible = true;
             RetryButton.IsVisible = true;
         }
@@ -182,7 +183,7 @@ public partial class LinuxSetupDialog : Window
         var settings = SettingsService.Load();
         var idx = items.FindIndex(v => v.Equals(settings.WineVersion, StringComparison.OrdinalIgnoreCase));
         VersionCombo.SelectedIndex = idx >= 0 ? idx : 0;
-        VersionHint.Text = "\"latest\" automatically updates to the newest vanilla build.";
+        VersionHint.Text = UiText.Dialog.LinuxLatestHint;
         CheckForUpdate();
         RefreshSaveButtonLabel();
     }
@@ -207,8 +208,8 @@ public partial class LinuxSetupDialog : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"Linux setup failed: {ex}");
-            ErrorText.Text = $"Setup failed: {ex}";
+            Log.Write(string.Format(LogText.Wine.LinuxSetupFailedFormat, ex.Message));
+            ErrorText.Text = string.Format(UiText.Dialog.LinuxSetupFailedFormat, ex.Message);
             ErrorText.IsVisible = true;
             SaveButton.IsEnabled = true;
         }
@@ -233,14 +234,11 @@ public partial class LinuxSetupDialog : Window
             if (wasBundled && Directory.Exists(WineService.LinuxDir))
             {
                 var confirm = new AppDialog(
-                    "Delete bundled Wine files?",
-                    $"Switching to system Wine.\n\n" +
-                    $"The bundled Wine installation and prefix in\n\n" +
-                    $"{WineService.LinuxDir}\n\n" +
-                    "are no longer needed. Delete them now?",
-                    "Delete", "Keep");
+                    UiText.Dialog.LinuxDeleteBundledTitle,
+                    string.Format(UiText.Dialog.LinuxDeleteBundledBody, WineService.LinuxDir),
+                    UiText.Button.WineDelete, UiText.Button.WineKeep);
                 await confirm.ShowDialog(this);
-                if (confirm.Result == "Delete")
+                if (confirm.Result == UiText.Button.WineDelete)
                 {
                     TryDeleteDir(WineService.LinuxDir);
                     TryDeleteDir(WineService.FallbackPrefixDir);
@@ -257,7 +255,7 @@ public partial class LinuxSetupDialog : Window
         var release = WineRunnersClient.PickRelease(_releases, pickedVersion);
         if (release is null)
         {
-            ErrorText.Text = "No Wine release available. Check your connection and retry.";
+            ErrorText.Text = UiText.Dialog.LinuxNoReleases;
             ErrorText.IsVisible = true;
             RetryButton.IsVisible = true;
             return;
@@ -265,8 +263,7 @@ public partial class LinuxSetupDialog : Window
 
         if (!HasEnoughDiskSpace(out var freeGib))
         {
-            ErrorText.Text = $"Not enough free disk space for the bundled Wine prefix. " +
-                             $"At least {RequiredDiskGib} GiB required, only {freeGib:0.0} GiB available in {WineService.LinuxDir}.";
+            ErrorText.Text = string.Format(UiText.Dialog.LinuxDiskSpaceInsufficientFormat, RequiredDiskGib, freeGib, WineService.LinuxDir);
             ErrorText.IsVisible = true;
             return;
         }
@@ -281,7 +278,7 @@ public partial class LinuxSetupDialog : Window
         RetryButton.IsVisible = false;
         ErrorText.IsVisible = false;
         ProgressPanel.IsVisible = true;
-        ProgressText.Text = $"Downloading {release.ArchiveName}...";
+        ProgressText.Text = string.Format(UiText.Dialog.LinuxDownloadingArchiveFormat, release.ArchiveName);
         ProgressBar.Value = 0;
 
         var progress = new Progress<double>(p => ProgressBar.Value = p * 100);
@@ -292,7 +289,7 @@ public partial class LinuxSetupDialog : Window
         if (runner is null)
         {
             ProgressPanel.IsVisible = false;
-            ErrorText.Text = "Download or extraction failed.";
+            ErrorText.Text = UiText.Dialog.LinuxDownloadFailed;
             ErrorText.IsVisible = true;
             RetryButton.IsVisible = true;
             return;
@@ -302,13 +299,11 @@ public partial class LinuxSetupDialog : Window
         if (!FontsInstalled())
         {
             var fontsPrompt = new AppDialog(
-                "Download Windows fonts?",
-                "Wine is installed. Optionally download the original Windows font pack " +
-                "for better rendering in Windows applications.\n\n" +
-                "You can skip this and download it later.",
-                "Download", "Skip");
+                UiText.Dialog.LinuxFontsPromptTitle,
+                UiText.Dialog.LinuxFontsPromptBody,
+                UiText.Button.WineDownload, UiText.Button.WineSkip);
             await fontsPrompt.ShowDialog(this);
-            if (fontsPrompt.Result == "Download")
+            if (fontsPrompt.Result == UiText.Button.WineDownload)
                 await RunFontsDownloadAsync();
         }
 
@@ -327,7 +322,7 @@ public partial class LinuxSetupDialog : Window
         RetryButton.IsVisible = false;
         ErrorText.IsVisible = false;
         ProgressPanel.IsVisible = true;
-        ProgressText.Text = "Downloading Windows fonts...";
+        ProgressText.Text = UiText.Dialog.LinuxDownloadingFonts;
         ProgressBar.Value = 0;
         var fontsProgress = new Progress<double>(p => ProgressBar.Value = p * 100);
         _downloadCts ??= new CancellationTokenSource();
@@ -362,9 +357,7 @@ public partial class LinuxSetupDialog : Window
 
         if (chosen == null)
         {
-            ErrorText.Text = $"No suitable location for the bundled Wine prefix. " +
-                             $"Install drive filesystem is unsupported and /tmp fallback needs 5 GiB free " +
-                             $"(has {tmpFreeGib:0.0} GiB).";
+            ErrorText.Text = string.Format(UiText.Dialog.LinuxPrefixLocationFailedFormat, tmpFreeGib);
             ErrorText.IsVisible = true;
             return false;
         }
@@ -375,8 +368,8 @@ public partial class LinuxSetupDialog : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"Failed to create prefix directory '{chosen}': {ex}");
-            ErrorText.Text = $"Failed to create prefix directory '{chosen}': {ex}";
+            Log.Write(string.Format(LogText.Wine.PrefixCreateFailedFormat, chosen, ex.Message));
+            ErrorText.Text = string.Format(UiText.Dialog.LinuxPrefixCreateFailedFormat, chosen, ex.Message);
             ErrorText.IsVisible = true;
             return false;
         }

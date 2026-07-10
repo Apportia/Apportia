@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Apportia.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
@@ -83,7 +84,7 @@ public partial class VirusTotalDialog : Window
     {
         _node = node;
 
-        Title = $"VirusTotal \u2014 {node.Name}";
+        Title = string.Format(UiText.Dialog.VtTitleFormat, node.Name);
 
         _store = VirusTotalService.LoadStore();
         ApiKeyBox.Text = _store.ApiKey;
@@ -119,9 +120,9 @@ public partial class VirusTotalDialog : Window
         if (_entries.Count > 0)
             FileCombo.SelectedIndex = 0;
         else if (_node?.IsInstalled == false)
-            SetStatus("No download file information available for this app.", true);
+            SetStatus(UiText.Dialog.VtNoDownloadInfo, true);
         else
-            SetStatus("No binary files found in the app directory.", true);
+            SetStatus(UiText.Dialog.VtNoBinariesFound, true);
     }
 
     private void OnClose(object? sender, RoutedEventArgs e)
@@ -150,7 +151,7 @@ public partial class VirusTotalDialog : Window
         }
         catch (Exception ex)
         {
-            await Alert("Unexpected Error", ex.ToString());
+            await Alert(UiText.Dialog.VtAlertUnexpectedError, ex.Message);
         }
     }
 
@@ -162,7 +163,7 @@ public partial class VirusTotalDialog : Window
         }
         catch (Exception ex)
         {
-            await Alert("Unexpected Error", ex.ToString());
+            await Alert(UiText.Dialog.VtAlertUnexpectedError, ex.Message);
         }
     }
 
@@ -171,7 +172,7 @@ public partial class VirusTotalDialog : Window
         if (FileCombo.SelectedItem is not VtFileEntry entry) return;
 
         _sha256PendingUpload = null;
-        ScanButton.Content = "Scan";
+        ScanButton.Content = UiText.Button.Scan;
         ClearResults();
         ScanButton.IsEnabled = false;
         StatusBorder.IsVisible = false;
@@ -189,13 +190,13 @@ public partial class VirusTotalDialog : Window
             var isStale = entry.Sha256 != null
                           && VirusTotalService.GetCacheStatus(entry.Sha256, _node?.UpdateDate ?? string.Empty) == VtFileStatus.Stale;
             DisplayResult(cached, sha256, isStale);
-            ScanButton.Content = "Rescan";
+            ScanButton.Content = UiText.Button.VtRescan;
         }
         else
         {
             ResizeWindow(MinWidth, MinHeight);
-            ScanButton.Content = "Scan";
-            SetStatus("Not yet scanned. Click Scan to query VirusTotal.", false);
+            ScanButton.Content = UiText.Button.Scan;
+            SetStatus(UiText.Dialog.VtNotYetScanned, false);
         }
 
         UpdateScanButtonState();
@@ -209,7 +210,7 @@ public partial class VirusTotalDialog : Window
         }
         catch (Exception ex)
         {
-            await Alert("Unexpected Error", ex.ToString());
+            await Alert(UiText.Dialog.VtAlertUnexpectedError, ex.Message);
             UpdateScanButtonState();
         }
     }
@@ -218,14 +219,14 @@ public partial class VirusTotalDialog : Window
     {
         if (FileCombo.SelectedItem is not VtFileEntry entry)
         {
-            await Alert("Scan Error", "No file selected.");
+            await Alert(UiText.Dialog.VtAlertScanError, UiText.Dialog.VtAlertNoFileSelected);
             return;
         }
 
         var apiKey = ApiKeyBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrEmpty(apiKey))
         {
-            await Alert("Scan Error", "Please enter an API key.");
+            await Alert(UiText.Dialog.VtAlertScanError, UiText.Dialog.VtAlertNoApiKey);
             return;
         }
 
@@ -239,7 +240,7 @@ public partial class VirusTotalDialog : Window
         }
 
         ScanButton.IsEnabled = false;
-        SetStatus("Querying VirusTotal...", false);
+        SetStatus(UiText.Dialog.VtQuerying, false);
         ClearResults();
 
         var (response, error, notFound) = await VirusTotalService.QueryAsync(sha256, apiKey);
@@ -250,12 +251,12 @@ public partial class VirusTotalDialog : Window
             if (_node?.IsInstalled == true)
             {
                 _sha256PendingUpload = sha256;
-                ScanButton.Content = "Upload & Scan";
-                SetStatus("File not found in VirusTotal database. Click 'Upload & Scan' to submit it.", false);
+                ScanButton.Content = UiText.Button.UploadAndScan;
+                SetStatus(UiText.Dialog.VtUploadNotFoundInstalled, false);
             }
             else
             {
-                SetStatus("This file has not been submitted to VirusTotal yet.", false);
+                SetStatus(UiText.Dialog.VtNotSubmitted, false);
             }
 
             UpdateScanButtonState();
@@ -265,20 +266,20 @@ public partial class VirusTotalDialog : Window
         if (error != null)
         {
             UpdateScanButtonState();
-            await Alert("VirusTotal Error", error);
+            await Alert(UiText.Dialog.VtAlertVtError, error);
             return;
         }
 
         if (response?.Data?.Attributes == null)
         {
             UpdateScanButtonState();
-            await Alert("VirusTotal Error", "No results returned.");
+            await Alert(UiText.Dialog.VtAlertVtError, UiText.Dialog.VtAlertNoResults);
             return;
         }
 
         DisplayResult(response, sha256, false);
         RefreshCurrentEntryAsFresh(sha256);
-        ScanButton.Content = "Rescan";
+        ScanButton.Content = UiText.Button.VtRescan;
         UpdateScanButtonState();
         StatusBorder.IsVisible = false;
     }
@@ -287,21 +288,21 @@ public partial class VirusTotalDialog : Window
     {
         ScanButton.IsEnabled = false;
         ClearResults();
-        SetStatus($"Uploading \u2018{entry.RelativePath}\u2019 to VirusTotal...", false);
+        SetStatus(string.Format(UiText.Dialog.VtUploadingFormat, entry.RelativePath), false);
 
         var filePath = Path.Combine(_appDir, entry.RelativePath);
         var (analysisId, uploadError) = await VirusTotalService.UploadAsync(filePath, apiKey);
         if (uploadError != null)
         {
             UpdateScanButtonState();
-            await Alert("Upload Error", uploadError);
+            await Alert(UiText.Dialog.VtSubmissionUploadError, uploadError);
             return;
         }
 
         if (analysisId == null)
         {
             UpdateScanButtonState();
-            await Alert("Upload Error", "No analysis ID returned.");
+            await Alert(UiText.Dialog.VtSubmissionUploadError, UiText.Dialog.VtAlertUploadNoId);
             return;
         }
 
@@ -310,7 +311,7 @@ public partial class VirusTotalDialog : Window
         analysisTimer.Tick += (_, _) =>
         {
             var elapsed = (int)(DateTime.Now - uploadedAt).TotalSeconds;
-            SetStatus($"File uploaded. VirusTotal is analyzing across all engines... ({elapsed}s elapsed)", false);
+            SetStatus(string.Format(UiText.Dialog.VtUploadAnalyzingFormat, elapsed), false);
         };
         analysisTimer.Start();
 
@@ -320,31 +321,31 @@ public partial class VirusTotalDialog : Window
         if (pollError != null)
         {
             UpdateScanButtonState();
-            await Alert("Analysis Error", pollError);
+            await Alert(UiText.Dialog.VtAnalysisError, pollError);
             return;
         }
 
         var querySha256 = resultSha256 ?? sha256;
-        SetStatus("Analysis complete. Fetching full report...", false);
+        SetStatus(UiText.Dialog.VtUploadFetching, false);
         var (response, queryError, _) = await VirusTotalService.QueryAsync(querySha256, apiKey);
         if (queryError != null)
         {
             UpdateScanButtonState();
-            await Alert("VirusTotal Error", queryError);
+            await Alert(UiText.Dialog.VtAlertVtError, queryError);
             return;
         }
 
         if (response?.Data?.Attributes == null)
         {
             UpdateScanButtonState();
-            await Alert("VirusTotal Error", "No results returned after analysis.");
+            await Alert(UiText.Dialog.VtAlertVtError, UiText.Dialog.VtAlertNoResultsAfter);
             return;
         }
 
         _sha256PendingUpload = null;
         DisplayResult(response, querySha256, false);
         RefreshCurrentEntryAsFresh(querySha256);
-        ScanButton.Content = "Rescan";
+        ScanButton.Content = UiText.Button.VtRescan;
         UpdateScanButtonState();
         StatusBorder.IsVisible = false;
     }
@@ -358,7 +359,7 @@ public partial class VirusTotalDialog : Window
             return cached;
 
         var filePath = Path.Combine(_appDir, entry.RelativePath);
-        SetStatus("Computing file hash...", false);
+        SetStatus(UiText.Dialog.VtComputingHash, false);
         try
         {
             var sha256 = await Task.Run(() => VirusTotalService.ComputeSha256(filePath));
@@ -377,8 +378,8 @@ public partial class VirusTotalDialog : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"Hash read failed for '{entry.RelativePath}': {ex}");
-            await Alert("Hash Error", $"Failed to read '{entry.RelativePath}':\n{ex}");
+            Log.Write(string.Format(LogText.VirusTotal.HashReadFailedFormat, entry.RelativePath, ex.Message));
+            await Alert(UiText.Dialog.VtAlertHashError, string.Format(UiText.Dialog.VtAlertHashFailedFormat, entry.RelativePath, ex.Message));
             return null;
         }
     }
@@ -392,7 +393,7 @@ public partial class VirusTotalDialog : Window
         {
             var total = stats.Malicious + stats.Suspicious + stats.Undetected + stats.Harmless + stats.Timeout;
             var detected = stats.Malicious + stats.Suspicious;
-            DetectionBadge.Text = $"{detected}/{total}";
+            DetectionBadge.Text = string.Format(UiText.Dialog.VtDetectionBadgeFormat, detected, total);
             var badgeColor =
                 stats.Malicious > 0
                     ? "#CC2222"
@@ -402,15 +403,15 @@ public partial class VirusTotalDialog : Window
                             ? "#CCCC00"
                             : "#22AA44";
             DetectionBadge.Foreground = new SolidColorBrush(Color.Parse(badgeColor));
-            DetectionLabel.Text = detected == 0 ? "no threats detected" : "engines detected a threat";
+            DetectionLabel.Text = detected == 0 ? UiText.Dialog.VtDetectionNone : UiText.Dialog.VtDetectionSome;
         }
 
         if (attrs.LastAnalysisDate > 0)
         {
             var scanDate = DateTimeOffset.FromUnixTimeSeconds(attrs.LastAnalysisDate).LocalDateTime;
             ScanDateText.Text = isStale
-                ? $"Cached {scanDate:yyyy-MM-dd} (outdated)"
-                : $"Scanned {scanDate:yyyy-MM-dd}";
+                ? string.Format(UiText.Dialog.VtScanDateCachedFormat, scanDate)
+                : string.Format(UiText.Dialog.VtScanDateFormat, scanDate);
         }
 
         FileInfoList.ItemsSource = Filter([
@@ -529,8 +530,8 @@ public partial class VirusTotalDialog : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"Directory scan failed: {ex}");
-            await Alert("Directory Scan Error", $"Failed to scan subdirectories:\n{ex}");
+            Log.Write(string.Format(LogText.VirusTotal.DirectoryScanFailedFormat, ex.Message));
+            await Alert(UiText.Dialog.VtDirectoryScanError, string.Format(UiText.Dialog.VtAlertSubdirScanFailedFormat, ex.Message));
         }
     }
 
@@ -580,25 +581,24 @@ public partial class VirusTotalDialog : Window
         var key = ApiKeyBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrEmpty(key))
         {
-            await Alert("Save API Key", "No API key entered.");
+            await Alert(UiText.Dialog.VtSaveApiKeyTitle, UiText.Dialog.VtAlertSaveApiKeyNoKey);
             return;
         }
 
         var dlg = new AppDialog(
-            "Save API Key",
-            $"How should the API key be saved?\n\n" +
-            $"Permanent storage writes the key unencrypted to:\n{VirusTotalService.IndexPath}",
-            "Session Only",
-            "Save Permanently") { Icon = Icon };
+            UiText.Dialog.VtSaveApiKeyTitle,
+            string.Format(UiText.Dialog.VtSaveApiKeyBodyFormat, VirusTotalService.IndexPath),
+            UiText.Button.VtSessionOnly,
+            UiText.Button.VtSavePermanent) { Icon = Icon };
         await dlg.ShowDialog(this);
 
         switch (dlg.Result)
         {
-            case "Save Permanently":
+            case UiText.Button.VtSavePermanent:
                 _store.ApiKey = key;
                 VirusTotalService.SaveStore(_store);
                 break;
-            case "Session Only" when _store.ApiKey != null:
+            case UiText.Button.VtSessionOnly when _store.ApiKey != null:
                 _store.ApiKey = null;
                 VirusTotalService.SaveStore(_store);
                 break;
@@ -685,9 +685,9 @@ public partial class VirusTotalDialog : Window
 
     private async Task Alert(string title, string message)
     {
-        var dlg = new AppDialog(title, message, "Copy", "OK") { Icon = Icon };
+        var dlg = new AppDialog(title, message, UiText.Button.Copy, UiText.Button.Ok) { Icon = Icon };
         await dlg.ShowDialog(this);
-        if (dlg.Result == "Copy")
+        if (dlg.Result == UiText.Button.Copy)
         {
             var clipboard = GetTopLevel(this)?.Clipboard;
             if (clipboard != null)

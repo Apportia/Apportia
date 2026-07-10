@@ -1,5 +1,6 @@
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Apportia.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -38,7 +39,7 @@ public partial class AppProperties : Window
         var updateDate = DateTime.TryParse(node.UpdateDate, out var dt)
             ? dt.ToString("dddd, MMMM d, yyyy")
             : node.UpdateDate;
-        Title = $"{node.Name} ({updateDate})";
+        Title = string.Format(UiText.Header.PropsTitleFormat, node.Name, updateDate);
 
         _installLocation = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
@@ -58,17 +59,17 @@ public partial class AppProperties : Window
         }
 
         GeneralList.ItemsSource = Filter(
-            new EntryField("Section", node.SectionName),
-            new EntryField("Name", node.Name),
-            new EntryField("Description", node.Description),
-            new EntryField("Website", node.Website),
-            new EntryField("Category", node.Category),
-            new EntryField("Sub-Category", node.IsAdvanced || node.IsLegacy
+            new EntryField(UiText.Header.PropsSection, node.SectionName),
+            new EntryField(UiText.Header.PropsName, node.Name),
+            new EntryField(UiText.Header.PropsDescription, node.Description),
+            new EntryField(UiText.Header.PropsWebsite, node.Website),
+            new EntryField(UiText.Header.PropsCategory, node.Category),
+            new EntryField(UiText.Header.PropsSubCategory, node.IsAdvanced || node.IsLegacy
                                ? node.SubCategory.Replace(prefix, string.Empty)
                                : node.SubCategory),
-            new EntryField("Class", node.IsAdvanced ? "Advanced" : node.IsLegacy ? "Legacy" : ""),
-            new EntryField("Joined Date", RelativeDate(node.JoinedDate)),
-            new EntryField("Requires Java", node.RequiresJava ? "Yes" : "")
+            new EntryField(UiText.Header.PropsClass, node.IsAdvanced ? UiText.Header.PropsClassAdvanced : node.IsLegacy ? UiText.Header.PropsClassLegacy : ""),
+            new EntryField(UiText.Header.PropsJoinedDate, RelativeDate(node.JoinedDate)),
+            new EntryField(UiText.Header.PropsRequiresJava, node.RequiresJava ? UiText.Header.PropsYes : "")
         );
 
         var localDisplay = node.LocalDisplayVersion ?? node.DisplayVersion;
@@ -78,9 +79,9 @@ public partial class AppProperties : Window
 
         VersionList.ItemsSource = new VersionField[]
         {
-            new("Display Version", localDisplay, availableDisplay),
-            new("Package Version", localPackage, availablePackage),
-            new("Update Date", RelativeDate(node.UpdateDate), string.Empty)
+            new(UiText.Header.PropsDisplayVersion, localDisplay, availableDisplay),
+            new(UiText.Header.PropsPackageVersion, localPackage, availablePackage),
+            new(UiText.Header.PropsUpdateDate, RelativeDate(node.UpdateDate), string.Empty)
         };
 
         if (node.IsCustom)
@@ -91,11 +92,11 @@ public partial class AppProperties : Window
         else
         {
             DownloadList.ItemsSource = Filter(
-                new EntryField("Download File", node.DownloadFile),
-                new EntryField("Hash", node.Hash),
-                new EntryField("Download Path", node.DownloadPath),
-                new EntryField("User Agent", node.UserAgent),
-                new EntryField("Download Size", node.DownloadSize)
+                new EntryField(UiText.Header.PropsDownloadFile, node.DownloadFile),
+                new EntryField(UiText.Header.PropsHash, node.Hash),
+                new EntryField(UiText.Header.PropsDownloadPath, node.DownloadPath),
+                new EntryField(UiText.Header.PropsUserAgent, node.UserAgent),
+                new EntryField(UiText.Header.PropsDownloadSize, node.DownloadSize)
             );
         }
 
@@ -129,7 +130,7 @@ public partial class AppProperties : Window
                     {
                         var dataBytes = t.Result;
                         var usedSize = dataBytes > 0 && node.UsedBytes > 0
-                            ? $"{node.UsedSize} (App: {AppDiskUsageService.FormatSize(node.UsedBytes - dataBytes)}, Data: {AppDiskUsageService.FormatSize(dataBytes)})"
+                            ? string.Format(UiText.Header.PropsInstalledFormat, node.UsedSize, AppDiskUsageService.FormatSize(node.UsedBytes - dataBytes), AppDiskUsageService.FormatSize(dataBytes))
                             : node.UsedSize;
                         Dispatcher.UIThread.Post(() => RefreshInstallList(usedSize));
                     }, TaskContinuationOptions.OnlyOnRanToCompletion);
@@ -138,10 +139,10 @@ public partial class AppProperties : Window
     private void RefreshInstallList(string usedSizeValue)
     {
         InstallList.ItemsSource = Filter(
-            new EntryField("Install Size", _node?.InstallSize ?? ""),
-            new EntryField("Used Size", usedSizeValue),
-            new EntryField("Install Location", _installLocation ?? ""),
-            new EntryField("Language", _selectedLanguage ?? "")
+            new EntryField(UiText.Header.PropsInstallSize, _node?.InstallSize ?? ""),
+            new EntryField(UiText.Header.PropsUsedSize, usedSizeValue),
+            new EntryField(UiText.Header.PropsInstallLocation, _installLocation ?? ""),
+            new EntryField(UiText.Header.PropsLanguage, _selectedLanguage ?? "")
         );
     }
 
@@ -150,7 +151,7 @@ public partial class AppProperties : Window
         if (e.Source is not TextBlock tb || !tb.Classes.Contains("value") || string.IsNullOrEmpty(tb.Text))
             return;
         var text = tb.Text;
-        var copyItem = new MenuItem { Header = "Copy" };
+        var copyItem = new MenuItem { Header = UiText.Header.PropsCopy };
         copyItem.Click += async (_, _) =>
         {
             if (GetTopLevel(this)?.Clipboard is { } clipboard)
@@ -176,10 +177,10 @@ public partial class AppProperties : Window
             return date.ToString("dddd, MMMM d, yyyy");
         return days switch
         {
-            0 => $"{dayName}, Today",
-            1 => $"{dayName}, Yesterday",
-            <= 6 => $"{dayName}, {days} days ago",
-            7 => $"{dayName}, 1 week ago",
+            0 => $"{dayName}, {UiText.Header.RelToday}",
+            1 => $"{dayName}, {UiText.Header.RelYesterday}",
+            <= 6 => string.Format(UiText.Header.RelDaysAgoFormat, dayName, days),
+            7 => $"{dayName}, {UiText.Header.RelWeekAgo}",
             _ => date.ToString("dddd, MMMM d, yyyy")
         };
     }

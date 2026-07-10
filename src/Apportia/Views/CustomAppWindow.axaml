@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.CustomAppWindow"
         Width="500"
         SizeToContent="Height"
@@ -30,55 +31,56 @@
     <StackPanel Margin="20" Spacing="4">
 
         <StackPanel x:Name="FolderSection">
-            <TextBlock Text="App Folder"
+            <TextBlock Text="{x:Static text:UiText+Header.CustomFolder}"
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                        Margin="0,8,0,2" />
             <Grid ColumnDefinitions="*,8,Auto">
                 <TextBox x:Name="FolderBox" Grid.Column="0" IsReadOnly="True"
                          Foreground="{DynamicResource AppTextBrush}" />
-                <Button x:Name="FolderBrowseButton" Grid.Column="2" Content="Browse..." Click="OnBrowseFolder" />
+                <Button x:Name="FolderBrowseButton" Grid.Column="2" Content="{x:Static text:UiText+Button.Browse}"
+                        Click="OnBrowseFolder" />
             </Grid>
         </StackPanel>
 
-        <TextBlock Text="Executable"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomExecutable}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <ComboBox x:Name="ExeSourceCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnExeSelectionChanged" />
 
-        <TextBlock Text="Name"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomName}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <TextBox x:Name="NameBox" Foreground="{DynamicResource AppTextBrush}" />
 
-        <TextBlock Text="Description"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomDescription}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <TextBox x:Name="DescriptionBox" Foreground="{DynamicResource AppTextBrush}" />
 
-        <TextBlock Text="Category"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomCategory}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <ComboBox x:Name="CategoryCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnCategorySelectionChanged" />
 
-        <TextBlock Text="SubCategory"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomSubCategory}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <ComboBox x:Name="SubCategoryCombo" HorizontalAlignment="Stretch" />
 
-        <TextBlock Text="Website"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomWebsite}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <TextBox x:Name="WebsiteBox" Foreground="{DynamicResource AppTextBrush}" />
 
-        <TextBlock Text="Version Source"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomVersionSource}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <ComboBox x:Name="VersionSourceCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnVersionExeSelectionChanged" />
 
-        <TextBlock Text="Version"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomVersion}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <TextBox x:Name="VersionBox" Foreground="{DynamicResource AppTextBrush}" />
@@ -88,13 +90,13 @@
                    TextWrapping="Wrap"
                    Margin="0,2,0,0" />
 
-        <TextBlock Text="Icon Source"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomIconSource}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
         <ComboBox x:Name="IconSourceCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnIconExeSelectionChanged" />
 
-        <TextBlock Text="Icon"
+        <TextBlock Text="{x:Static text:UiText+Header.CustomIcon}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
 
@@ -116,8 +118,8 @@
         <Grid ColumnDefinitions="*,8,Auto">
             <TextBox x:Name="IconBox" Grid.Column="0" IsReadOnly="True"
                      Foreground="{DynamicResource AppSubTextBrush}"
-                     PlaceholderText="Pick from above or browse..." />
-            <Button Grid.Column="2" Content="Browse..." Click="OnBrowseIcon" />
+                     PlaceholderText="{x:Static text:UiText+Placeholder.CustomAppIconPath}" />
+            <Button Grid.Column="2" Content="{x:Static text:UiText+Button.Browse}" Click="OnBrowseIcon" />
         </Grid>
 
         <TextBlock x:Name="ErrorText"
@@ -129,7 +131,7 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                     Spacing="8" Margin="0,16,0,0">
             <Button x:Name="ActionButton" Click="OnAction" />
-            <Button Content="Cancel" Click="OnCancel" />
+            <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" />
         </StackPanel>
 
     </StackPanel>

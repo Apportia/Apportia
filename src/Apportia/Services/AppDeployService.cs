@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -64,7 +65,7 @@ public sealed class AppDeployService : IDisposable
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
-            throw new TimeoutException($"Connection to {new Uri(url).Host} timed out.");
+            throw new TimeoutException(string.Format(LogText.Install.ConnectionTimedOutFormat, new Uri(url).Host));
         }
 
         using (response)
@@ -495,7 +496,7 @@ public sealed class AppDeployService : IDisposable
         }
 
         using var process = Process.Start(psi)
-                            ?? throw new InvalidOperationException("Failed to start 7z process");
+                            ?? throw new InvalidOperationException(LogText.Install.SevenZipStartFailed);
         await process.WaitForExitAsync(ct);
     }
 

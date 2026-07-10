@@ -1,8 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:Apportia.Views"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.AppProperties"
-        Title="Properties"
+        Title="{x:Static text:UiText+Header.PropsTitle}"
         Width="710"
         Height="620"
         MinWidth="710"
@@ -33,7 +34,7 @@
                 BorderBrush="{DynamicResource AppSeparatorBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="16,10">
-            <Button Content="Close" HorizontalAlignment="Right" Click="OnClose" />
+            <Button Content="{x:Static text:UiText+Button.Close}" HorizontalAlignment="Right" Click="OnClose" />
         </Border>
 
         <ScrollViewer Padding="16,14,0,0">
@@ -51,7 +52,7 @@
                            IsVisible="False" />
                     <StackPanel>
                         <Border Classes="sectionSep">
-                            <TextBlock Classes="sectionHeader" Text="GENERAL" />
+                            <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Header.PropsGeneral}" />
                         </Border>
                         <ItemsControl x:Name="GeneralList" Margin="0,0,0,16">
                             <ItemsControl.ItemTemplate>
@@ -74,7 +75,7 @@
 
                 <!-- Version -->
                 <Border Classes="sectionSep">
-                    <TextBlock Classes="sectionHeader" Text="VERSION" />
+                    <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Header.PropsVersion}" />
                 </Border>
                 <ItemsControl x:Name="VersionList" Margin="0,0,0,16">
                     <ItemsControl.ItemTemplate>
@@ -108,7 +109,7 @@
 
                 <!-- Download -->
                 <Border x:Name="DownloadSection" Classes="sectionSep">
-                    <TextBlock Classes="sectionHeader" Text="DOWNLOAD" />
+                    <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Header.PropsDownload}" />
                 </Border>
                 <ItemsControl x:Name="DownloadList" Margin="0,0,0,16">
                     <ItemsControl.ItemTemplate>
@@ -129,7 +130,7 @@
 
                 <!-- Installation -->
                 <Border Classes="sectionSep">
-                    <TextBlock Classes="sectionHeader" Text="INSTALLATION" />
+                    <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Header.PropsInstallation}" />
                 </Border>
                 <ItemsControl x:Name="InstallList" Margin="0,0,0,16">
                     <ItemsControl.ItemTemplate>
@@ -151,7 +152,7 @@
                 <!-- Languages -->
                 <StackPanel x:Name="LanguagesSection" IsVisible="False" Margin="0,0,0,16">
                     <Border Classes="sectionSep">
-                        <TextBlock Classes="sectionHeader" Text="LANGUAGES" />
+                        <TextBlock Classes="sectionHeader" Text="{x:Static text:UiText+Header.PropsLanguages}" />
                     </Border>
                     <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                             BorderThickness="1" CornerRadius="4">
@@ -159,13 +160,13 @@
                             <Grid ColumnDefinitions="110,*,*"
                                   Background="{DynamicResource AppColHeaderBrush}"
                                   Margin="0">
-                                <TextBlock Grid.Column="0" Text="Language"
+                                <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.LanguageLanguage}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
-                                <TextBlock Grid.Column="1" Text="File"
+                                <TextBlock Grid.Column="1" Text="{x:Static text:UiText+Column.LanguageFile}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
-                                <TextBlock Grid.Column="2" Text="Hash"
+                                <TextBlock Grid.Column="2" Text="{x:Static text:UiText+Column.LanguageHash}"
                                            FontWeight="SemiBold" Padding="8,5"
                                            Foreground="{DynamicResource AppSubTextBrush}" />
                             </Grid>

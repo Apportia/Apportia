@@ -1,5 +1,6 @@
 using Apportia.Models;
 using Apportia.Platform;
+using Apportia.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -34,7 +35,7 @@ public partial class CopyProgressDialog : Window
         {
             CopyProgressBar.IsIndeterminate = false;
             CopyProgressBar.Value = (double)progress.Copied / progress.Total * 100;
-            StatusText.Text = $"{progress.Copied} of {progress.Total} files copied";
+            StatusText.Text = string.Format(UiText.Dialog.CopyProgressFilesFormat, progress.Copied, progress.Total);
         }
 
         if (!string.IsNullOrEmpty(progress.File))
@@ -48,7 +49,7 @@ public partial class CopyProgressDialog : Window
             _copyDone = true;
             CopyProgressBar.IsIndeterminate = false;
             CopyProgressBar.Value = 100;
-            StatusText.Text = "All files copied.";
+            StatusText.Text = UiText.Dialog.CopyProgressFinished;
             await Task.Delay(800, CancellationToken.None);
             Close();
         }
@@ -76,12 +77,12 @@ public partial class CopyProgressDialog : Window
     private async Task ConfirmCancelAsync()
     {
         var dialog = new AppDialog(
-            "Cancel Import",
-            "The import is not complete.\n\nCancel and delete the already copied files?",
-            "Yes, Cancel",
-            "No, Continue");
+            UiText.Dialog.CopyImportCancelTitle,
+            UiText.Dialog.CopyImportCancelBody,
+            UiText.Button.CancelImportYes,
+            UiText.Button.CancelImportNo);
         await dialog.ShowDialog(this);
-        if (dialog.Result != "Yes, Cancel")
+        if (dialog.Result != UiText.Button.CancelImportYes)
             return;
         _closeConfirmed = true;
         await _cts.CancelAsync();

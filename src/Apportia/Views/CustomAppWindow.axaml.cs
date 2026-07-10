@@ -1,5 +1,6 @@
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Apportia.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
@@ -47,8 +48,8 @@ public partial class CustomAppWindow : Window
         string? presetFolder = null) : this()
     {
         _subCategoriesMap = subCategoriesMap;
-        Title = "Import App";
-        ActionButton.Content = "Import";
+        Title = UiText.Dialog.CustomAppImportTitle;
+        ActionButton.Content = UiText.Button.CustomAppImport;
         CategoryCombo.ItemsSource = categories;
         if (categories.Count > 0)
             CategoryCombo.SelectedIndex = 0;
@@ -72,8 +73,8 @@ public partial class CustomAppWindow : Window
         _initialName = node.Name;
         _initialDescription = node.Description;
 
-        Title = "App Settings";
-        ActionButton.Content = "Save";
+        Title = UiText.Dialog.CustomAppEditTitle;
+        ActionButton.Content = UiText.Button.CustomAppSave;
         FolderSection.IsVisible = false;
 
         CategoryCombo.ItemsSource = categories;
@@ -123,10 +124,10 @@ public partial class CustomAppWindow : Window
             var liveNormalized = NormalizeVersion(liveRaw);
             if (!string.IsNullOrEmpty(liveNormalized) && liveNormalized != NormalizeVersion(storedVersion))
             {
-                var previousText = string.IsNullOrEmpty(storedVersion) ? "none" : NormalizeVersion(storedVersion);
+                var previousText = string.IsNullOrEmpty(storedVersion) ? UiText.Dialog.CustomAppVersionUpdatedNone : NormalizeVersion(storedVersion);
                 _rawVersion = liveRaw;
                 VersionBox.Text = liveNormalized;
-                VersionChangedText.Text = $"Updated from stored version: {previousText}";
+                VersionChangedText.Text = string.Format(UiText.Dialog.CustomAppVersionUpdatedFormat, previousText);
                 VersionChangedText.IsVisible = true;
                 ActionButton.Foreground = new SolidColorBrush(Color.Parse("#E0A020"));
             }
@@ -156,7 +157,7 @@ public partial class CustomAppWindow : Window
         {
             var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "Select App Folder",
+                Title = UiText.Dialog.CustomAppFolderPickerTitle,
                 AllowMultiple = false
             });
 
@@ -170,7 +171,7 @@ public partial class CustomAppWindow : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"Custom app folder picker failed: {ex}");
+            Log.Write(string.Format(LogText.Custom.FolderPickerFailedFormat, ex.Message));
         }
     }
 
@@ -224,7 +225,7 @@ public partial class CustomAppWindow : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"PopulateFromFolderAsync failed: {ex}");
+            Log.Write(string.Format(LogText.Custom.PopulateFromFolderFailedFormat, ex.Message));
         }
     }
 
@@ -318,7 +319,7 @@ public partial class CustomAppWindow : Window
                 {
                     var bmp = new Bitmap(currentIconPath);
                     var px = bmp.PixelSize;
-                    icons.Add(new IconVariant(bmp, $"Current icon ({px.Width} x {px.Height} px)"));
+                    icons.Add(new IconVariant(bmp, string.Format(UiText.Dialog.CustomAppIconCurrentFormat, px.Width, px.Height)));
                 }
                 catch
                 {
@@ -407,7 +408,7 @@ public partial class CustomAppWindow : Window
         {
             var bmp = new Bitmap(fullPath);
             var px = bmp.PixelSize;
-            return [new IconVariant(bmp, $"{Path.GetFileName(fullPath)} ({px.Width} x {px.Height} px)")];
+            return [new IconVariant(bmp, string.Format(UiText.Dialog.CustomAppIconSizeFormat, Path.GetFileName(fullPath), px.Width, px.Height))];
         }
         catch
         {
@@ -488,11 +489,11 @@ public partial class CustomAppWindow : Window
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Select Icon (PNG)",
+                Title = UiText.Dialog.CustomAppIconPickerTitle,
                 AllowMultiple = false,
                 FileTypeFilter =
                 [
-                    new FilePickerFileType("PNG Image") { Patterns = ["*.png"] }
+                    new FilePickerFileType(UiText.Dialog.CustomAppIconFileTypeName) { Patterns = ["*.png"] }
                 ]
             });
 
@@ -514,7 +515,7 @@ public partial class CustomAppWindow : Window
         }
         catch (Exception ex)
         {
-            Log.Write($"Icon picker failed: {ex}");
+            Log.Write(string.Format(LogText.Custom.IconPickerFailedFormat, ex.Message));
         }
     }
 
@@ -532,26 +533,26 @@ public partial class CustomAppWindow : Window
 
         if (string.IsNullOrWhiteSpace(FolderBox.Text))
         {
-            ShowError("Please select an app folder.");
+            ShowError(UiText.Error.CustomAppSelectFolder);
             return;
         }
 
         if (ExeSourceCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
         {
-            ShowError("Please select an executable.");
+            ShowError(UiText.Error.CustomAppSelectExe);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(NameBox.Text))
         {
-            ShowError("Please enter a name.");
+            ShowError(UiText.Error.CustomAppEnterName);
             return;
         }
 
         var effectiveIconPath = string.IsNullOrEmpty(IconBox.Text) ? _tempIconPath : IconBox.Text;
         if (string.IsNullOrWhiteSpace(effectiveIconPath))
         {
-            ShowError("Please select an icon.");
+            ShowError(UiText.Error.CustomAppSelectIcon);
             return;
         }
 
@@ -582,13 +583,13 @@ public partial class CustomAppWindow : Window
 
         if (ExeSourceCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
         {
-            ShowError("Please select an executable.");
+            ShowError(UiText.Error.CustomAppSelectExe);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(NameBox.Text))
         {
-            ShowError("Please enter a name.");
+            ShowError(UiText.Error.CustomAppEnterName);
             return;
         }
 

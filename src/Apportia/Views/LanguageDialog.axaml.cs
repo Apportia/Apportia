@@ -1,5 +1,6 @@
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -19,7 +20,7 @@ public partial class LanguageDialog : Window
     {
         AppLabel.Text = appName;
 
-        _entries.Add(("English", "English"));
+        _entries.Add((UiText.Dialog.LanguageEnglish, UiText.Dialog.LanguageEnglish));
         _entries.AddRange(
             languageKeys
                 .Select(k => (Key: k, Display: AppLanguageService.FormatLanguageName(k)))
@@ -27,8 +28,8 @@ public partial class LanguageDialog : Window
 
         LanguageList.ItemsSource = _entries.Select(e => e.Display).ToList();
 
-        var preselectDisplay = preselect is null or "English"
-            ? "English"
+        var preselectDisplay = preselect is null or UiText.Dialog.LanguageEnglish
+            ? UiText.Dialog.LanguageEnglish
             : AppLanguageService.FormatLanguageName(preselect);
         var idx = _entries.FindIndex(e => e.Display == preselectDisplay);
         LanguageList.SelectedIndex = idx >= 0 ? idx : 0;

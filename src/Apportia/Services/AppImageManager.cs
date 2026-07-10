@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Apportia.Text;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -6,20 +7,14 @@ using Svg.Skia;
 
 namespace Apportia.Services;
 
-public sealed class AppImageManager : IDisposable
+public sealed class AppImageManager(string cacheDir) : IDisposable
 {
     private const string RawBase = "https://raw.githubusercontent.com/Apportia/Apportia/main/data/AppImages/";
     private const int MaxConcurrentDownloads = 4;
     private static readonly Uri FallbackUri = new("avares://Apportia/Assets/Emoji/1f5bc.svg");
 
     private readonly ConcurrentDictionary<string, Bitmap> _cache = new();
-    private readonly string _cacheDir;
     private bool _disposed;
-
-    public AppImageManager(string cacheDir)
-    {
-        _cacheDir = cacheDir;
-    }
 
     public void Dispose()
     {
@@ -43,7 +38,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Write($"Icon corrupt, discarding: {sectionName} @ {size} – {ex}");
+            Log.Write(string.Format(LogText.AppImage.IconCorruptFormat, sectionName, size, ex.Message));
             try
             {
                 File.Delete(localPath);
@@ -75,7 +70,7 @@ public sealed class AppImageManager : IDisposable
 
     public async Task<Bitmap?> GetPreviewAsync(string sectionName, CancellationToken ct = default)
     {
-        var localPath = Path.Combine(_cacheDir, "Previews", $"{NormalizeSection(sectionName)}.png");
+        var localPath = Path.Combine(cacheDir, "Previews", $"{NormalizeSection(sectionName)}.png");
         if (File.Exists(localPath))
             return new Bitmap(localPath);
 
@@ -83,7 +78,7 @@ public sealed class AppImageManager : IDisposable
         var bytes = await GitHubClient.GetAssetBytesAsync(url, ct);
         if (bytes == null)
         {
-            Log.Write($"Preview not found: {sectionName} ({url})");
+            Log.Write(string.Format(LogText.AppImage.PreviewNotFoundFormat, sectionName, url));
             return null;
         }
 
@@ -95,7 +90,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Write($"Preview write failed: {sectionName} – {ex}");
+            Log.Write(string.Format(LogText.AppImage.PreviewWriteFailedFormat, sectionName, ex.Message));
             return null;
         }
     }
@@ -134,7 +129,7 @@ public sealed class AppImageManager : IDisposable
         var bytes = await GitHubClient.GetAssetBytesAsync(url, ct);
         if (bytes == null)
         {
-            Log.Write($"Icon not found: {section} ({url})");
+            Log.Write(string.Format(LogText.AppImage.IconNotFoundFormat, section, url));
             return null;
         }
 
@@ -149,7 +144,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Write($"Icon write failed: {section} – {ex}");
+            Log.Write(string.Format(LogText.AppImage.IconWriteFailedFormat, section, ex.Message));
             return null;
         }
     }
@@ -163,7 +158,7 @@ public sealed class AppImageManager : IDisposable
     {
         using var stream = AssetLoader.Open(uri);
         var svg = new SKSvg();
-        var picture = svg.Load(stream) ?? throw new InvalidOperationException($"Failed to load SVG: {uri}");
+        var picture = svg.Load(stream) ?? throw new InvalidOperationException(string.Format(LogText.AppImage.LoadSvgFailedFormat, uri));
         var bounds = picture.CullRect;
         var scale = size / Math.Max(bounds.Width, bounds.Height);
         var info = new SKImageInfo(size, size);
@@ -180,7 +175,7 @@ public sealed class AppImageManager : IDisposable
 
     public string LocalPath(string section, int size)
     {
-        return Path.Combine(_cacheDir, ResolveSize(size).ToString(), $"{NormalizeSection(section)}.png");
+        return Path.Combine(cacheDir, ResolveSize(size).ToString(), $"{NormalizeSection(section)}.png");
     }
 
     private static int ResolveSize(int size)

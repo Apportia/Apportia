@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -129,8 +130,7 @@ public static class WineService
             return;
 
         var wine = ResolveWineBinary()
-                   ?? throw new InvalidOperationException(
-                       "Wine is not available. Install Wine or configure a bundled runner.");
+                   ?? throw new InvalidOperationException(LogText.Wine.WineNotAvailable);
         var prefix = ResolvePrefix();
 
         if (IsPrefixValid(prefix))
@@ -150,7 +150,7 @@ public static class WineService
 
         using var proc = Process.Start(psi)
                          ?? throw new InvalidOperationException(
-                             $"Failed to launch Wine ('{wine}') to initialize the prefix at '{prefix}'.");
+                             string.Format(LogText.Wine.LaunchFailedFormat, wine, prefix));
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, ct);
         var stderrTask = proc.StandardError.ReadToEndAsync(linked.Token);
@@ -171,7 +171,7 @@ public static class WineService
             }
 
             throw new InvalidOperationException(
-                $"Wine prefix initialization timed out at '{prefix}'.");
+                string.Format(LogText.Wine.PrefixInitTimedOutFormat, prefix));
         }
 
         if (IsPrefixValid(prefix))
@@ -208,10 +208,10 @@ public static class WineService
         if (missing.Count > 0)
         {
             var list = string.Join('\n', missing.Select(m => "• " + m));
-            return "Wine could not start because these shared libraries are missing:\n\n" + list;
+            return LogText.Wine.PrefixMissingSharedLibrariesHeader + "\n\n" + list;
         }
 
-        return $"Wine prefix at '{prefix}' could not be initialized. Check your Wine installation.";
+        return string.Format(LogText.Wine.PrefixInitUnknownFailureFormat, prefix);
     }
 
     private static List<string> ExtractMissingSharedObjects(string wineOutput)

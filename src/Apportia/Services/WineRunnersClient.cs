@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -172,7 +173,7 @@ public static partial class WineRunnersClient
         }
         catch (Exception ex)
         {
-            Log.Write($"Wine runner download failed: {ex}");
+            Log.Write(string.Format(LogText.Wine.RunnerDownloadFailedFormat, ex.Message));
             TryDeleteDir(targetDir);
             return null;
         }
@@ -189,7 +190,7 @@ public static partial class WineRunnersClient
         CancellationToken ct)
     {
         if (!await GitHubClient.DownloadAssetAsync(url, dest, progress, ct))
-            throw new IOException($"Failed to download {url}");
+            throw new IOException(string.Format(LogText.Install.DownloadUrlFailedFormat, url));
     }
 
     private static async Task<bool> ExtractTarballAsync(string archive, string destDir, CancellationToken ct)

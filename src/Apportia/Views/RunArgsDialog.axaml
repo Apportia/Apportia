@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.RunArgsDialog"
-        Title="Run App"
+        Title="{x:Static text:UiText+Dialog.RunArgsTitle}"
         Width="540"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
@@ -16,7 +17,7 @@
                    Foreground="{DynamicResource AppTextBrush}"
                    Margin="0,0,0,8" />
 
-        <TextBlock Text="Parameters"
+        <TextBlock Text="{x:Static text:UiText+Dialog.RunArgsParameters}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,0,0,2" />
 
@@ -31,17 +32,18 @@
         </Border>
 
         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-            <Button Content="Add Parameter" Click="OnAddArg" />
-            <Button Content="Add File..." Click="OnAddFile" />
-            <Button Content="Add Folder..." Click="OnAddFolder" />
+            <Button Content="{x:Static text:UiText+Button.AddParameter}" Click="OnAddArg" />
+            <Button Content="{x:Static text:UiText+Button.AddFile}" Click="OnAddFile" />
+            <Button Content="{x:Static text:UiText+Button.AddFolder}" Click="OnAddFolder" />
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                     Spacing="8" Margin="0,16,0,0">
-            <Button x:Name="RunButton" Content="Run" Click="OnRunWithArgs" />
-            <Button x:Name="RunAsAdminButton" Content="Run as Administrator" Click="OnRunAsAdmin" />
-            <Button Content="Run without Parameters" Click="OnRunWithoutArgs" />
-            <Button Content="Cancel" Click="OnCancel" />
+            <Button x:Name="RunButton" Content="{x:Static text:UiText+Button.Run}" Click="OnRunWithArgs" />
+            <Button x:Name="RunAsAdminButton" Content="{x:Static text:UiText+Button.RunAsAdministrator}"
+                    Click="OnRunAsAdmin" />
+            <Button Content="{x:Static text:UiText+Button.RunWithoutParameters}" Click="OnRunWithoutArgs" />
+            <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" />
         </StackPanel>
 
     </StackPanel>

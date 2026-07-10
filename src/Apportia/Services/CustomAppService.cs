@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Apportia.Models;
+using Apportia.Text;
 using Avalonia;
 using Avalonia.Media.Imaging;
 
@@ -355,7 +356,7 @@ public static class CustomAppService
         if (!VerifyRoundTrip(tmp, dict))
         {
             TryDelete(tmp);
-            throw new IOException($"Custom app database write verification failed: {tmp}");
+            throw new IOException(string.Format(LogText.Custom.DatabaseWriteVerificationFailedFormat, tmp));
         }
 
         File.Move(tmp, DatabasePath, true);

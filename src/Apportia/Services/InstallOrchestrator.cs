@@ -1,3 +1,4 @@
+using Apportia.Text;
 using Apportia.ViewModels;
 using Avalonia.Threading;
 
@@ -63,9 +64,9 @@ public sealed class InstallOrchestrator(
                 if (available.Count == 0)
                 {
                     await ui.ShowDialogAsync(
-                        node, "Java Required",
-                        $"{node.Name} requires a Java runtime, but no Java plugins are available to install.",
-                        "OK");
+                        node, UiText.Dialog.JavaRequiredTitle,
+                        string.Format(UiText.Dialog.InstallJavaUnavailableBodyFormat, node.Name),
+                        UiText.Button.Ok);
                     return;
                 }
 
@@ -109,7 +110,7 @@ public sealed class InstallOrchestrator(
         ui.SetInstalling(true);
         ui.SetBusyCursor(true);
         ui.ShowDownloadBar(true);
-        ui.SetDownloadStatus($"Preparing {node.Name}...", "Please wait");
+        ui.SetDownloadStatus(string.Format(UiText.Dialog.InstallPreparingFormat, node.Name), UiText.Dialog.InstallPleaseWait);
 
         try
         {
@@ -169,13 +170,13 @@ public sealed class InstallOrchestrator(
                             MirrorService.SavePreferredMirror(downloadUrl, selected);
                             downloadUrl = MirrorService.ApplyMirror(downloadUrl, selected);
                             ui.ShowDownloadBar(true);
-                            ui.SetDownloadStatus($"Preparing {node.Name}...", string.Empty);
+                            ui.SetDownloadStatus(string.Format(UiText.Dialog.InstallPreparingFormat, node.Name), string.Empty);
                             continue;
                         }
                     }
 
-                    Log.Write($"Download failed for '{node.SectionName}': {ex}");
-                    await ui.ShowDialogAsync(node, "Download Failed", ex.ToString(), "OK");
+                    Log.Write(string.Format(LogText.Install.DownloadFailedFormat, node.SectionName, ex.Message));
+                    await ui.ShowDialogAsync(node, UiText.Dialog.InstallDownloadFailedTitle, ex.Message, UiText.Button.Ok);
                     return;
                 }
             }
@@ -185,24 +186,23 @@ public sealed class InstallOrchestrator(
             {
                 ui.ShowDownloadBar(false);
                 var choice = await ui.ShowDialogAsync(
-                    node, "Hash Mismatch",
-                    "The downloaded file's hash does not match the expected value.\n\n" +
-                    "The file may be corrupted or tampered with.",
-                    "Scan with VirusTotal", "Proceed Anyway", "Cancel");
-                if (choice == "Scan with VirusTotal")
+                    node, UiText.Dialog.InstallHashMismatchTitle,
+                    UiText.Dialog.InstallHashMismatchBody,
+                    UiText.Button.ScanWithVirusTotal, UiText.Button.ProceedAnyway, UiText.Button.Cancel);
+                if (choice == UiText.Button.ScanWithVirusTotal)
                 {
                     await ui.ShowVirusTotalDialogAsync(node);
                     choice = await ui.ShowDialogAsync(
-                        node, "Hash Mismatch",
-                        "Do you want to proceed with the installation?",
-                        "Proceed", "Cancel");
-                    if (choice != "Proceed")
+                        node, UiText.Dialog.InstallHashMismatchTitle,
+                        UiText.Dialog.InstallHashProceedQuestion,
+                        UiText.Button.Proceed, UiText.Button.Cancel);
+                    if (choice != UiText.Button.Proceed)
                     {
                         File.Delete(localPath);
                         return;
                     }
                 }
-                else if (choice != "Proceed Anyway")
+                else if (choice != UiText.Button.ProceedAnyway)
                 {
                     File.Delete(localPath);
                     return;
@@ -219,8 +219,8 @@ public sealed class InstallOrchestrator(
 
             ui.SetDownloadProgress(0, true);
             ui.SetDownloadStatus(
-                isLegacyArchive ? $"Extracting {node.Name}..." : $"Installing {node.Name}...",
-                "Please wait");
+                string.Format(isLegacyArchive ? UiText.Dialog.InstallExtractingFormat : UiText.Dialog.InstallInstallingFormat, node.Name),
+                UiText.Dialog.InstallPleaseWait);
             queue.InSetupPhase = true;
 
             try
@@ -314,9 +314,9 @@ public sealed class InstallOrchestrator(
                 {
                     await ui.ShowDialogAsync(
                         node,
-                        "Installation Failed",
-                        $"'{node.Name}' was not installed correctly. No executable was found after installation. The incomplete installation has been removed.",
-                        "OK");
+                        UiText.Dialog.InstallFailedTitle,
+                        string.Format(UiText.Dialog.InstallFailedBodyFormat, node.Name),
+                        UiText.Button.Ok);
                 }
                 else
                 {
@@ -343,7 +343,7 @@ public sealed class InstallOrchestrator(
                         }
                         catch (Exception ex)
                         {
-                            Log.Write($"Failed to restore backup for '{node.SectionName}': {ex}");
+                            Log.Write(string.Format(LogText.Install.BackupRestoreFailedFormat, node.SectionName, ex.Message));
                         }
 
                     if (DateTime.TryParse(node.UpdateDate, out var updateDate))
@@ -362,9 +362,9 @@ public sealed class InstallOrchestrator(
             }
             catch (Exception ex)
             {
-                Log.Write($"Launch failed for '{node.SectionName}': {ex}");
+                Log.Write(string.Format(LogText.Install.LaunchFailedFormat, node.SectionName, ex.Message));
                 if (!queue.Cts.IsCancellationRequested)
-                    await ui.ShowDialogAsync(node, "Launch Failed", ex.ToString(), "OK");
+                    await ui.ShowDialogAsync(node, UiText.Dialog.InstallLaunchFailedTitle, ex.Message, UiText.Button.Ok);
             }
         }
         finally

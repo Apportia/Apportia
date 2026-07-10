@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Apportia.Models;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -73,7 +74,7 @@ public static class AppDiskUsageService
         }
         catch (Exception ex)
         {
-            Log.Write($"Disk space check failed for '{path}': {ex}");
+            Log.Write(string.Format(LogText.DiskUsage.DiskSpaceCheckFailedFormat, path, ex.Message));
             return long.MaxValue; // assume sufficient if check fails
         }
     }

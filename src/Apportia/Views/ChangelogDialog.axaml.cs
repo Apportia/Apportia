@@ -1,5 +1,6 @@
 using Apportia.Platform;
 using Apportia.Rendering;
+using Apportia.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -29,7 +30,7 @@ public partial class ChangelogDialog : Window
         base.OnOpened(e);
         Win32Window.ApplyDarkTitlebar(this);
 
-        VersionText.Text = $"What's new in {_version}";
+        VersionText.Text = string.Format(UiText.Dialog.ChangelogVersionFormat, _version);
 
         var textBrush = this.FindResource("AppTextBrush") as IBrush ?? Brushes.White;
         var content = _changelog != null ? ExtractChangelog(_changelog) : string.Empty;

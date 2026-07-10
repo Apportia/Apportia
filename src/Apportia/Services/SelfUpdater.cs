@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using Apportia.Text;
 using SharpCompress.Archives.Zip;
 
 namespace Apportia.Services;
@@ -49,7 +50,7 @@ public static partial class SelfUpdater
                 var dest = Path.GetFullPath(Path.Combine(tempDir, entry.Key!.Replace('/', Path.DirectorySeparatorChar)));
                 if (!dest.StartsWith(tempRoot, StringComparison.Ordinal))
                 {
-                    Log.Write($"Skipped update entry outside extraction directory: '{entry.Key}'");
+                    Log.Write(string.Format(LogText.Update.SkippedEntryOutsideExtractionFormat, entry.Key));
                     continue;
                 }
 
@@ -74,7 +75,7 @@ public static partial class SelfUpdater
     {
         var pct = progress == null ? null : new Progress<double>(p => progress.Report((int)(p * 100)));
         if (!await GitHubClient.DownloadAssetAsync(url, dest, pct, ct))
-            throw new IOException($"Failed to download {url}");
+            throw new IOException(string.Format(LogText.Install.DownloadUrlFailedFormat, url));
     }
 
     [LibraryImport("libc", EntryPoint = "system", StringMarshalling = StringMarshalling.Utf8)]

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Apportia.Models;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -264,7 +265,7 @@ public static class CurrentAppService
         }
         catch (Exception ex)
         {
-            Log.Write($"Failed to save current_app_database.json: {ex}");
+            Log.Write(string.Format(LogText.CurrentApp.SaveDatabaseFailedFormat, ex.Message));
         }
     }
 

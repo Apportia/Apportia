@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.MirrorDialog"
-        Title="Connection Timed Out"
+        Title="{x:Static text:UiText+Dialog.MirrorTitle}"
         Width="420"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
@@ -29,8 +30,8 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                     Spacing="8" Margin="0,4,0,0">
-            <Button Content="Retry" Click="OnRetry" />
-            <Button Content="Cancel" Click="OnCancel" />
+            <Button Content="{x:Static text:UiText+Button.Retry}" Click="OnRetry" />
+            <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" />
         </StackPanel>
 
     </StackPanel>

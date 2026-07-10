@@ -1,4 +1,5 @@
 using Apportia.Platform;
+using Apportia.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -59,7 +60,7 @@ public partial class RunArgsDialog : Window
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Select File(s)",
+                Title = UiText.Dialog.RunArgsFilePickerTitle,
                 AllowMultiple = true
             });
             if (files.Count == 0)
@@ -80,7 +81,7 @@ public partial class RunArgsDialog : Window
         {
             var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "Select Folder(s)",
+                Title = UiText.Dialog.RunArgsFolderPickerTitle,
                 AllowMultiple = true
             });
             if (folders.Count == 0)
@@ -117,7 +118,7 @@ public partial class RunArgsDialog : Window
 
         var removeBtn = new Button
         {
-            Content = "x",
+            Content = UiText.Button.RemoveArg,
             Padding = new Thickness(6, 2),
             Margin = new Thickness(4, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center

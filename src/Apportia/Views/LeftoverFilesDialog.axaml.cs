@@ -1,5 +1,6 @@
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -22,7 +23,7 @@ public partial class LeftoverFilesDialog : Window
         ItemList.ItemsSource = paths.Select(p =>
         {
             var name = Path.GetFileName(p);
-            var kind = Directory.Exists(p) ? "Folder" : "File";
+            var kind = Directory.Exists(p) ? UiText.Dialog.LeftoverKindFolder : UiText.Dialog.LeftoverKindFile;
             return new LeftoverEntry(name, kind);
         }).ToArray();
     }
@@ -47,8 +48,8 @@ public partial class LeftoverFilesDialog : Window
             }
             catch (Exception ex)
             {
-                errors.Add($"{Path.GetFileName(path)}: {ex}");
-                Log.Write($"Failed to delete leftover '{path}': {ex}");
+                errors.Add($"{Path.GetFileName(path)}: {ex.Message}");
+                Log.Write(string.Format(LogText.Leftover.DeleteFailedFormat, path, ex.Message));
             }
         }
 

@@ -1,5 +1,6 @@
 using Apportia.Platform;
 using Apportia.Services;
+using Apportia.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -22,10 +23,10 @@ public partial class TerminateDialog : Window
     public TerminateDialog(string appName, IReadOnlyList<RunningAppsService.KillCandidate> candidates)
     {
         InitializeComponent();
-        Title = $"Terminate {appName}";
+        Title = string.Format(UiText.Dialog.TerminateTitleFormat, appName);
         HeaderText.Text = candidates.Count == 1
-            ? $"The following process from {appName} will be terminated:"
-            : $"The following {candidates.Count} processes from {appName} will be terminated:";
+            ? string.Format(UiText.Dialog.TerminateHeaderSingleFormat, appName)
+            : string.Format(UiText.Dialog.TerminateHeaderMultipleFormat, candidates.Count, appName);
         ProcessList.ItemsSource = candidates.Select(c => new TerminateRow(c)).ToList();
     }
 
