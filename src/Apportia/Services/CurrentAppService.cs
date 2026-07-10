@@ -264,7 +264,7 @@ public static class CurrentAppService
         }
         catch (Exception ex)
         {
-            Log.Write($"Failed to save current_app_database.json: {ex.Message}");
+            Log.Write($"Failed to save current_app_database.json: {ex}");
         }
     }
 

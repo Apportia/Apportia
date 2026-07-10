@@ -47,8 +47,8 @@ public partial class LeftoverFilesDialog : Window
             }
             catch (Exception ex)
             {
-                errors.Add($"{Path.GetFileName(path)}: {ex.Message}");
-                Log.Write($"Failed to delete leftover '{path}': {ex.Message}");
+                errors.Add($"{Path.GetFileName(path)}: {ex}");
+                Log.Write($"Failed to delete leftover '{path}': {ex}");
             }
         }
 

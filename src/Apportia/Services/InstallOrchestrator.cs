@@ -174,7 +174,8 @@ public sealed class InstallOrchestrator(
                         }
                     }
 
-                    await ui.ShowDialogAsync(node, "Download Failed", ex.Message, "OK");
+                    Log.Write($"Download failed for '{node.SectionName}': {ex}");
+                    await ui.ShowDialogAsync(node, "Download Failed", ex.ToString(), "OK");
                     return;
                 }
             }
@@ -342,7 +343,7 @@ public sealed class InstallOrchestrator(
                         }
                         catch (Exception ex)
                         {
-                            Log.Write($"Failed to restore backup for '{node.SectionName}': {ex.Message}");
+                            Log.Write($"Failed to restore backup for '{node.SectionName}': {ex}");
                         }
 
                     if (DateTime.TryParse(node.UpdateDate, out var updateDate))
@@ -361,8 +362,9 @@ public sealed class InstallOrchestrator(
             }
             catch (Exception ex)
             {
+                Log.Write($"Launch failed for '{node.SectionName}': {ex}");
                 if (!queue.Cts.IsCancellationRequested)
-                    await ui.ShowDialogAsync(node, "Launch Failed", ex.Message, "OK");
+                    await ui.ShowDialogAsync(node, "Launch Failed", ex.ToString(), "OK");
             }
         }
         finally

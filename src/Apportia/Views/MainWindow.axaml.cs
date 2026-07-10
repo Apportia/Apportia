@@ -698,8 +698,9 @@ public partial class MainWindow : Window, IInstallUi
                 win.DisplayVersion,
                 move: true);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Write($"ImportUnknownAsCustomAsync failed: {ex}");
             return false;
         }
 
@@ -808,9 +809,9 @@ public partial class MainWindow : Window, IInstallUi
                 return;
             await ActivateNode(node, _ctrlHeld);
         }
-        catch
+        catch (Exception ex)
         {
-            /* activation failed – UI remains in its current state */
+            Log.Write($"OnAppRowTapped activation failed: {ex}");
         }
     }
 
@@ -1095,9 +1096,9 @@ public partial class MainWindow : Window, IInstallUi
         {
             await CancelInstallAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            /* cancellation dialog failed – the install continues uninterrupted */
+            Log.Write($"OnMenuCancelInstall failed: {ex}");
         }
     }
 
@@ -1146,9 +1147,9 @@ public partial class MainWindow : Window, IInstallUi
                 return;
             await TryLaunchWithArgsAsync(node);
         }
-        catch
+        catch (Exception ex)
         {
-            /* launch failed – the app was not started, UI stays unchanged */
+            Log.Write($"OnMenuRun failed: {ex}");
         }
     }
 
@@ -1172,9 +1173,9 @@ public partial class MainWindow : Window, IInstallUi
 
             RunningAppsService.KillPids(candidates.Select(c => c.Pid));
         }
-        catch
+        catch (Exception ex)
         {
-            /* terminate confirmation failed – no processes were killed */
+            Log.Write($"OnMenuTerminate failed: {ex}");
         }
     }
 
@@ -1203,9 +1204,9 @@ public partial class MainWindow : Window, IInstallUi
             else
                 RunApp(node, AppDeployService.AppsDir, args);
         }
-        catch
+        catch (Exception ex)
         {
-            /* args dialog or launch failed – the app was not started */
+            Log.Write($"OnMenuRunWithArgs failed: {ex}");
         }
     }
 
@@ -1349,12 +1350,13 @@ public partial class MainWindow : Window, IInstallUi
             }
             catch (Exception ex)
             {
-                await ShowDialog(node, "Uninstall Failed", ex.Message, "OK");
+                Log.Write($"Uninstall failed for '{node.SectionName}': {ex}");
+                await ShowDialog(node, "Uninstall Failed", ex.ToString(), "OK");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            /* confirmation dialog failed – the uninstall was not performed */
+            Log.Write($"OnMenuUninstall confirmation failed: {ex}");
         }
     }
 
@@ -1465,7 +1467,8 @@ public partial class MainWindow : Window, IInstallUi
         }
         catch (Exception ex)
         {
-            await ShowDialog(node, "Uninstall Failed", ex.Message, "OK");
+            Log.Write($"Uninstall failed for '{node.SectionName}': {ex}");
+            await ShowDialog(node, "Uninstall Failed", ex.ToString(), "OK");
         }
     }
 
@@ -1540,12 +1543,13 @@ public partial class MainWindow : Window, IInstallUi
             }
             catch (Exception ex)
             {
-                await ShowDialog(node, "Update Failed", ex.Message, "OK");
+                Log.Write($"Custom app update failed for '{node.SectionName}': {ex}");
+                await ShowDialog(node, "Update Failed", ex.ToString(), "OK");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            /* settings dialog failed – the custom app entry was not modified */
+            Log.Write($"OnMenuSettings custom app edit failed: {ex}");
         }
     }
 
@@ -1913,12 +1917,13 @@ public partial class MainWindow : Window, IInstallUi
             }
             catch (Exception ex)
             {
-                await ShowDialog("Add App Failed", ex.Message, "OK");
+                Log.Write($"Add custom app failed: {ex}");
+                await ShowDialog("Add App Failed", ex.ToString(), "OK");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            /* import dialog failed – no custom app was added to the list */
+            Log.Write($"OnMenuAdd import dialog failed: {ex}");
         }
     }
 
@@ -2535,12 +2540,12 @@ public partial class MainWindow : Window, IInstallUi
             {
                 ShowDownloadBar(false);
                 UpdateButton.IsEnabled = true;
-                Log.Write($"Self-update failed: {ex.Message}");
+                Log.Write($"Self-update failed: {ex}");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            /* self-update setup failed – the running version is unchanged */
+            Log.Write($"Self-update setup failed: {ex}");
         }
     }
 
@@ -2758,9 +2763,9 @@ public partial class MainWindow : Window, IInstallUi
         {
             await OnSaveViewAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            /* save-view must never crash the app */
+            Log.Write($"OnSaveView failed: {ex}");
         }
     }
 
@@ -2952,9 +2957,9 @@ public partial class MainWindow : Window, IInstallUi
             _forceClose = true;
             Close();
         }
-        catch
+        catch (Exception ex)
         {
-            /* close confirmation failed – force the window shut to avoid being stuck open */
+            Log.Write($"Close confirmation failed, forcing shutdown: {ex}");
             _forceClose = true;
             Close();
         }

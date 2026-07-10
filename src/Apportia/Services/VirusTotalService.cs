@@ -151,7 +151,8 @@ public static class VirusTotalService
         }
         catch (Exception ex)
         {
-            return (null, ex.Message, false);
+            Log.Write($"VirusTotal lookup failed for '{sha256}': {ex}");
+            return (null, ex.ToString(), false);
         }
     }
 
@@ -178,7 +179,8 @@ public static class VirusTotalService
         }
         catch (Exception ex)
         {
-            return (null, ex.Message);
+            Log.Write($"VirusTotal upload failed for '{filePath}': {ex}");
+            return (null, ex.ToString());
         }
     }
 

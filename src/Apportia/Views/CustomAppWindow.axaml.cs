@@ -168,9 +168,9 @@ public partial class CustomAppWindow : Window
 
             await PopulateFromFolderAsync(folder);
         }
-        catch
+        catch (Exception ex)
         {
-            /* folder picker or file access failed – leave form unchanged */
+            Log.Write($"Custom app folder picker failed: {ex}");
         }
     }
 
@@ -222,9 +222,9 @@ public partial class CustomAppWindow : Window
                 VersionBox.Text = NormalizeVersion(details.PackageVersion);
             }
         }
-        catch
+        catch (Exception ex)
         {
-            /* file access failed – leave form unchanged */
+            Log.Write($"PopulateFromFolderAsync failed: {ex}");
         }
     }
 
@@ -512,9 +512,9 @@ public partial class CustomAppWindow : Window
             _iconManuallySelected = true;
             IconBox.Text = path;
         }
-        catch
+        catch (Exception ex)
         {
-            /* file picker or icon load failed – leave form unchanged */
+            Log.Write($"Icon picker failed: {ex}");
         }
     }
 

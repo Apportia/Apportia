@@ -377,7 +377,8 @@ public partial class VirusTotalDialog : Window
         }
         catch (Exception ex)
         {
-            await Alert("Hash Error", $"Failed to read '{entry.RelativePath}':\n{ex.Message}");
+            Log.Write($"Hash read failed for '{entry.RelativePath}': {ex}");
+            await Alert("Hash Error", $"Failed to read '{entry.RelativePath}':\n{ex}");
             return null;
         }
     }
@@ -528,7 +529,8 @@ public partial class VirusTotalDialog : Window
         }
         catch (Exception ex)
         {
-            await Alert("Directory Scan Error", $"Failed to scan subdirectories:\n{ex.Message}");
+            Log.Write($"Directory scan failed: {ex}");
+            await Alert("Directory Scan Error", $"Failed to scan subdirectories:\n{ex}");
         }
     }
 

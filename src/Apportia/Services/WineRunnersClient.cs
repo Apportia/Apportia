@@ -170,8 +170,9 @@ public static partial class WineRunnersClient
             CleanupOldRunners(basename);
             return targetDir;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Write($"Wine runner download failed: {ex}");
             TryDeleteDir(targetDir);
             return null;
         }

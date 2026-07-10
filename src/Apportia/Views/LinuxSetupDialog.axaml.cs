@@ -165,8 +165,9 @@ public partial class LinuxSetupDialog : Window
         }
         catch (Exception ex)
         {
+            Log.Write($"Could not fetch Wine releases: {ex}");
             VersionHint.Text = string.Empty;
-            ErrorText.Text = $"Could not fetch Wine releases: {ex.Message}";
+            ErrorText.Text = $"Could not fetch Wine releases: {ex}";
             ErrorText.IsVisible = true;
             RetryButton.IsVisible = true;
         }
@@ -206,7 +207,8 @@ public partial class LinuxSetupDialog : Window
         }
         catch (Exception ex)
         {
-            ErrorText.Text = $"Setup failed: {ex.Message}";
+            Log.Write($"Linux setup failed: {ex}");
+            ErrorText.Text = $"Setup failed: {ex}";
             ErrorText.IsVisible = true;
             SaveButton.IsEnabled = true;
         }
@@ -373,7 +375,8 @@ public partial class LinuxSetupDialog : Window
         }
         catch (Exception ex)
         {
-            ErrorText.Text = $"Failed to create prefix directory '{chosen}': {ex.Message}";
+            Log.Write($"Failed to create prefix directory '{chosen}': {ex}");
+            ErrorText.Text = $"Failed to create prefix directory '{chosen}': {ex}";
             ErrorText.IsVisible = true;
             return false;
         }

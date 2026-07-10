@@ -90,7 +90,7 @@ public static class SettingsService
         }
         catch (Exception ex)
         {
-            Log.Write($"Failed to save settings to '{FilePath}': {ex.Message}");
+            Log.Write($"Failed to save settings to '{FilePath}': {ex}");
         }
     }
 }

@@ -43,7 +43,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Write($"Icon corrupt, discarding: {sectionName} @ {size} – {ex.Message}");
+            Log.Write($"Icon corrupt, discarding: {sectionName} @ {size} – {ex}");
             try
             {
                 File.Delete(localPath);
@@ -95,7 +95,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Write($"Preview write failed: {sectionName} – {ex.Message}");
+            Log.Write($"Preview write failed: {sectionName} – {ex}");
             return null;
         }
     }
@@ -149,7 +149,7 @@ public sealed class AppImageManager : IDisposable
         }
         catch (Exception ex)
         {
-            Log.Write($"Icon write failed: {section} – {ex.Message}");
+            Log.Write($"Icon write failed: {section} – {ex}");
             return null;
         }
     }
