@@ -24,21 +24,18 @@
             <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
             <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
         </Style>
-        <Style Selector="Border.skeleton">
+        <Style Selector="Border.skeletonBase">
             <Setter Property="Background" Value="{DynamicResource AppCategoryBrush}" />
-            <Style.Animations>
-                <Animation Duration="0:0:0.8"
-                           IterationCount="INFINITE"
-                           PlaybackDirection="Alternate"
-                           Easing="SineEaseInOut">
-                    <KeyFrame Cue="0%">
-                        <Setter Property="Opacity" Value="1.0" />
-                    </KeyFrame>
-                    <KeyFrame Cue="100%">
-                        <Setter Property="Opacity" Value="0.3" />
-                    </KeyFrame>
-                </Animation>
-            </Style.Animations>
+        </Style>
+        <Style Selector="Border.skeletonShimmer">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                    <GradientStop Color="{DynamicResource AppShimmerEdgeColor}" Offset="0.0" />
+                    <GradientStop Color="{DynamicResource AppShimmerHighlightColor}" Offset="0.5" />
+                    <GradientStop Color="{DynamicResource AppShimmerEdgeColor}" Offset="1.0" />
+                </LinearGradientBrush>
+            </Setter>
         </Style>
         <Style Selector="Border.categoryHeader">
             <Setter Property="Background" Value="{DynamicResource AppCategoryBrush}" />

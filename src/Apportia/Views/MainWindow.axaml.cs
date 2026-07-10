@@ -11,6 +11,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -231,8 +234,12 @@ public partial class MainWindow : Window, IInstallUi
         ListSkeleton.IsVisible = !isGrid;
         GridSkeleton.IsVisible = isGrid;
 
-        var viewportW = ResolveViewport(Bounds.Width, Width, MinWidth);
-        var viewportH = ResolveViewport(Bounds.Height, Height, MinHeight);
+        var viewportW = presetOverride != null
+            ? preset.WindowWidth
+            : ResolveViewport(Bounds.Width, Width, MinWidth);
+        var viewportH = presetOverride != null
+            ? preset.WindowHeight
+            : ResolveViewport(Bounds.Height, Height, MinHeight);
 
         if (isGrid)
         {
@@ -268,28 +275,25 @@ public partial class MainWindow : Window, IInstallUi
     private static Border BuildGridSkeletonCard(int iconSize)
     {
         var iconSide = Math.Max(48, iconSize);
-        var iconPlaceholder = new Border
+        var iconPlaceholder = WrapSkeleton(new Border
         {
             Width = iconSide,
             Height = iconSide,
             CornerRadius = new CornerRadius(6),
             HorizontalAlignment = HorizontalAlignment.Center
-        };
-        iconPlaceholder.Classes.Add("skeleton");
-        var titleBar = new Border
+        });
+        var titleBar = WrapSkeleton(new Border
         {
             Height = 10,
             Margin = new Thickness(8, 8, 8, 4),
             CornerRadius = new CornerRadius(3)
-        };
-        titleBar.Classes.Add("skeleton");
-        var subBar = new Border
+        });
+        var subBar = WrapSkeleton(new Border
         {
             Height = 8,
             Margin = new Thickness(16, 0, 16, 8),
             CornerRadius = new CornerRadius(3)
-        };
-        subBar.Classes.Add("skeleton");
+        });
         var stack = new StackPanel { Spacing = 0 };
         stack.Children.Add(iconPlaceholder);
         stack.Children.Add(titleBar);
@@ -304,30 +308,27 @@ public partial class MainWindow : Window, IInstallUi
     private static Border BuildListSkeletonRow(int iconSize, int index)
     {
         var iconSide = Math.Max(20, Math.Min(iconSize, 32));
-        var iconPlaceholder = new Border
+        var iconPlaceholder = WrapSkeleton(new Border
         {
             Width = iconSide,
             Height = iconSide,
             CornerRadius = new CornerRadius(4),
             VerticalAlignment = VerticalAlignment.Center
-        };
-        iconPlaceholder.Classes.Add("skeleton");
+        });
         var titleWidths = new[] { 0.35, 0.42, 0.28, 0.5, 0.38 };
-        var titleBar = new Border
+        var titleBar = WrapSkeleton(new Border
         {
             Height = 10,
             CornerRadius = new CornerRadius(3),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(0, 0, 0, 6)
-        };
-        titleBar.Classes.Add("skeleton");
-        var subBar = new Border
+        });
+        var subBar = WrapSkeleton(new Border
         {
             Height = 8,
             CornerRadius = new CornerRadius(3),
             HorizontalAlignment = HorizontalAlignment.Stretch
-        };
-        subBar.Classes.Add("skeleton");
+        });
         var textStack = new StackPanel
         {
             Margin = new Thickness(10, 0, 0, 0),
@@ -346,7 +347,58 @@ public partial class MainWindow : Window, IInstallUi
         };
     }
 
-    private static Grid BuildProportionalBar(Border bar, double fraction)
+    private static Panel WrapSkeleton(Border baseBorder)
+    {
+        baseBorder.Classes.Add("skeletonBase");
+        var overlay = new Border { CornerRadius = baseBorder.CornerRadius };
+        overlay.Classes.Add("skeletonShimmer");
+        var container = new Grid
+        {
+            ClipToBounds = true,
+            Margin = baseBorder.Margin,
+            HorizontalAlignment = baseBorder.HorizontalAlignment,
+            VerticalAlignment = baseBorder.VerticalAlignment
+        };
+        baseBorder.Margin = default;
+        baseBorder.HorizontalAlignment = HorizontalAlignment.Stretch;
+        baseBorder.VerticalAlignment = VerticalAlignment.Stretch;
+        container.Children.Add(baseBorder);
+        container.Children.Add(overlay);
+        AttachShimmerAnimation(overlay, container, baseBorder.CornerRadius);
+        return container;
+    }
+
+    private static void AttachShimmerAnimation(Border overlay, Control container, CornerRadius cornerRadius)
+    {
+        EventHandler? handler = null;
+        handler = (_, _) =>
+        {
+            var w = container.Bounds.Width;
+            var h = container.Bounds.Height;
+            if (w <= 0 || h <= 0)
+                return;
+            var visual = ElementComposition.GetElementVisual(overlay);
+            if (visual == null)
+                return;
+            container.LayoutUpdated -= handler;
+            var radius = cornerRadius.TopLeft;
+            if (radius > 0)
+                container.Clip = new RectangleGeometry(new Rect(0, 0, w, h))
+                {
+                    RadiusX = radius,
+                    RadiusY = radius
+                };
+            var anim = visual.Compositor.CreateVector3DKeyFrameAnimation();
+            anim.InsertKeyFrame(0f, new Vector3D(-w, 0, 0));
+            anim.InsertKeyFrame(1f, new Vector3D(w, 0, 0));
+            anim.Duration = TimeSpan.FromMilliseconds(1500);
+            anim.IterationBehavior = AnimationIterationBehavior.Forever;
+            visual.StartAnimation("Offset", anim);
+        };
+        container.LayoutUpdated += handler;
+    }
+
+    private static Grid BuildProportionalBar(Control bar, double fraction)
     {
         var grid = new Grid
         {
