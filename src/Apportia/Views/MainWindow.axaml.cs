@@ -1935,19 +1935,36 @@ public partial class MainWindow : Window, IInstallUi
         if (!OperatingSystem.IsLinux())
             return true;
         var settings = SettingsService.Load();
-        if (settings.LinuxSetupCompleted && WineService.IsWineReady())
-            return true;
-        try
+        if (!settings.LinuxSetupCompleted || !WineService.IsWineReady())
         {
-            var dialog = new LinuxSetupDialog { Icon = Icon };
-            await dialog.ShowDialog(this);
-        }
-        catch
-        {
-            /* window may be closing */
+            try
+            {
+                var dialog = new LinuxSetupDialog { Icon = Icon };
+                await dialog.ShowDialog(this);
+            }
+            catch
+            {
+                /* window may be closing */
+            }
+
+            if (!WineService.IsWineReady())
+                return false;
         }
 
-        return WineService.IsWineReady();
+        try
+        {
+            await WineService.EnsurePrefixReadyAsync();
+        }
+        catch (Exception ex)
+        {
+            await ShowDialog(
+                UiText.Dialog.LinuxSetupTitle,
+                string.Format(UiText.Dialog.LinuxSetupFailedFormat, ex.Message),
+                UiText.Button.Ok);
+            return false;
+        }
+
+        return true;
     }
 
     private async void OnImportApp(object? sender, RoutedEventArgs e)
