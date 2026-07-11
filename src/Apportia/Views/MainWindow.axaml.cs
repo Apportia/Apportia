@@ -231,8 +231,10 @@ public partial class MainWindow : Window, IInstallUi
         }
 
         var isGrid = preset.IsGridView;
+        var isCategorized = isGrid && preset.CategoryDisplay != CategoryDisplayMode.None;
         ListSkeleton.IsVisible = !isGrid;
-        GridSkeleton.IsVisible = isGrid;
+        GridSkeleton.IsVisible = isGrid && !isCategorized;
+        CategoryGridSkeleton.IsVisible = isCategorized;
 
         var viewportW = presetOverride != null
             ? preset.WindowWidth
@@ -241,7 +243,40 @@ public partial class MainWindow : Window, IInstallUi
             ? preset.WindowHeight
             : ResolveViewport(Bounds.Height, Height, MinHeight);
 
-        if (isGrid)
+        var chromeH = TopToolbar.Bounds.Height
+                      + (ColumnHeaderBar.IsVisible ? ColumnHeaderBar.Bounds.Height : 0)
+                      + (DownloadBar.IsVisible ? DownloadBar.Bounds.Height : 0);
+        if (chromeH > 0)
+            viewportH = Math.Max(100, viewportH - chromeH);
+
+        var minSkeletonW = presetOverride != null
+            ? Math.Max(0, preset.WindowWidth - ListSkeleton.Margin.Left - ListSkeleton.Margin.Right)
+            : 0d;
+        ListSkeleton.MinWidth = minSkeletonW;
+        GridSkeleton.MinWidth = minSkeletonW;
+
+        if (isCategorized)
+        {
+            CategoryGridSkeleton.Children.Clear();
+            var tileSide = Math.Max(preset.IconSize + 40, 140);
+            var cols = Math.Max(1, (int)(viewportW / tileSide));
+            const double headerHeight = 22;
+            const double sectionSpacing = 10;
+            var tileCounts = new[] { 2, 3, 4, 2, 5, 3 };
+            var headerWidths = new[] { 1.0, 0.55, 0.8, 0.4, 0.7, 0.5 };
+            var used = 0d;
+            var sectionIndex = 0;
+            while (used < viewportH + tileSide)
+            {
+                var tiles = Math.Min(cols, tileCounts[sectionIndex % tileCounts.Length]);
+                var headerFrac = headerWidths[sectionIndex % headerWidths.Length];
+                CategoryGridSkeleton.Children.Add(BuildCategoryHeaderBar(headerFrac, headerHeight));
+                CategoryGridSkeleton.Children.Add(BuildCategoryTileRow(tiles, cols, preset.IconSize));
+                used += headerHeight + tileSide + sectionSpacing;
+                sectionIndex++;
+            }
+        }
+        else if (isGrid)
         {
             GridSkeleton.Children.Clear();
             var tileSide = Math.Max(preset.IconSize + 40, 140);
@@ -255,7 +290,7 @@ public partial class MainWindow : Window, IInstallUi
         else
         {
             ListSkeleton.Children.Clear();
-            const int rowHeight = 46;
+            var rowHeight = Math.Max(46, preset.IconSize + 14);
             var count = (int)Math.Ceiling(viewportH / rowHeight) + 4;
             for (var i = 0; i < count; i++)
                 ListSkeleton.Children.Add(BuildListSkeletonRow(preset.IconSize, i));
@@ -305,9 +340,34 @@ public partial class MainWindow : Window, IInstallUi
         };
     }
 
+    private static Control BuildCategoryHeaderBar(double widthFraction, double height)
+    {
+        var bar = WrapSkeleton(new Border
+        {
+            Height = height,
+            CornerRadius = new CornerRadius(4),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(4, 2, 0, 2)
+        });
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(widthFraction, GridUnitType.Star)));
+        grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(Math.Max(0.0001, 1 - widthFraction), GridUnitType.Star)));
+        Grid.SetColumn(bar, 0);
+        grid.Children.Add(bar);
+        return grid;
+    }
+
+    private static Control BuildCategoryTileRow(int tileCount, int totalCols, int iconSize)
+    {
+        var grid = new UniformGrid { Columns = totalCols, HorizontalAlignment = HorizontalAlignment.Stretch };
+        for (var i = 0; i < tileCount; i++)
+            grid.Children.Add(BuildGridSkeletonCard(iconSize));
+        return grid;
+    }
+
     private static Border BuildListSkeletonRow(int iconSize, int index)
     {
-        var iconSide = Math.Max(20, Math.Min(iconSize, 32));
+        var iconSide = Math.Max(12, iconSize);
         var iconPlaceholder = WrapSkeleton(new Border
         {
             Width = iconSide,
@@ -336,7 +396,7 @@ public partial class MainWindow : Window, IInstallUi
         };
         textStack.Children.Add(BuildProportionalBar(titleBar, titleWidths[index % titleWidths.Length]));
         textStack.Children.Add(subBar);
-        var panel = new DockPanel { LastChildFill = true, Height = 42 };
+        var panel = new DockPanel { LastChildFill = true, Height = Math.Max(42, iconSide + 10) };
         DockPanel.SetDock(iconPlaceholder, Dock.Left);
         panel.Children.Add(iconPlaceholder);
         panel.Children.Add(textStack);
@@ -433,6 +493,8 @@ public partial class MainWindow : Window, IInstallUi
     private void ShowLoadingOverlay(FilterViewSettings? preset = null)
     {
         BuildSkeletons(preset);
+        if (preset != null)
+            ColumnHeaderBar.IsVisible = !preset.IsGridView;
         LoadingOverlay.Opacity = 1;
         LoadingOverlay.IsVisible = true;
         TopToolbar.IsEnabled = false;
@@ -2604,6 +2666,7 @@ public partial class MainWindow : Window, IInstallUi
         if (DataContext is not MainViewModel vm)
             return;
         vm.Columns.IsGridView = !vm.Columns.IsGridView;
+        ColumnHeaderBar.IsVisible = !vm.Columns.IsGridView;
         UpdateViewModeButton();
     }
 
@@ -2879,6 +2942,7 @@ public partial class MainWindow : Window, IInstallUi
             vm.EndPresetUpdate();
         }
 
+        ColumnHeaderBar.IsVisible = !preset.IsGridView;
         UpdateIconSizeButton();
         UpdateViewModeButton();
         UpdateFontSizeButton();

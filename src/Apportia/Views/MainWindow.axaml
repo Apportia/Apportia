@@ -336,7 +336,7 @@
 
             <!-- Fixed column header (detail mode only) -->
             <Border x:Name="ColumnHeaderBar" Grid.Row="0" Classes="columnHeader" Margin="8,0"
-                    IsVisible="{Binding !Columns.IsGridView, FallbackValue=False, TargetNullValue=False}">
+                    IsVisible="False">
                 <DockPanel LastChildFill="True">
                     <TextBlock DockPanel.Dock="Left" Width="36" Text="" />
 
@@ -1017,10 +1017,12 @@
                         ClipToBounds="True"
                         Background="{DynamicResource AppWindowBrush}">
                     <Grid>
-                        <StackPanel x:Name="ListSkeleton" Margin="8,4,8,8" Spacing="4"
+                        <StackPanel x:Name="ListSkeleton" Margin="20,4,20,8" Spacing="4"
                                     HorizontalAlignment="Stretch" />
                         <UniformGrid x:Name="GridSkeleton" Margin="8,4,8,8" IsVisible="False"
                                      HorizontalAlignment="Stretch" />
+                        <StackPanel x:Name="CategoryGridSkeleton" Margin="8,4,8,8" Spacing="10"
+                                    IsVisible="False" HorizontalAlignment="Stretch" />
                     </Grid>
                 </Border>
             </Grid>
