@@ -190,7 +190,7 @@ public static class UiText
 
         public const string TipsHeader = "Tips & Shortcuts";
         public const string TipsSubtitle = "Everything you need to get the most out of Apportia.";
-        public const string TipsTitle = "Tips && Shortcuts";
+        public const string TipsTitle = "Tips & Shortcuts";
 
         // Tip cards
         public const string Tip01Body = "Press Ctrl+F from anywhere to focus the search box instantly.";
@@ -214,7 +214,7 @@ public static class UiText
         public const string Tip10Body = "Use the Import App button to integrate portable apps from any source into Apportia. Apps are added as-is; Apportia does not make them portable.";
         public const string Tip10Title = "Custom App Import";
         public const string Tip11Body = "Before uninstalling, you can optionally back up an app's data. Reinstall and restore it later with everything intact, perfect for using apps on demand without losing your settings.";
-        public const string Tip11Title = "Backup && Restore App Data";
+        public const string Tip11Title = "Backup & Restore App Data";
         public const string Tip12Body = "If Apportia lives at a fixed location, use the included setup scripts to add it to your file manager's context menu and open files directly from there.";
         public const string Tip12Title = "System Integration \u2014 Context Menu";
 
