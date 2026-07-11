@@ -212,15 +212,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public void MergeUpstreamEntries(IReadOnlyList<AppEntry> entries)
     {
-        var known = new HashSet<string>(AllNodes.Select(n => n.SectionName), StringComparer.OrdinalIgnoreCase);
+        var existing = AllNodes.ToDictionary(n => n.SectionName, StringComparer.OrdinalIgnoreCase);
         var iconSize = Math.Max(16, _iconSize);
 
         foreach (var entry in entries)
         {
             if (string.Equals(entry.Category, "None", StringComparison.OrdinalIgnoreCase))
                 continue;
-            if (!known.Add(entry.SectionName))
+            if (existing.TryGetValue(entry.SectionName, out var existingNode))
+            {
+                existingNode.ApplyUpstream(entry);
                 continue;
+            }
 
             var node = new AppNode(
                 entry,

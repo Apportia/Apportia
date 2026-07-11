@@ -640,11 +640,8 @@ public partial class MainWindow : Window, IInstallUi
 
     private async Task MergeUpstreamAsync(MainViewModel vm)
     {
-        var installedSet = new HashSet<string>(
-            vm.AllNodes.Select(n => n.SectionName), StringComparer.OrdinalIgnoreCase);
         var upstream = await Task.Run(() =>
                                           AppDatabaseParser.ParseJson(AppDatabaseUpdater.CachePath)
-                                                           .Where(e => !installedSet.Contains(e.SectionName))
                                                            .ToList());
         vm.MergeUpstreamEntries(upstream);
         _ = StartIconDownloadsAsync(vm);
@@ -1453,6 +1450,12 @@ public partial class MainWindow : Window, IInstallUi
                 else
                 {
                     AppExecutableService.Remove(node.SectionName);
+                }
+
+                if (node is { IsPlugin: false, IsCustom: false })
+                {
+                    node.LocalDisplayVersion = null;
+                    node.LocalPackageVersion = null;
                 }
 
                 node.IsInstalled = false;

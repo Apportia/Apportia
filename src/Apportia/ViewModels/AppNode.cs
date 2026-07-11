@@ -8,9 +8,9 @@ namespace Apportia.ViewModels;
 
 public sealed class AppNode : INotifyPropertyChanged
 {
-    private readonly IReadOnlyDictionary<string, (string File, string Hash)>? _languageVariants;
     private string _currentDate;
     private Bitmap _icon;
+    private IReadOnlyDictionary<string, (string File, string Hash)>? _languageVariants;
 
     public AppNode(
         AppEntry entry,
@@ -198,8 +198,8 @@ public sealed class AppNode : INotifyPropertyChanged
             ? $"{Category} \u2013 {field}"
             : field;
 
-    public string DisplayVersion { get; }
-    public string PackageVersion { get; }
+    public string DisplayVersion { get; private set; }
+    public string PackageVersion { get; private set; }
 
     public string? LocalDisplayVersion
     {
@@ -228,15 +228,15 @@ public sealed class AppNode : INotifyPropertyChanged
     }
 
     public string ShownVersion => (IsInstalled ? LocalPackageVersion : null) ?? PackageVersion;
-    public string DownloadSize { get; }
-    public string InstallSize { get; }
-    public long DownloadSizeMb { get; }
-    public long InstallSizeMb { get; }
-    public string DownloadFile { get; }
-    public string DownloadPath { get; }
-    public string Hash { get; }
+    public string DownloadSize { get; private set; }
+    public string InstallSize { get; private set; }
+    public long DownloadSizeMb { get; private set; }
+    public long InstallSizeMb { get; private set; }
+    public string DownloadFile { get; private set; }
+    public string DownloadPath { get; private set; }
+    public string Hash { get; private set; }
     public string JoinedDate { get; }
-    public string UpdateDate { get; }
+    public string UpdateDate { get; private set; }
     public string JoinedDateDisplay => RelativeDate(JoinedDate);
     public string UpdateDateDisplay => RelativeDate(UpdateDate);
 
@@ -255,7 +255,7 @@ public sealed class AppNode : INotifyPropertyChanged
     }
 
     public string Website { get; }
-    public string UserAgent { get; }
+    public string UserAgent { get; private set; }
 
     public string UsedSize
     {
@@ -286,6 +286,49 @@ public sealed class AppNode : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void ApplyUpstream(AppEntry entry)
+    {
+        if (!string.Equals(entry.SectionName, SectionName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        DownloadFile = entry.DownloadFile;
+        DownloadPath = entry.DownloadPath;
+        Hash = entry.Hash;
+        UserAgent = entry.UserAgent;
+        _languageVariants = entry.LanguageVariants;
+
+        if (!IsCustom)
+        {
+            DownloadSizeMb = long.TryParse(entry.DownloadSize, out var dlMb) ? dlMb : 1;
+            DownloadSize = AppDiskUsageService.FormatSize(DownloadSizeMb, true);
+            InstallSizeMb = long.TryParse(entry.InstallSize, out var instMb) ? instMb : DownloadSizeMb;
+            InstallSize = AppDiskUsageService.FormatSize(InstallSizeMb, true);
+        }
+
+        var displayChanged = DisplayVersion != entry.DisplayVersion;
+        var packageChanged = PackageVersion != entry.PackageVersion;
+        DisplayVersion = entry.DisplayVersion;
+        PackageVersion = entry.PackageVersion;
+        UpdateDate = entry.UpdateDate;
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DownloadFile)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DownloadPath)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hash)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DownloadSize)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InstallSize)));
+        if (displayChanged)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayVersion)));
+        if (packageChanged)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PackageVersion)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShownVersion)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NeedsUpdate)));
+        }
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UpdateDate)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UpdateDateDisplay)));
+    }
 
     private void OnRunningChanged(object? sender, string sectionName)
     {
