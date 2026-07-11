@@ -2350,6 +2350,23 @@ public partial class MainWindow : Window, IInstallUi
 
     private void SubscribeViewModel(MainViewModel vm)
     {
+        var attachedNodes = new HashSet<AppNode>();
+
+        void AttachInstallListeners()
+        {
+            foreach (var node in vm.AllNodes)
+            {
+                if (!attachedNodes.Add(node))
+                    continue;
+                node.PropertyChanged += (_, ev) =>
+                {
+                    if (ev.PropertyName == nameof(AppNode.IsInstalled))
+                        Dispatcher.UIThread.Post(UpdateInstallFilterButton);
+                };
+            }
+        }
+
+        AttachInstallListeners();
         vm.PropertyChanged += (sender, e) =>
         {
             switch (e.PropertyName)
@@ -2366,6 +2383,7 @@ public partial class MainWindow : Window, IInstallUi
                     break;
             }
         };
+        vm.RowsFullyLoaded += AttachInstallListeners;
         SearchBox.AsyncPopulator = (text, _) =>
             Task.FromResult(vm.SearchAppNames(text ?? string.Empty).Cast<object>());
         vm.BeforeRebuildRows += () =>
@@ -2615,6 +2633,7 @@ public partial class MainWindow : Window, IInstallUi
     {
         if (DataContext is not MainViewModel vm)
             return;
+        InstallFilterButton.IsVisible = vm.AllNodes.Any(n => n.IsInstalled);
         InstallFilterButton.Content = vm.InstallFilter switch
         {
             InstallFilter.Installed => UiText.Status.InstallFilterInstalled,
