@@ -309,7 +309,7 @@ public partial class MainWindow : Window, IInstallUi
 
     private static Border BuildGridSkeletonCard(int iconSize)
     {
-        var iconSide = Math.Max(48, iconSize);
+        var iconSide = Math.Max(12, iconSize);
         var iconPlaceholder = WrapSkeleton(new Border
         {
             Width = iconSide,
@@ -417,9 +417,13 @@ public partial class MainWindow : Window, IInstallUi
             ClipToBounds = true,
             Margin = baseBorder.Margin,
             HorizontalAlignment = baseBorder.HorizontalAlignment,
-            VerticalAlignment = baseBorder.VerticalAlignment
+            VerticalAlignment = baseBorder.VerticalAlignment,
+            Width = baseBorder.Width,
+            Height = baseBorder.Height
         };
         baseBorder.Margin = default;
+        baseBorder.Width = double.NaN;
+        baseBorder.Height = double.NaN;
         baseBorder.HorizontalAlignment = HorizontalAlignment.Stretch;
         baseBorder.VerticalAlignment = VerticalAlignment.Stretch;
         container.Children.Add(baseBorder);
