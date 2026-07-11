@@ -191,6 +191,11 @@ public partial class MainWindow : Window, IInstallUi
         var preset = settings.ViewPresets.GetValueOrDefault(initialFilter.ToString())
                      ?? FilterViewSettings.Default;
 
+        ApplyToolbarLabelsFromPreset(preset, initialFilter);
+    }
+
+    private void ApplyToolbarLabelsFromPreset(FilterViewSettings preset, InstallFilter? filter = null)
+    {
         IconSizeButton.Content = string.Format(UiText.Status.IconSizeFormat, preset.IconSize);
         ViewModeButton.Content = preset.IsGridView ? UiText.Status.ViewModeGrid : UiText.Status.ViewModeList;
         FontSizeButton.Content = string.Format(UiText.Status.FontSizeFormat, preset.FontSize);
@@ -206,11 +211,13 @@ public partial class MainWindow : Window, IInstallUi
             CategoryDisplayMode.None => UiText.Status.CategoryDisplayNoGroups,
             _ => UiText.Status.CategoryDisplayTree
         };
-        InstallFilterButton.Content = initialFilter switch
-        {
-            InstallFilter.Installed => UiText.Status.InstallFilterInstalled,
-            _ => UiText.Status.InstallFilterAll
-        };
+        if (filter != null)
+            InstallFilterButton.Content = filter switch
+            {
+                InstallFilter.Installed => UiText.Status.InstallFilterInstalled,
+                InstallFilter.NotInstalled => UiText.Status.InstallFilterNotInstalled,
+                _ => UiText.Status.InstallFilterAll
+            };
     }
 
     private void BuildSkeletons(FilterViewSettings? presetOverride = null)
@@ -511,6 +518,7 @@ public partial class MainWindow : Window, IInstallUi
 
         var targetPreset = SettingsService.Load().ViewPresets.GetValueOrDefault(target.ToString())
                            ?? _defaultView;
+        ApplyToolbarLabelsFromPreset(targetPreset, target);
         ShowLoadingOverlay(targetPreset);
         await Task.Yield();
 
