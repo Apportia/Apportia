@@ -1459,6 +1459,7 @@ public partial class MainWindow : Window, IInstallUi
                 }
 
                 node.IsInstalled = false;
+                RunningAppsService.InvalidateExeCache(node.SectionName);
 
                 foreach (var javaNode in javaPluginsToRemove)
                 {
@@ -1467,6 +1468,7 @@ public partial class MainWindow : Window, IInstallUi
                         Directory.Delete(javaDir, true);
                     CurrentAppService.Remove(javaNode.SectionName);
                     javaNode.IsInstalled = false;
+                    RunningAppsService.InvalidateExeCache(javaNode.SectionName);
                 }
 
                 if (javaPluginsToRemove.Count <= 0)
@@ -1592,6 +1594,7 @@ public partial class MainWindow : Window, IInstallUi
             }
 
             node.IsInstalled = false;
+            RunningAppsService.InvalidateExeCache(node.SectionName);
         }
         catch (Exception ex)
         {

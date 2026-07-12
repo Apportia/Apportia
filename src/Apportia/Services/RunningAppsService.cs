@@ -9,9 +9,13 @@ public static class RunningAppsService
     private const int PollMs = 1000;
 
     private static readonly Lock Gate = new();
+    private static readonly Lock ExeCacheGate = new();
     private static HashSet<string> _running = new(StringComparer.OrdinalIgnoreCase);
     private static Timer? _timer;
     private static int _pollBusy;
+
+    private static readonly Dictionary<string, Dictionary<string, bool>> ExePresenceBySection =
+        new(StringComparer.OrdinalIgnoreCase);
 
     private static readonly string[] WineOnlyExes =
     [
@@ -52,9 +56,7 @@ public static class RunningAppsService
             return [];
         if (OperatingSystem.IsLinux())
             return GetKillCandidatesLinux(sectionName, bases);
-        if (OperatingSystem.IsWindows())
-            return GetKillCandidatesWindows(sectionName, bases);
-        return [];
+        return OperatingSystem.IsWindows() ? GetKillCandidatesWindows(sectionName, bases) : [];
     }
 
     public static void KillPids(IEnumerable<int> pids)
@@ -62,6 +64,75 @@ public static class RunningAppsService
         foreach (var pid in pids)
             TryKill(pid);
         _ = Task.Run(Poll);
+    }
+
+    public static void InvalidateExeCache(string? sectionName = null)
+    {
+        lock (ExeCacheGate)
+        {
+            if (sectionName is null)
+                ExePresenceBySection.Clear();
+            else
+                ExePresenceBySection.Remove(sectionName);
+        }
+    }
+
+    private static bool SectionContainsExe(string sectionName, string exeName, List<string> bases)
+    {
+        if (string.IsNullOrEmpty(exeName))
+            return false;
+
+        lock (ExeCacheGate)
+        {
+            if (!ExePresenceBySection.TryGetValue(sectionName, out var map))
+            {
+                map = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                ExePresenceBySection[sectionName] = map;
+            }
+
+            if (map.TryGetValue(exeName, out var cached))
+                return cached;
+
+            var found = false;
+            foreach (var sectionDir in bases.Select(b => Path.Combine(b, sectionName)).Where(Directory.Exists))
+            {
+                try
+                {
+                    using var e = Directory.EnumerateFiles(sectionDir, exeName, SearchOption.AllDirectories).GetEnumerator();
+                    if (!e.MoveNext())
+                        continue;
+                    found = true;
+                    break;
+                }
+                catch
+                {
+                    /* enumeration raced with uninstall */
+                }
+            }
+
+            map[exeName] = found;
+            return found;
+        }
+    }
+
+    private static string GetProcessExeName(string cmdline, string comm)
+    {
+        foreach (var token in cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (!token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var sep = token.LastIndexOfAny(['/', '\\']);
+            return sep < 0 ? token : token[(sep + 1)..];
+        }
+
+        var argv0 = cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        if (!string.IsNullOrEmpty(argv0))
+        {
+            var sep = argv0.LastIndexOfAny(['/', '\\']);
+            return sep < 0 ? argv0 : argv0[(sep + 1)..];
+        }
+
+        return comm;
     }
 
     private static List<KillCandidate> GetKillCandidatesLinux(string sectionName, List<string> bases)
@@ -86,6 +157,8 @@ public static class RunningAppsService
                     continue;
                 var comm = ReadComm(procDir);
                 if (IsPortableLauncher(cmdline, comm) || IsWineInternal(cmdline))
+                    continue;
+                if (!SectionContainsExe(sectionName, GetProcessExeName(cmdline, comm), bases))
                     continue;
 
                 var pretty = cmdline.Replace('\0', ' ').TrimEnd();
@@ -182,9 +255,8 @@ public static class RunningAppsService
             var basename = Basename(token);
             var underWindows = token.StartsWith("C:\\windows\\", StringComparison.OrdinalIgnoreCase);
 
-            foreach (var only in WineOnlyExes)
-                if (basename.Equals(only, StringComparison.OrdinalIgnoreCase))
-                    return true;
+            if (WineOnlyExes.Any(s => basename.Equals(s, StringComparison.OrdinalIgnoreCase)))
+                return true;
 
             foreach (var (exe, arg) in WineArgSignatures)
             {
@@ -213,16 +285,10 @@ public static class RunningAppsService
         if (comm.EndsWith("Portable", StringComparison.OrdinalIgnoreCase) ||
             comm.EndsWith("Portable64", StringComparison.OrdinalIgnoreCase))
             return true;
-        foreach (var token in cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries))
-        {
-            var sep = token.LastIndexOfAny(['/', '\\']);
-            var basename = sep < 0 ? token : token[(sep + 1)..];
-            if (basename.EndsWith("Portable.exe", StringComparison.OrdinalIgnoreCase) ||
-                basename.EndsWith("Portable64.exe", StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        return false;
+        return cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries)
+                      .Select(t => t[(t.LastIndexOfAny(['/', '\\']) + 1)..])
+                      .Any(b => b.EndsWith("Portable.exe", StringComparison.OrdinalIgnoreCase) ||
+                                b.EndsWith("Portable64.exe", StringComparison.OrdinalIgnoreCase));
     }
 
     private static string ReadComm(string procDir)
@@ -312,9 +378,7 @@ public static class RunningAppsService
             return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (OperatingSystem.IsLinux())
             return ScanLinux(bases);
-        if (OperatingSystem.IsWindows())
-            return ScanWindows(bases);
-        return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        return OperatingSystem.IsWindows() ? ScanWindows(bases) : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 
     private static List<string> CollectBaseDirs()
@@ -355,17 +419,23 @@ public static class RunningAppsService
             try
             {
                 var cmdlinePath = Path.Combine(procDir, "cmdline");
-                if (File.Exists(cmdlinePath))
-                {
-                    var cmdline = File.ReadAllText(cmdlinePath);
-                    if (TryExtractSection(cmdline, bases, '/', result))
-                        continue;
-                    TryExtractSection(cmdline, wineBases, '\\', result);
-                }
-
+                var cmdline = File.Exists(cmdlinePath) ? File.ReadAllText(cmdlinePath) : string.Empty;
                 var cwd = ReadLink(Path.Combine(procDir, "cwd"));
+
+                var candidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                TryExtractSection(cmdline, bases, '/', candidates);
+                TryExtractSection(cmdline, wineBases, '\\', candidates);
                 if (cwd is not null)
-                    TryExtractSection(cwd, bases, '/', result);
+                    TryExtractSection(cwd, bases, '/', candidates);
+
+                if (candidates.Count == 0)
+                    continue;
+
+                var comm = ReadComm(procDir);
+                var exeName = GetProcessExeName(cmdline, comm);
+
+                foreach (var section in candidates.Where(section => SectionContainsExe(section, exeName, bases)))
+                    result.Add(section);
             }
             catch
             {
@@ -400,7 +470,7 @@ public static class RunningAppsService
         return result;
     }
 
-    private static bool TryExtractSection(string haystack, List<string> bases, char sep, HashSet<string> result)
+    private static void TryExtractSection(string haystack, List<string> bases, char sep, HashSet<string> result)
     {
         foreach (var b in bases)
         {
@@ -417,14 +487,11 @@ public static class RunningAppsService
             var end = haystack.IndexOfAny(['/', '\\', '\0'], start);
             if (end < 0)
                 end = haystack.Length;
-            if (end > start)
-            {
-                result.Add(haystack[start..end]);
-                return true;
-            }
+            if (end <= start)
+                continue;
+            result.Add(haystack[start..end]);
+            return;
         }
-
-        return false;
     }
 
     private static string? ReadLink(string linkPath)

@@ -324,6 +324,7 @@ public sealed class InstallOrchestrator(
                     if (chosenLanguage != null)
                         AppLanguageService.Save(node.SectionName, chosenLanguage);
                     node.IsInstalled = true;
+                    RunningAppsService.InvalidateExeCache(node.SectionName);
                     CurrentAppService.Register(node.SectionName);
                     if (!node.IsPlugin)
                     {
