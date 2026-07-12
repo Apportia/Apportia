@@ -1294,7 +1294,7 @@ public partial class MainWindow : Window, IInstallUi
             if (!dialog.Confirmed)
                 return;
 
-            RunningAppsService.KillPids(candidates.Select(c => c.Pid));
+            RunningAppsService.KillPids(dialog.RemainingPids);
         }
         catch (Exception ex)
         {

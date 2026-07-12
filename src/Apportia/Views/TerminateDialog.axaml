@@ -45,7 +45,7 @@
                     Background="Transparent">
                 <DockPanel>
                     <Grid DockPanel.Dock="Top"
-                          ColumnDefinitions="70,*,120,2*"
+                          ColumnDefinitions="70,*,120,2*,32"
                           Background="{DynamicResource AppColHeaderBrush}">
                         <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminatePid}"
                                    Padding="8,4" FontWeight="SemiBold"
@@ -67,7 +67,7 @@
                                 <DataTemplate x:DataType="views:TerminateRow">
                                     <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                                             BorderThickness="0,0,0,1">
-                                        <Grid ColumnDefinitions="70,*,120,2*">
+                                        <Grid ColumnDefinitions="70,*,120,2*,32">
                                             <TextBlock Grid.Column="0" Text="{Binding PidText}"
                                                        Padding="8,4"
                                                        Foreground="{DynamicResource AppTextBrush}"
@@ -86,6 +86,17 @@
                                                        TextTrimming="CharacterEllipsis"
                                                        ToolTip.Tip="{Binding CommandLine}"
                                                        Foreground="{DynamicResource AppSubTextBrush}" />
+                                            <Button Grid.Column="4"
+                                                    Content="&#x2715;"
+                                                    Tag="{Binding}"
+                                                    Click="OnTerminateRow"
+                                                    ToolTip.Tip="{x:Static text:UiText+Button.Terminate}"
+                                                    Padding="6,2"
+                                                    Margin="4,2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Background="Transparent"
+                                                    Foreground="{DynamicResource AppSubTextBrush}" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
