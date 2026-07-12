@@ -631,6 +631,7 @@ public partial class MainWindow : Window, IInstallUi
         var vm = BuildViewModel();
         SubscribeViewModel(vm);
         DataContext = vm;
+        UpdateTerminateAllButton();
         ApplyViewPreset(vm, false);
         // In All/NotInstalled the merge flickers, so only stream upstream in for Installed.
         return vm.InstallFilter == InstallFilter.Installed
@@ -1448,9 +1449,7 @@ public partial class MainWindow : Window, IInstallUi
                         vmCustom.RemoveCustomApp(node);
                 }
                 else
-                {
                     AppExecutableService.Remove(node.SectionName);
-                }
 
                 if (node is { IsPlugin: false, IsCustom: false })
                 {
@@ -1904,6 +1903,48 @@ public partial class MainWindow : Window, IInstallUi
         return Path.Combine(appDir, dialog.SelectedExe);
     }
 
+    private void OnAnyRunningChanged(object? sender, string sectionName)
+    {
+        Dispatcher.UIThread.Post(UpdateTerminateAllButton);
+    }
+
+    private void UpdateTerminateAllButton()
+    {
+        if (DataContext is not MainViewModel vm)
+        {
+            TerminateAllButton.IsVisible = false;
+            return;
+        }
+
+        TerminateAllButton.IsVisible = vm.AllNodes.Any(n => !n.IsPlugin && RunningAppsService.IsRunning(n.SectionName));
+    }
+
+    private async void OnTerminateAllApps(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (DataContext is not MainViewModel vm)
+                return;
+            var running = vm.AllNodes.Where(n => n is { IsRunning: true, IsPlugin: false }).ToList();
+            var candidates = new List<RunningAppsService.KillCandidate>();
+            foreach (var node in running)
+                candidates.AddRange(RunningAppsService.GetKillCandidates(node.SectionName));
+            if (candidates.Count == 0)
+                return;
+
+            var dialog = new TerminateDialog(UiText.Dialog.TerminateAllAppsName, candidates);
+            await dialog.ShowDialog(this);
+            if (!dialog.Confirmed)
+                return;
+
+            RunningAppsService.KillPids(dialog.RemainingPids);
+        }
+        catch (Exception ex)
+        {
+            Log.Write(string.Format(LogText.Main.MenuTerminateFailedFormat, ex.Message));
+        }
+    }
+
     private async void OnLinuxSetupButton(object? sender, RoutedEventArgs e)
     {
         try
@@ -2257,6 +2298,8 @@ public partial class MainWindow : Window, IInstallUi
         base.OnOpened(e);
         _themeController.ApplyDarkTitlebar(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
         RunningAppsService.Start();
+        RunningAppsService.Changed += OnAnyRunningChanged;
+        UpdateTerminateAllButton();
         _ = CheckOrphanedFilesAsync();
         if (OperatingSystem.IsLinux())
         {

@@ -258,6 +258,17 @@
                             FontSize="13"
                             ToolTip.Tip="{x:Static text:UiText+Tip.UpdateApportia}"
                             Click="OnUpdateApp" />
+                    <Button x:Name="TerminateAllButton"
+                            IsVisible="False"
+                            VerticalAlignment="Center"
+                            Height="28"
+                            Padding="6,3"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ToolTip.Tip="{x:Static text:UiText+Tip.TerminateAllApps}"
+                            Click="OnTerminateAllApps">
+                        <svg:Svg Path="avares://Apportia/Assets/Emoji/2620.svg" Width="18" Height="18" />
+                    </Button>
                     <Button x:Name="LinuxSetupButton"
                             IsVisible="False"
                             VerticalAlignment="Center"

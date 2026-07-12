@@ -2,7 +2,10 @@ namespace Apportia.Text;
 
 /// Centralized user-facing string constants for the Apportia UI.
 /// Nested classes group strings by role. Fields are sorted alphabetically within each class.
-/// Fields with a <c>Format</c> suffix are <see cref="string.Format(string, object?)" />
+/// Fields with a
+/// <c>Format</c>
+/// suffix are
+/// <see cref="string.Format(string, object?)" />
 /// patterns.
 public static class UiText
 {
@@ -179,6 +182,7 @@ public static class UiText
 
         #region TerminateDialog
 
+        public const string TerminateAllAppsName = "Running Apps";
         public const string TerminateHeaderMultipleFormat = "The following {0} processes from {1} will be terminated:";
         public const string TerminateHeaderSingleFormat = "The following process from {0} will be terminated:";
         public const string TerminateTitle = "Terminate";
@@ -339,6 +343,7 @@ public static class UiText
         public const string ImportCustomApp = "Import Custom App";
         public const string InstallFilter = "Install Filter";
         public const string SaveViewPreset = "Save View Preset";
+        public const string TerminateAllApps = "Terminate Running Apps";
         public const string Tips = "Tips";
         public const string ToggleTheme = "Toggle Theme";
         public const string UpdateApportia = "Update Apportia";
