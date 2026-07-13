@@ -178,7 +178,7 @@
                             BorderThickness="0"
                             ToolTip.Tip="{x:Static text:UiText+Tip.SaveViewPreset}"
                             Click="OnSaveView">
-                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4be.svg" Width="18" Height="18" />
+                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f3ad.svg" Width="18" Height="18" />
                     </Button>
                     <Button x:Name="IconSizeButton"
                             VerticalAlignment="Center"
