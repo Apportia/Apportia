@@ -61,9 +61,72 @@ public static class RunningAppsService
 
     public static void KillPids(IEnumerable<int> pids)
     {
-        foreach (var pid in pids)
+        var list = pids.Distinct().ToList();
+        if (list.Count == 0)
+            return;
+        foreach (var pid in SortLeafFirst(list))
             TryKill(pid);
         _ = Task.Run(Poll);
+    }
+
+    private static List<int> SortLeafFirst(List<int> pids)
+    {
+        var parentInSet = new Dictionary<int, int>();
+        var pidSet = new HashSet<int>(pids);
+        foreach (var pid in pids)
+        {
+            var ppid = TryGetParentPid(pid);
+            if (ppid is { } p && pidSet.Contains(p) && p != pid)
+                parentInSet[pid] = p;
+        }
+
+        var childCount = pids.ToDictionary(p => p, _ => 0);
+        foreach (var parent in parentInSet.Values)
+            childCount[parent]++;
+
+        var result = new List<int>(pids.Count);
+        var queue = new Queue<int>();
+        foreach (var (pid, cnt) in childCount)
+            if (cnt == 0)
+                queue.Enqueue(pid);
+        while (queue.TryDequeue(out var pid))
+        {
+            result.Add(pid);
+            if (!parentInSet.TryGetValue(pid, out var parent))
+                continue;
+            if (--childCount[parent] == 0)
+                queue.Enqueue(parent);
+        }
+
+        foreach (var pid in pids.Where(pid => !result.Contains(pid)))
+            result.Add(pid);
+        return result;
+    }
+
+    private static int? TryGetParentPid(int pid)
+    {
+        if (OperatingSystem.IsLinux())
+            return TryGetParentPidLinux(pid);
+        return OperatingSystem.IsWindows() ? Win32Process.TryGetParentPid(pid) : null;
+    }
+
+    private static int? TryGetParentPidLinux(int pid)
+    {
+        try
+        {
+            foreach (var line in File.ReadLines($"/proc/{pid}/status"))
+            {
+                if (!line.StartsWith("PPid:", StringComparison.Ordinal))
+                    continue;
+                return int.TryParse(line.AsSpan(5).Trim(), out var ppid) ? ppid : null;
+            }
+        }
+        catch
+        {
+            // /proc entry vanished or unreadable
+        }
+
+        return null;
     }
 
     public static void InvalidateExeCache(string? sectionName = null)
@@ -126,13 +189,10 @@ public static class RunningAppsService
         }
 
         var argv0 = cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        if (!string.IsNullOrEmpty(argv0))
-        {
-            var sep = argv0.LastIndexOfAny(['/', '\\']);
-            return sep < 0 ? argv0 : argv0[(sep + 1)..];
-        }
-
-        return comm;
+        if (string.IsNullOrEmpty(argv0))
+            return comm;
+        var s = argv0.LastIndexOfAny(['/', '\\']);
+        return s < 0 ? argv0 : argv0[(s + 1)..];
     }
 
     private static List<KillCandidate> GetKillCandidatesLinux(string sectionName, List<string> bases)
