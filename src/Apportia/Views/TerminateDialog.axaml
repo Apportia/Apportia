@@ -43,10 +43,18 @@
                     BorderThickness="1"
                     CornerRadius="3"
                     Background="Transparent">
-                <DockPanel>
+                <DockPanel Grid.IsSharedSizeScope="True">
                     <Grid DockPanel.Dock="Top"
-                          ColumnDefinitions="60,60,80,*,80,2*,32"
                           Background="{DynamicResource AppColHeaderBrush}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ExeCol" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="32" />
+                        </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminatePid}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
@@ -107,7 +115,16 @@
                                                 <DataTemplate x:DataType="views:TerminateRow">
                                                     <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                                                             BorderThickness="0,0,0,1">
-                                                        <Grid ColumnDefinitions="60,60,80,*,80,2*,32">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="60" />
+                                                                <ColumnDefinition Width="60" />
+                                                                <ColumnDefinition Width="80" />
+                                                                <ColumnDefinition Width="Auto" SharedSizeGroup="ExeCol" />
+                                                                <ColumnDefinition Width="80" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="32" />
+                                                            </Grid.ColumnDefinitions>
                                                             <TextBlock Grid.Column="0" Text="{Binding PidText}"
                                                                        Padding="8,4"
                                                                        Foreground="{DynamicResource AppTextBrush}"
