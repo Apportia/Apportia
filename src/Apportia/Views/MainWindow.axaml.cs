@@ -42,6 +42,8 @@ public partial class MainWindow : Window, IInstallUi
     private CancellationTokenSource? _iconDownloadCts;
     private CancellationTokenSource? _ipcDebounceCts;
     private IpcServer? _ipcServer;
+
+    private ScrollViewer? _listScrollerCache;
     private string? _pendingScrollApp;
     private string? _pendingScrollTarget;
     private bool _pendingScrollTop;
@@ -98,6 +100,12 @@ public partial class MainWindow : Window, IInstallUi
 
     private ItemsControl ActiveList =>
         (DataContext as MainViewModel)?.Columns.IsGridView == true ? MainGridList : MainList;
+
+    private ScrollViewer? ListScroller =>
+        _listScrollerCache ??= MainList.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+
+    private ScrollViewer? ActiveScroller =>
+        (DataContext as MainViewModel)?.Columns.IsGridView == true ? MainGridScroller : ListScroller;
 
     Task<string?> IInstallUi.ShowDialogAsync(AppNode? node, string title, string message, params string[] buttons)
     {
@@ -180,6 +188,32 @@ public partial class MainWindow : Window, IInstallUi
     Task<bool> IInstallUi.EnsureWineReadyAsync()
     {
         return EnsureWineReadyAsync();
+    }
+
+    private double? GetViewportY(Control container)
+    {
+        var target = (Visual?)ActiveScroller;
+        return target == null ? null : container.TranslatePoint(new Point(0, 0), target)?.Y;
+    }
+
+    private void SetActiveScrollY(double y)
+    {
+        var scroller = ActiveScroller;
+        scroller?.Offset = new Vector(0, Math.Max(0, y));
+    }
+
+    private double GetActiveScrollY()
+    {
+        return ActiveScroller?.Offset.Y ?? 0;
+    }
+
+    private void ScrollContainerToViewportY(Control container, double targetViewportY)
+    {
+        var scroller = ActiveScroller;
+        if (scroller == null) return;
+        var y = GetViewportY(container);
+        if (y == null) return;
+        scroller.Offset = new Vector(0, Math.Max(0, scroller.Offset.Y + (y.Value - targetViewportY)));
     }
 
     private void PreloadToolbarLabels()
@@ -519,14 +553,14 @@ public partial class MainWindow : Window, IInstallUi
         ShowLoadingOverlay(targetPreset);
         await Task.Yield();
 
-        MainScroller.IsVisible = false;
+        ListsHost.IsVisible = false;
         try
         {
             await StartWindowTransitionToPreset(targetPreset, true);
         }
         finally
         {
-            MainScroller.IsVisible = true;
+            ListsHost.IsVisible = true;
         }
 
         _suppressWindowTransition = true;
@@ -929,11 +963,32 @@ public partial class MainWindow : Window, IInstallUi
         {
             if (vm.FlatRows[i] is not CategoryNode node || node.Category != name)
                 continue;
-            var container = ActiveList.ContainerFromIndex(i);
-            var pos = container?.TranslatePoint(new Point(0, 0), MainList);
-            if (pos.HasValue)
-                MainScroller.Offset = new Vector(0, pos.Value.Y - GetStickyOffset(vm));
+            ScrollToFlatRowIndex(i, GetStickyOffset(vm));
             return;
+        }
+    }
+
+    private void ScrollToFlatRowIndex(int index, double viewportTargetY)
+    {
+        var list = ActiveList;
+        var scroller = ActiveScroller;
+        if (scroller == null) return;
+
+        var c = list.ContainerFromIndex(index);
+        if (c != null)
+        {
+            ScrollContainerToViewportY(c, viewportTargetY);
+            return;
+        }
+
+        if (list is ListBox lb)
+        {
+            lb.ScrollIntoView(index);
+            Dispatcher.UIThread.Post(() =>
+            {
+                var c2 = list.ContainerFromIndex(index);
+                if (c2 != null) ScrollContainerToViewportY(c2, viewportTargetY);
+            }, DispatcherPriority.Background);
         }
     }
 
@@ -2239,7 +2294,12 @@ public partial class MainWindow : Window, IInstallUi
             UpdateFontSizeButton();
         };
         Closing += OnWindowClosing;
-        MainScroller.ScrollChanged += (_, _) => UpdateStickyHeader();
+        MainGridScroller.ScrollChanged += (_, _) => UpdateStickyHeader();
+        MainList.AttachedToVisualTree += (_, _) =>
+        {
+            var s = ListScroller;
+            if (s != null) s.ScrollChanged += (_, _) => UpdateStickyHeader();
+        };
         KeyDown += OnWindowKeyDown;
         SearchBox.AddHandler(KeyDownEvent, OnSearchPreviewKeyDown, RoutingStrategies.Tunnel);
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "Data"));
@@ -2477,7 +2537,7 @@ public partial class MainWindow : Window, IInstallUi
             Task.FromResult(vm.SearchAppNames(text ?? string.Empty).Cast<object>());
         vm.BeforeRebuildRows += () =>
         {
-            _pendingScrollY = MainScroller.Offset.Y;
+            _pendingScrollY = GetActiveScrollY();
             _pendingScrollTarget ??= FindTopVisibleSectionName();
         };
         vm.RowsFullyLoaded += () =>
@@ -2487,7 +2547,7 @@ public partial class MainWindow : Window, IInstallUi
                 _pendingScrollTop = false;
                 _pendingScrollY = null;
                 _pendingScrollTarget = null;
-                MainScroller.Offset = new Vector(0, 0);
+                SetActiveScrollY(0);
             }
             else if (_pendingScrollApp != null)
             {
@@ -2506,13 +2566,13 @@ public partial class MainWindow : Window, IInstallUi
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (!TryScrollToSectionName(target) && fallbackY is { } y)
-                        MainScroller.Offset = new Vector(0, y);
+                        SetActiveScrollY(y);
                 }, DispatcherPriority.Background);
             }
             else if (_pendingScrollY is { } y)
             {
                 _pendingScrollY = null;
-                Dispatcher.UIThread.Post(() => MainScroller.Offset = new Vector(0, y), DispatcherPriority.Background);
+                Dispatcher.UIThread.Post(() => SetActiveScrollY(y), DispatcherPriority.Background);
             }
 
             UpdateStickyHeader();
@@ -2523,18 +2583,28 @@ public partial class MainWindow : Window, IInstallUi
     {
         if (DataContext is not MainViewModel vm)
             return null;
-        var scrollY = MainScroller.Offset.Y;
-        for (var i = 0; i < vm.FlatRows.Count; i++)
+        var list = ActiveList;
+        Control? best = null;
+        var bestY = double.PositiveInfinity;
+        foreach (var c in list.GetRealizedContainers())
         {
-            if (vm.FlatRows[i] is not AppNode node)
-                continue;
-            var container = ActiveList.ContainerFromIndex(i);
-            var pos = container?.TranslatePoint(new Point(0, 0), MainList);
-            if (pos is { Y: var y } && y >= scrollY)
-                return node.SectionName;
+            var idx = list.IndexFromContainer(c);
+            if (idx < 0 || idx >= vm.FlatRows.Count) continue;
+            if (vm.FlatRows[idx] is not AppNode) continue;
+            var y = GetViewportY(c);
+            if (y is not { } yv || yv < 0) continue;
+            if (yv < bestY)
+            {
+                best = c;
+                bestY = yv;
+            }
         }
 
-        return null;
+        if (best == null) return null;
+        var bIdx = list.IndexFromContainer(best);
+        return bIdx >= 0 && bIdx < vm.FlatRows.Count
+            ? (vm.FlatRows[bIdx] as AppNode)?.SectionName
+            : null;
     }
 
     private bool TryScrollToSectionName(string sectionName)
@@ -2545,12 +2615,7 @@ public partial class MainWindow : Window, IInstallUi
         {
             if (vm.FlatRows[i] is not AppNode node || node.SectionName != sectionName)
                 continue;
-            var container = ActiveList.ContainerFromIndex(i);
-            if (container is null)
-                return false;
-            var pos = container.TranslatePoint(new Point(0, 0), MainList);
-            if (pos.HasValue)
-                MainScroller.Offset = new Vector(0, pos.Value.Y - GetStickyOffset(vm));
+            ScrollToFlatRowIndex(i, GetStickyOffset(vm));
             return true;
         }
 
@@ -2573,21 +2638,32 @@ public partial class MainWindow : Window, IInstallUi
             return;
         }
 
-        var scrollY = MainScroller.Offset.Y;
-        string? currentCategory = null;
-
-        for (var i = 0; i < vm.FlatRows.Count; i++)
+        var list = ActiveList;
+        var topRealizedIndex = -1;
+        var topY = double.PositiveInfinity;
+        foreach (var c in list.GetRealizedContainers())
         {
-            if (vm.FlatRows[i] is not CategoryNode { HasCategory: true } catHeader)
-                continue;
-            var container = ActiveList.ContainerFromIndex(i);
-            if (container is null)
-                continue;
-            var pos = container.TranslatePoint(new Point(0, 0), MainList);
-            if (pos is { Y: var y } && y < scrollY)
-                currentCategory = catHeader.Category;
-            else
-                break;
+            var y = GetViewportY(c);
+            if (y is not { } yv || yv < 0) continue;
+            if (yv < topY)
+            {
+                topY = yv;
+                topRealizedIndex = list.IndexFromContainer(c);
+            }
+        }
+
+        if (topRealizedIndex <= 0)
+        {
+            StickyHeader.IsVisible = false;
+            return;
+        }
+
+        string? currentCategory = null;
+        for (var i = topRealizedIndex - 1; i >= 0; i--)
+        {
+            if (vm.FlatRows[i] is not CategoryNode { HasCategory: true } cat) continue;
+            currentCategory = cat.Category;
+            break;
         }
 
         if (currentCategory == null)
@@ -2926,13 +3002,7 @@ public partial class MainWindow : Window, IInstallUi
                 !node.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            var container = ActiveList.ContainerFromIndex(i);
-            if (container is null)
-                return;
-
-            var pos = container.TranslatePoint(new Point(0, 0), MainList);
-            if (pos.HasValue)
-                MainScroller.Offset = new Vector(0, pos.Value.Y - GetStickyOffset(vm));
+            ScrollToFlatRowIndex(i, GetStickyOffset(vm));
             found = node;
             break;
         }

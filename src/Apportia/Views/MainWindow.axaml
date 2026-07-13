@@ -455,323 +455,352 @@
 
             <!-- Scrollable content + sticky header overlay -->
             <Grid Grid.Row="1">
-                <ScrollViewer x:Name="MainScroller"
-                              HorizontalScrollBarVisibility="Disabled"
-                              VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
+                <Panel x:Name="ListsHost">
 
-                        <!-- Detail list -->
-                        <ItemsControl x:Name="MainList" ItemsSource="{Binding FlatRows}" Margin="8,0,8,8"
-                                      IsVisible="{Binding !Columns.IsGridView}">
-                            <ItemsControl.DataTemplates>
+                    <!-- Detail list (virtualized) -->
+                    <ListBox x:Name="MainList" ItemsSource="{Binding FlatRows}" Margin="8,0,8,8"
+                             IsVisible="{Binding !Columns.IsGridView}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             SelectionMode="Single"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Focusable" Value="False" />
+                            </Style>
+                            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                            <Style
+                                Selector="ListBoxItem:selected:focus /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                            <Style
+                                Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                        </ListBox.Styles>
+                        <ListBox.DataTemplates>
 
-                                <!-- Subcategory header with expand/collapse toggle -->
-                                <DataTemplate x:DataType="vm:SubCategoryNode">
-                                    <Border Classes="subCategoryHeader"
-                                            Tapped="OnSubCategoryHeaderTapped">
-                                        <DockPanel>
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Text="▼"
-                                                       IsVisible="{Binding IsExpanded}"
-                                                       FontSize="9"
-                                                       Opacity="0.6"
-                                                       VerticalAlignment="Center"
-                                                       Margin="4,0,0,0" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Text="▶"
-                                                       IsVisible="{Binding !IsExpanded}"
-                                                       FontSize="9"
-                                                       Opacity="0.6"
-                                                       VerticalAlignment="Center"
-                                                       Margin="4,0,0,0" />
-                                            <TextBlock Text="{Binding Name}"
-                                                       FontSize="{Binding Columns.FontSizeSub}" />
-                                        </DockPanel>
-                                    </Border>
-                                </DataTemplate>
+                            <!-- Subcategory header with expand/collapse toggle -->
+                            <DataTemplate x:DataType="vm:SubCategoryNode">
+                                <Border Classes="subCategoryHeader"
+                                        Tapped="OnSubCategoryHeaderTapped">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right"
+                                                   Text="▼"
+                                                   IsVisible="{Binding IsExpanded}"
+                                                   FontSize="9"
+                                                   Opacity="0.6"
+                                                   VerticalAlignment="Center"
+                                                   Margin="4,0,0,0" />
+                                        <TextBlock DockPanel.Dock="Right"
+                                                   Text="▶"
+                                                   IsVisible="{Binding !IsExpanded}"
+                                                   FontSize="9"
+                                                   Opacity="0.6"
+                                                   VerticalAlignment="Center"
+                                                   Margin="4,0,0,0" />
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontSize="{Binding Columns.FontSizeSub}" />
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
 
-                                <!-- Category header with expand/collapse toggle -->
-                                <DataTemplate x:DataType="vm:CategoryNode">
-                                    <Border Classes="categoryHeader"
-                                            IsVisible="{Binding HasCategory}"
-                                            Tapped="OnCategoryHeaderTapped">
-                                        <DockPanel>
+                            <!-- Category header with expand/collapse toggle -->
+                            <DataTemplate x:DataType="vm:CategoryNode">
+                                <Border Classes="categoryHeader"
+                                        IsVisible="{Binding HasCategory}"
+                                        Tapped="OnCategoryHeaderTapped">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right"
+                                                   Text="▼"
+                                                   IsVisible="{Binding IsExpanded}"
+                                                   FontSize="10"
+                                                   Opacity="0.6"
+                                                   VerticalAlignment="Center"
+                                                   Margin="4,0,0,0" />
+                                        <TextBlock DockPanel.Dock="Right"
+                                                   Text="▶"
+                                                   IsVisible="{Binding !IsExpanded}"
+                                                   FontSize="10"
+                                                   Opacity="0.6"
+                                                   VerticalAlignment="Center"
+                                                   Margin="4,0,0,0" />
+                                        <TextBlock Text="{Binding Category}"
+                                                   FontSize="{Binding Columns.FontSize}" />
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+
+                            <!-- App row -->
+                            <DataTemplate x:DataType="vm:AppNode">
+                                <Border Classes="appRow"
+                                        Classes.installedRow="{Binding IsHighlighted}"
+                                        Classes.updateRow="{Binding NeedsUpdate}"
+                                        Classes.queuedRow="{Binding IsQueued}"
+                                        Classes.activeInstallRow="{Binding IsBeingInstalled}"
+                                        Classes.launchFxRow="{Binding IsLaunchFx}"
+                                        Classes.indentedRow="{Binding IsIndented}"
+                                        Classes.searchFxRow="{Binding IsSearchFx}"
+                                        PointerPressed="OnAppRowPointerPressed"
+                                        Tapped="OnAppRowTapped">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.CancelInstallation}"
+                                                      IsVisible="{Binding ShowCancelInstall}"
+                                                      Click="OnMenuCancelInstall">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/26d4.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.AddToQueue}"
+                                                      IsVisible="{Binding ShowAddToQueue}"
+                                                      Click="OnMenuAddToQueue">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.RemoveFromQueue}"
+                                                      IsVisible="{Binding ShowRemoveFromQueue}"
+                                                      Click="OnMenuRemoveFromQueue">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e4.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator>
+                                                <Separator.IsVisible>
+                                                    <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
+                                                        <Binding Path="ShowCancelInstall" />
+                                                        <Binding Path="ShowAddToQueue" />
+                                                        <Binding Path="ShowRemoveFromQueue" />
+                                                    </MultiBinding>
+                                                </Separator.IsVisible>
+                                            </Separator>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Install}"
+                                                      IsVisible="{Binding ShowInstallActions}"
+                                                      Click="OnMenuInstall">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.InstallAndRun}"
+                                                      IsVisible="{Binding ShowInstallActions}"
+                                                      Click="OnMenuInstallRun">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Update}"
+                                                      IsVisible="{Binding ShowUpdateActions}"
+                                                      Click="OnMenuUpdate">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.UpdateAndRun}"
+                                                      IsVisible="{Binding ShowUpdateActions}"
+                                                      Click="OnMenuUpdateRun">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Run}"
+                                                      IsVisible="{Binding ShowRunActions}"
+                                                      Click="OnMenuRun">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f3c3.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.RunWithParameters}"
+                                                      IsVisible="{Binding ShowRunActions}"
+                                                      Click="OnMenuRunWithArgs">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f680.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.RunAsAdministrator}"
+                                                      Click="OnMenuRunAsAdmin">
+                                                <MenuItem.IsVisible>
+                                                    <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
+                                                        <Binding Path="ShowRunActions" />
+                                                        <Binding Source="{x:Static views:MainWindow.IsWindows}" />
+                                                    </MultiBinding>
+                                                </MenuItem.IsVisible>
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e1.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Terminate}"
+                                                      IsVisible="{Binding ShowTerminate}"
+                                                      Click="OnMenuTerminate">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/2620.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.OpenFolder}"
+                                                      IsVisible="{Binding ShowRunActions}"
+                                                      Click="OnMenuOpenFolder">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="{x:Static views:MainWindow.OpenFolderIconPath}"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Settings}"
+                                                      IsVisible="{Binding IsCustom}"
+                                                      Click="OnMenuSettings">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/2699.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator>
+                                                <Separator.IsVisible>
+                                                    <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
+                                                        <Binding Path="ShowInstallActions" />
+                                                        <Binding Path="ShowUpdateActions" />
+                                                        <Binding Path="ShowRunActions" />
+                                                        <Binding Path="IsCustom" />
+                                                    </MultiBinding>
+                                                </Separator.IsVisible>
+                                            </Separator>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Uninstall}"
+                                                      IsVisible="{Binding ShowUninstall}"
+                                                      Click="OnMenuUninstall">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f5d1.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator IsVisible="{Binding ShowUninstall}" />
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Preview}"
+                                                      IsVisible="{Binding ShowPreview}"
+                                                      Click="OnMenuPreview">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f441.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Properties}"
+                                                      Click="OnMenuAppDatabaseEntry">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4cb.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.VirusTotal}"
+                                                      IsVisible="{Binding ShowVirusTotalActions}"
+                                                      Click="OnMenuVirusTotal">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f9a0.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.VisitWebsite}"
+                                                      IsVisible="{Binding HasUrl}"
+                                                      Click="OnMenuVisitWebsite">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f310.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <Grid>
+                                        <DockPanel LastChildFill="True">
+                                            <Image DockPanel.Dock="Left"
+                                                   Source="{Binding Icon}"
+                                                   Width="{Binding Columns.IconSize}"
+                                                   Height="{Binding Columns.IconSize}"
+                                                   Margin="4,0,4,0"
+                                                   VerticalAlignment="Center"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                            <TextBlock DockPanel.Dock="Left"
+                                                       Width="{Binding Columns.Name}"
+                                                       Text="{Binding Name}"
+                                                       Margin="0,0,8,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       ToolTip.Tip="{Binding Name}" />
                                             <TextBlock DockPanel.Dock="Right"
-                                                       Text="▼"
-                                                       IsVisible="{Binding IsExpanded}"
-                                                       FontSize="10"
-                                                       Opacity="0.6"
-                                                       VerticalAlignment="Center"
-                                                       Margin="4,0,0,0" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Text="▶"
-                                                       IsVisible="{Binding !IsExpanded}"
-                                                       FontSize="10"
-                                                       Opacity="0.6"
-                                                       VerticalAlignment="Center"
-                                                       Margin="4,0,0,0" />
-                                            <TextBlock Text="{Binding Category}"
+                                                       Width="{Binding Columns.Used}"
+                                                       IsVisible="{Binding Columns.ShowUsedColumn}"
+                                                       Text="{Binding UsedSize}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
                                                        FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Install}"
+                                                       IsVisible="{Binding Columns.ShowMetaColumns}"
+                                                       Text="{Binding InstallSize}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Download}"
+                                                       IsVisible="{Binding Columns.ShowMetaColumns}"
+                                                       Text="{Binding DownloadSize}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Version}"
+                                                       Text="{Binding ShownVersion}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Updated}"
+                                                       Text="{Binding UpdateDateDisplay}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Current}"
+                                                       IsVisible="{Binding Columns.ShowCurrentColumn}"
+                                                       Text="{Binding CurrentDate}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.Joined}"
+                                                       IsVisible="{Binding Columns.ShowJoinedColumn}"
+                                                       Text="{Binding JoinedDateDisplay}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock Text="{Binding Description}" Margin="4,0,0,0"
+                                                       FontSize="{Binding Columns.FontSize}"
+                                                       ToolTip.Tip="{Binding Description}" />
                                         </DockPanel>
-                                    </Border>
-                                </DataTemplate>
+                                        <Rectangle Width="3" HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                                   Fill="#4CAF50" IsVisible="{Binding IsRunning}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
 
-                                <!-- App row -->
-                                <DataTemplate x:DataType="vm:AppNode">
-                                    <Border Classes="appRow"
-                                            Classes.installedRow="{Binding IsHighlighted}"
-                                            Classes.updateRow="{Binding NeedsUpdate}"
-                                            Classes.queuedRow="{Binding IsQueued}"
-                                            Classes.activeInstallRow="{Binding IsBeingInstalled}"
-                                            Classes.launchFxRow="{Binding IsLaunchFx}"
-                                            Classes.indentedRow="{Binding IsIndented}"
-                                            Classes.searchFxRow="{Binding IsSearchFx}"
-                                            PointerPressed="OnAppRowPointerPressed"
-                                            Tapped="OnAppRowTapped">
-                                        <Border.ContextMenu>
-                                            <ContextMenu>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.CancelInstallation}"
-                                                          IsVisible="{Binding ShowCancelInstall}"
-                                                          Click="OnMenuCancelInstall">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/26d4.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.AddToQueue}"
-                                                          IsVisible="{Binding ShowAddToQueue}"
-                                                          Click="OnMenuAddToQueue">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.RemoveFromQueue}"
-                                                          IsVisible="{Binding ShowRemoveFromQueue}"
-                                                          Click="OnMenuRemoveFromQueue">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e4.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <Separator>
-                                                    <Separator.IsVisible>
-                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
-                                                            <Binding Path="ShowCancelInstall" />
-                                                            <Binding Path="ShowAddToQueue" />
-                                                            <Binding Path="ShowRemoveFromQueue" />
-                                                        </MultiBinding>
-                                                    </Separator.IsVisible>
-                                                </Separator>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Install}"
-                                                          IsVisible="{Binding ShowInstallActions}"
-                                                          Click="OnMenuInstall">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.InstallAndRun}"
-                                                          IsVisible="{Binding ShowInstallActions}"
-                                                          Click="OnMenuInstallRun">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Update}"
-                                                          IsVisible="{Binding ShowUpdateActions}"
-                                                          Click="OnMenuUpdate">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.UpdateAndRun}"
-                                                          IsVisible="{Binding ShowUpdateActions}"
-                                                          Click="OnMenuUpdateRun">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e9.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Run}"
-                                                          IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuRun">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f3c3.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.RunWithParameters}"
-                                                          IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuRunWithArgs">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f680.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.RunAsAdministrator}"
-                                                          Click="OnMenuRunAsAdmin">
-                                                    <MenuItem.IsVisible>
-                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.And}">
-                                                            <Binding Path="ShowRunActions" />
-                                                            <Binding Source="{x:Static views:MainWindow.IsWindows}" />
-                                                        </MultiBinding>
-                                                    </MenuItem.IsVisible>
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f6e1.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Terminate}"
-                                                          IsVisible="{Binding ShowTerminate}"
-                                                          Click="OnMenuTerminate">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/2620.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.OpenFolder}"
-                                                          IsVisible="{Binding ShowRunActions}"
-                                                          Click="OnMenuOpenFolder">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="{x:Static views:MainWindow.OpenFolderIconPath}"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Settings}"
-                                                          IsVisible="{Binding IsCustom}"
-                                                          Click="OnMenuSettings">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/2699.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <Separator>
-                                                    <Separator.IsVisible>
-                                                        <MultiBinding Converter="{x:Static conv:BoolConverters.Or}">
-                                                            <Binding Path="ShowInstallActions" />
-                                                            <Binding Path="ShowUpdateActions" />
-                                                            <Binding Path="ShowRunActions" />
-                                                            <Binding Path="IsCustom" />
-                                                        </MultiBinding>
-                                                    </Separator.IsVisible>
-                                                </Separator>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Uninstall}"
-                                                          IsVisible="{Binding ShowUninstall}"
-                                                          Click="OnMenuUninstall">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f5d1.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <Separator IsVisible="{Binding ShowUninstall}" />
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Preview}"
-                                                          IsVisible="{Binding ShowPreview}"
-                                                          Click="OnMenuPreview">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f441.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.Properties}"
-                                                          Click="OnMenuAppDatabaseEntry">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4cb.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.VirusTotal}"
-                                                          IsVisible="{Binding ShowVirusTotalActions}"
-                                                          Click="OnMenuVirusTotal">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f9a0.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                                <MenuItem Header="{x:Static text:UiText+Menu.VisitWebsite}"
-                                                          IsVisible="{Binding HasUrl}"
-                                                          Click="OnMenuVisitWebsite">
-                                                    <MenuItem.Icon>
-                                                        <svg:Svg Path="avares://Apportia/Assets/Emoji/1f310.svg"
-                                                                 Width="16" Height="16" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                            </ContextMenu>
-                                        </Border.ContextMenu>
-                                        <Grid>
-                                            <DockPanel LastChildFill="True">
-                                                <Image DockPanel.Dock="Left"
-                                                       Source="{Binding Icon}"
-                                                       Width="{Binding Columns.IconSize}"
-                                                       Height="{Binding Columns.IconSize}"
-                                                       Margin="4,0,4,0"
-                                                       VerticalAlignment="Center"
-                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
-                                                <TextBlock DockPanel.Dock="Left"
-                                                           Width="{Binding Columns.Name}"
-                                                           Text="{Binding Name}"
-                                                           Margin="0,0,8,0"
-                                                           FontSize="{Binding Columns.FontSize}"
-                                                           ToolTip.Tip="{Binding Name}" />
-                                                <TextBlock DockPanel.Dock="Right"
-                                                           Width="{Binding Columns.Used}"
-                                                           IsVisible="{Binding Columns.ShowUsedColumn}"
-                                                           Text="{Binding UsedSize}"
-                                                           TextAlignment="Right" Margin="0,0,4,0"
-                                                           FontSize="{Binding Columns.FontSize}" />
-                                                <TextBlock DockPanel.Dock="Right"
-                                                           Width="{Binding Columns.Install}"
-                                                           IsVisible="{Binding Columns.ShowMetaColumns}"
-                                                           Text="{Binding InstallSize}"
-                                                           TextAlignment="Right" Margin="0,0,4,0"
-                                                           FontSize="{Binding Columns.FontSize}" />
-                                                <TextBlock DockPanel.Dock="Right"
-                                                           Width="{Binding Columns.Download}"
-                                                           IsVisible="{Binding Columns.ShowMetaColumns}"
-                                                           Text="{Binding DownloadSize}"
-                                                           TextAlignment="Right" Margin="0,0,4,0"
-                                                           FontSize="{Binding Columns.FontSize}" />
-                                                <TextBlock DockPanel.Dock="Right"
-                                                           Width="{Binding Columns.Version}"
-                                                           Text="{Binding ShownVersion}"
-                                                           TextAlignment="Right" Margin="0,0,4,0"
-                                                           FontSize="{Binding Columns.FontSize}" />
-                                                <TextBlock DockPanel.Dock="Right"
-                                                           Width="{Binding Columns.Updated}"
-                                                           Text="{Binding UpdateDateDisplay}"
-                                                           TextAlignment="Right" Margin="0,0,4,0"
-                                                           FontSize="{Binding Columns.FontSize}" />
-                                                <TextBlock DockPanel.Dock="Right"
-                                                           Width="{Binding Columns.Current}"
-                                                           IsVisible="{Binding Columns.ShowCurrentColumn}"
-                                                           Text="{Binding CurrentDate}"
-                                                           TextAlignment="Right" Margin="0,0,4,0"
-                                                           FontSize="{Binding Columns.FontSize}"
-                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                <TextBlock DockPanel.Dock="Right"
-                                                           Width="{Binding Columns.Joined}"
-                                                           IsVisible="{Binding Columns.ShowJoinedColumn}"
-                                                           Text="{Binding JoinedDateDisplay}"
-                                                           TextAlignment="Right" Margin="0,0,4,0"
-                                                           FontSize="{Binding Columns.FontSize}" />
-                                                <TextBlock Text="{Binding Description}" Margin="4,0,0,0"
-                                                           FontSize="{Binding Columns.FontSize}"
-                                                           ToolTip.Tip="{Binding Description}" />
-                                            </DockPanel>
-                                            <Rectangle Width="3" HorizontalAlignment="Left" VerticalAlignment="Stretch"
-                                                       Fill="#4CAF50" IsVisible="{Binding IsRunning}" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
+                        </ListBox.DataTemplates>
+                    </ListBox>
 
-                            </ItemsControl.DataTemplates>
-                        </ItemsControl>
-
-                        <!-- Grid / tile view -->
-                        <ItemsControl x:Name="MainGridList" ItemsSource="{Binding FlatRows}" Margin="8,0,8,8"
-                                      IsVisible="{Binding Columns.IsGridView}">
+                    <!-- Grid / tile view -->
+                    <ScrollViewer x:Name="MainGridScroller"
+                                  IsVisible="{Binding Columns.IsGridView}"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="MainGridList" ItemsSource="{Binding FlatRows}" Margin="8,0,8,8">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel />
@@ -1028,9 +1057,9 @@
 
                             </ItemsControl.DataTemplates>
                         </ItemsControl>
+                    </ScrollViewer>
 
-                    </StackPanel>
-                </ScrollViewer>
+                </Panel>
                 <Border x:Name="StickyHeader"
                         VerticalAlignment="Top"
                         Margin="8,0,8,0"
