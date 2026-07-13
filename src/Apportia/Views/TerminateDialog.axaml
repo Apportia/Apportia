@@ -113,13 +113,13 @@
                                                            Padding="8,4" FontWeight="SemiBold"
                                                            VerticalAlignment="Center"
                                                            TextAlignment="Right"
-                                                           Foreground="{DynamicResource AppTextBrush}"
+                                                           Foreground="{Binding CpuBrush}"
                                                            FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
                                                 <TextBlock Grid.Column="2" Text="{Binding RamText}"
                                                            Padding="8,4" FontWeight="SemiBold"
                                                            VerticalAlignment="Center"
                                                            TextAlignment="Right"
-                                                           Foreground="{DynamicResource AppTextBrush}"
+                                                           Foreground="{Binding RamBrush}"
                                                            FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
                                                 <StackPanel Grid.Column="3" Grid.ColumnSpan="3"
                                                             Orientation="Horizontal"
@@ -172,12 +172,12 @@
                                                             <TextBlock Grid.Column="1" Text="{Binding CpuText}"
                                                                        Padding="8,4"
                                                                        TextAlignment="Right"
-                                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                                       Foreground="{Binding CpuBrush}"
                                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
                                                             <TextBlock Grid.Column="2" Text="{Binding RamText}"
                                                                        Padding="8,4"
                                                                        TextAlignment="Right"
-                                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                                       Foreground="{Binding RamBrush}"
                                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
                                                             <TextBlock Grid.Column="3" Text="{Binding Exe}"
                                                                        Padding="8,4"

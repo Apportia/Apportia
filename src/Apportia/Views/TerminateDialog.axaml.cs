@@ -6,6 +6,7 @@ using Apportia.Services;
 using Apportia.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
@@ -13,7 +14,9 @@ namespace Apportia.Views;
 
 public sealed class TerminateRow(RunningAppsService.KillCandidate source) : INotifyPropertyChanged
 {
+    private IBrush? _cpuBrush;
     private string _cpuText = "\u2014";
+    private IBrush? _ramBrush;
     private string _ramText = "\u2014";
 
     public RunningAppsService.KillCandidate Source { get; } = source;
@@ -48,12 +51,38 @@ public sealed class TerminateRow(RunningAppsService.KillCandidate source) : INot
         }
     }
 
+    public IBrush? CpuBrush
+    {
+        get => _cpuBrush;
+        set
+        {
+            if (Equals(_cpuBrush, value))
+                return;
+            _cpuBrush = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CpuBrush)));
+        }
+    }
+
+    public IBrush? RamBrush
+    {
+        get => _ramBrush;
+        set
+        {
+            if (Equals(_ramBrush, value))
+                return;
+            _ramBrush = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RamBrush)));
+        }
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 public sealed class TerminateGroup(string sectionName, string appName, Bitmap? icon, IEnumerable<TerminateRow> rows) : INotifyPropertyChanged
 {
+    private IBrush? _cpuBrush;
     private string _cpuText = "\u2014";
+    private IBrush? _ramBrush;
     private string _ramText = "\u2014";
 
     public string SectionName { get; } = sectionName;
@@ -84,6 +113,30 @@ public sealed class TerminateGroup(string sectionName, string appName, Bitmap? i
                 return;
             _ramText = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RamText)));
+        }
+    }
+
+    public IBrush? CpuBrush
+    {
+        get => _cpuBrush;
+        set
+        {
+            if (Equals(_cpuBrush, value))
+                return;
+            _cpuBrush = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CpuBrush)));
+        }
+    }
+
+    public IBrush? RamBrush
+    {
+        get => _ramBrush;
+        set
+        {
+            if (Equals(_ramBrush, value))
+                return;
+            _ramBrush = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RamBrush)));
         }
     }
 
@@ -356,6 +409,7 @@ public partial class TerminateDialog : Window
                 {
                     row.CpuText = pct.ToString("0.0") + " %";
                     row.CpuPercent = pct;
+                    row.CpuBrush = CpuBrushForPercent(pct);
                     cpuSum = (cpuSum ?? 0) + pct;
                 }
 
@@ -363,6 +417,7 @@ public partial class TerminateDialog : Window
                 {
                     row.RamText = AppDiskUsageService.FormatSize(ram);
                     row.RamBytes = ram;
+                    row.RamBrush = RamBrushForBytes(ram);
                     ramSum += ram;
                     anyRam = true;
                 }
@@ -372,9 +427,35 @@ public partial class TerminateDialog : Window
 
             group.CpuText = cpuSum is { } c ? c.ToString("0.0") + " %" : "\u2014";
             group.CpuPercent = cpuSum;
+            group.CpuBrush = cpuSum is { } gc ? CpuBrushForPercent(gc) : null;
             group.RamText = anyRam ? AppDiskUsageService.FormatSize(ramSum) : "\u2014";
             group.RamBytes = anyRam ? ramSum : null;
+            group.RamBrush = anyRam ? RamBrushForBytes(ramSum) : null;
         }
+    }
+
+    private IBrush? CpuBrushForPercent(double pct)
+    {
+        if (pct >= 60)
+            return FindBrush("AppDangerBrush");
+        if (pct >= 25)
+            return FindBrush("AppWarnBrush");
+        return FindBrush("AppTextBrush");
+    }
+
+    private IBrush? RamBrushForBytes(long bytes)
+    {
+        const long gib = 1L << 30;
+        if (bytes >= 2 * gib)
+            return FindBrush("AppDangerBrush");
+        if (bytes >= 512L * 1024 * 1024)
+            return FindBrush("AppWarnBrush");
+        return FindBrush("AppTextBrush");
+    }
+
+    private IBrush? FindBrush(string key)
+    {
+        return this.TryFindResource(key, ActualThemeVariant, out var value) ? value as IBrush : null;
     }
 
     private void OnSortHeaderClicked(object? sender, RoutedEventArgs e)

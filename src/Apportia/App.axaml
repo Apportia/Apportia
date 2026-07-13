@@ -15,6 +15,7 @@
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#E4E4EA" />
                     <SolidColorBrush x:Key="AppColHeaderBrush" Color="#DADADF" />
                     <SolidColorBrush x:Key="AppControlBorderBrush" Color="#9898A8" />
+                    <SolidColorBrush x:Key="AppDangerBrush" Color="#C43535" />
                     <SolidColorBrush x:Key="AppHoverBrush" Color="#E2EAF8" />
                     <SolidColorBrush x:Key="AppInstalledBrush" Color="#C8EAC8" />
                     <SolidColorBrush x:Key="AppQueuedBrush" Color="#B8D4F0" />
@@ -24,6 +25,7 @@
                     <SolidColorBrush x:Key="AppSubTextBrush" Color="#444458" />
                     <SolidColorBrush x:Key="AppTextBrush" Color="#111111" />
                     <SolidColorBrush x:Key="AppUpdateBrush" Color="#F5E0A0" />
+                    <SolidColorBrush x:Key="AppWarnBrush" Color="#C77A00" />
                     <SolidColorBrush x:Key="AppWindowBrush" Color="#F5F5F7" />
                     <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBackground" Color="#F5F5F7" />
                     <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBorderBrush" Color="#9898A8" />
@@ -81,6 +83,7 @@
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#2C2C2C" />
                     <SolidColorBrush x:Key="AppColHeaderBrush" Color="#272727" />
                     <SolidColorBrush x:Key="AppControlBorderBrush" Color="#484850" />
+                    <SolidColorBrush x:Key="AppDangerBrush" Color="#F06060" />
                     <SolidColorBrush x:Key="AppHoverBrush" Color="#2A2A2A" />
                     <SolidColorBrush x:Key="AppInstalledBrush" Color="#1A3A1A" />
                     <SolidColorBrush x:Key="AppQueuedBrush" Color="#1A3050" />
@@ -90,6 +93,7 @@
                     <SolidColorBrush x:Key="AppSubTextBrush" Color="#888888" />
                     <SolidColorBrush x:Key="AppTextBrush" Color="#DCDCDC" />
                     <SolidColorBrush x:Key="AppUpdateBrush" Color="#3A2E00" />
+                    <SolidColorBrush x:Key="AppWarnBrush" Color="#E8A040" />
                     <SolidColorBrush x:Key="AppWindowBrush" Color="#1E1E1E" />
                     <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBackground" Color="#1E1E1E" />
                     <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBorderBrush" Color="#484850" />
