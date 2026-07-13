@@ -180,8 +180,6 @@ public static class UiText
         #region TerminateDialog
 
         public const string TerminateAllAppsName = "Running Apps";
-        public const string TerminateHeaderMultipleFormat = "The following {0} processes from {1} will be terminated:";
-        public const string TerminateHeaderSingleFormat = "The following process from {0} will be terminated:";
         public const string TerminateTitle = "Terminate";
         public const string TerminateTitleFormat = "Terminate {0}";
         public const string TerminateTotalsFormat = "Total: {0} CPU \u00b7 {1} RAM \u00b7 Free: {2}";

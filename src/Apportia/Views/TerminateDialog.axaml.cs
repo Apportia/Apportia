@@ -150,7 +150,6 @@ public partial class TerminateDialog : Window
     private static readonly int ProcessorCount = Math.Max(1, Environment.ProcessorCount);
     private static readonly IComparer<string> AppNameComparer = StringComparer.CurrentCultureIgnoreCase;
 
-    private readonly string _appName;
     private readonly ObservableCollection<TerminateGroup> _groups = [];
     private readonly Dictionary<int, (TimeSpan Cpu, DateTime When)> _lastSample = [];
     private readonly Func<IReadOnlyList<TerminateGroupInput>> _sourceProvider;
@@ -168,7 +167,6 @@ public partial class TerminateDialog : Window
     public TerminateDialog(string appName, Func<IReadOnlyList<TerminateGroupInput>> sourceProvider)
     {
         InitializeComponent();
-        _appName = appName;
         _sourceProvider = sourceProvider;
         Title = string.Format(UiText.Dialog.TerminateTitleFormat, appName);
         GroupList.ItemsSource = _groups;
@@ -181,15 +179,8 @@ public partial class TerminateDialog : Window
 
     public bool Confirmed { get; private set; }
 
-    private int TotalRowCount => _groups.Sum(g => g.Rows.Count);
-
     private void UpdateHeader()
     {
-        var count = TotalRowCount;
-        HeaderText.Text = count == 1
-            ? string.Format(UiText.Dialog.TerminateHeaderSingleFormat, _appName)
-            : string.Format(UiText.Dialog.TerminateHeaderMultipleFormat, count, _appName);
-
         double? cpuSum = null;
         long ramSum = 0;
         var anyRam = false;
