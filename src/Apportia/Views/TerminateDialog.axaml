@@ -58,19 +58,28 @@
                         <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminatePid}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="1" Text="{x:Static text:UiText+Column.TerminateCpu}"
+                        <TextBlock Grid.Column="1" x:Name="CpuHeader" Tag="cpu"
+                                   Text="{x:Static text:UiText+Column.TerminateCpu}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    TextAlignment="Right"
+                                   Cursor="Hand"
+                                   Tapped="OnSortHeaderClicked"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="2" Text="{x:Static text:UiText+Column.TerminateRam}"
+                        <TextBlock Grid.Column="2" x:Name="RamHeader" Tag="ram"
+                                   Text="{x:Static text:UiText+Column.TerminateRam}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    TextAlignment="Right"
+                                   Cursor="Hand"
+                                   Tapped="OnSortHeaderClicked"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
                         <TextBlock Grid.Column="3" Text="{x:Static text:UiText+Column.TerminateExecutable}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="4" Text="{x:Static text:UiText+Column.TerminateStarted}"
+                        <TextBlock Grid.Column="4" x:Name="StartedHeader" Tag="started"
+                                   Text="{x:Static text:UiText+Column.TerminateStarted}"
                                    Padding="8,4" FontWeight="SemiBold"
+                                   Cursor="Hand"
+                                   Tapped="OnSortHeaderClicked"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
                         <TextBlock Grid.Column="5" Text="{x:Static text:UiText+Column.TerminateCommand}"
                                    Padding="8,4" FontWeight="SemiBold"

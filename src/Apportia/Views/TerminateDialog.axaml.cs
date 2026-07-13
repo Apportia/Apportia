@@ -17,6 +17,8 @@ public sealed class TerminateRow(RunningAppsService.KillCandidate source) : INot
     private string _ramText = "\u2014";
 
     public RunningAppsService.KillCandidate Source { get; } = source;
+    public double? CpuPercent { get; set; }
+    public long? RamBytes { get; set; }
     public string PidText => Source.Pid.ToString();
     public string Exe => Source.Exe;
     public string CommandLine => Source.CommandLine;
@@ -58,6 +60,8 @@ public sealed class TerminateGroup(string sectionName, string appName, Bitmap? i
     public string AppName { get; } = appName;
     public Bitmap? Icon { get; } = icon;
     public ObservableCollection<TerminateRow> Rows { get; } = new(rows);
+    public double? CpuPercent { get; set; }
+    public long? RamBytes { get; set; }
 
     public string CpuText
     {
@@ -99,6 +103,9 @@ public partial class TerminateDialog : Window
     private readonly Func<IReadOnlyList<TerminateGroupInput>> _sourceProvider;
     private DispatcherTimer? _sampleTimer;
 
+    private SortColumn _sortColumn = SortColumn.Started;
+    private bool _sortDesc = true;
+
     public TerminateDialog() : this("", () => [])
     {
     }
@@ -110,6 +117,7 @@ public partial class TerminateDialog : Window
         _sourceProvider = sourceProvider;
         Title = string.Format(UiText.Dialog.TerminateTitleFormat, appName);
         GroupList.ItemsSource = _groups;
+        UpdateHeaderIndicators();
         Refresh();
     }
 
@@ -166,6 +174,7 @@ public partial class TerminateDialog : Window
             return;
         }
 
+        ApplySort();
         UpdateHeader();
     }
 
@@ -265,11 +274,13 @@ public partial class TerminateDialog : Window
                             if (percent < 0)
                                 percent = 0;
                             row.CpuText = percent.ToString("0.0") + " %";
+                            row.CpuPercent = percent;
                             cpuSum = (cpuSum ?? 0) + percent;
                         }
                     }
 
                     row.RamText = AppDiskUsageService.FormatSize(ram);
+                    row.RamBytes = ram;
                     ramSum += ram;
                     anyRam = true;
                     _lastSample[pid] = (cpu, now);
@@ -281,7 +292,89 @@ public partial class TerminateDialog : Window
             }
 
             group.CpuText = cpuSum is { } c ? c.ToString("0.0") + " %" : "\u2014";
+            group.CpuPercent = cpuSum;
             group.RamText = anyRam ? AppDiskUsageService.FormatSize(ramSum) : "\u2014";
+            group.RamBytes = anyRam ? ramSum : null;
+        }
+    }
+
+    private void OnSortHeaderClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Control { Tag: string tag })
+            return;
+        var newCol = tag switch
+        {
+            "cpu" => SortColumn.Cpu,
+            "ram" => SortColumn.Ram,
+            _ => SortColumn.Started
+        };
+        if (_sortColumn == newCol)
+        {
+            _sortDesc = !_sortDesc;
+        }
+        else
+        {
+            _sortColumn = newCol;
+            _sortDesc = true;
+        }
+
+        UpdateHeaderIndicators();
+        ApplySort();
+    }
+
+    private void UpdateHeaderIndicators()
+    {
+        var arrow = _sortDesc ? " \u25BE" : " \u25B4";
+        CpuHeader.Text = UiText.Column.TerminateCpu + (_sortColumn == SortColumn.Cpu ? arrow : "");
+        RamHeader.Text = UiText.Column.TerminateRam + (_sortColumn == SortColumn.Ram ? arrow : "");
+        StartedHeader.Text = UiText.Column.TerminateStarted + (_sortColumn == SortColumn.Started ? arrow : "");
+    }
+
+    private void ApplySort()
+    {
+        SortInPlace(_groups, GroupComparer);
+        foreach (var group in _groups)
+            SortInPlace(group.Rows, RowComparer);
+    }
+
+    private int GroupComparer(TerminateGroup a, TerminateGroup b)
+    {
+        int cmp;
+        switch (_sortColumn)
+        {
+            case SortColumn.Cpu:
+                cmp = Nullable.Compare(a.CpuPercent, b.CpuPercent);
+                break;
+            case SortColumn.Ram:
+                cmp = Nullable.Compare(a.RamBytes, b.RamBytes);
+                break;
+            default:
+                return AppNameComparer.Compare(a.AppName, b.AppName);
+        }
+
+        return _sortDesc ? -cmp : cmp;
+    }
+
+    private int RowComparer(TerminateRow a, TerminateRow b)
+    {
+        var cmp = _sortColumn switch
+        {
+            SortColumn.Cpu => Nullable.Compare(a.CpuPercent, b.CpuPercent),
+            SortColumn.Ram => Nullable.Compare(a.RamBytes, b.RamBytes),
+            _ => Nullable.Compare(a.Source.StartTime, b.Source.StartTime)
+        };
+        return _sortDesc ? -cmp : cmp;
+    }
+
+    private static void SortInPlace<T>(ObservableCollection<T> collection, Comparison<T> comparer)
+    {
+        var sorted = collection.ToArray();
+        Array.Sort(sorted, comparer);
+        for (var i = 0; i < sorted.Length; i++)
+        {
+            var current = collection.IndexOf(sorted[i]);
+            if (current != i)
+                collection.Move(current, i);
         }
     }
 
@@ -299,5 +392,12 @@ public partial class TerminateDialog : Window
         _sampleTimer = null;
         _lastSample.Clear();
         base.OnClosed(e);
+    }
+
+    private enum SortColumn
+    {
+        Started,
+        Cpu,
+        Ram
     }
 }
