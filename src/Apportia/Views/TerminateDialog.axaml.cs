@@ -159,6 +159,7 @@ public partial class TerminateDialog : Window
 
     private SortColumn _sortColumn = SortColumn.Started;
     private bool _sortDesc = true;
+    private long? _systemFreeBytes;
 
     public TerminateDialog() : this("", () => [])
     {
@@ -205,7 +206,8 @@ public partial class TerminateDialog : Window
 
         var cpuText = cpuSum is { } cs ? cs.ToString("0.0") + " %" : "\u2014";
         var ramText = anyRam ? AppDiskUsageService.FormatSize(ramSum) : "\u2014";
-        TotalsText.Text = string.Format(UiText.Dialog.TerminateTotalsFormat, cpuText, ramText);
+        var freeText = _systemFreeBytes is { } fb ? AppDiskUsageService.FormatSize(fb) : "\u2014";
+        TotalsText.Text = string.Format(UiText.Dialog.TerminateTotalsFormat, cpuText, ramText, freeText);
     }
 
     private void OnTerminate(object? sender, RoutedEventArgs e)
@@ -264,10 +266,11 @@ public partial class TerminateDialog : Window
                 var pids = _groups.SelectMany(g => g.Rows.Select(r => r.Source.Pid)).ToArray();
                 var prevSample = new Dictionary<int, (TimeSpan Cpu, DateTime When)>(_lastSample);
                 var now = DateTime.UtcNow;
-                var metrics = await Task.Run(() => SampleMetrics(pids, prevSample, now));
+                var sample = await Task.Run(() => SampleAll(pids, prevSample, now));
                 if (_sampleTimer == null)
                     return;
-                ApplyMetrics(metrics, now);
+                _systemFreeBytes = sample.FreeBytes;
+                ApplyMetrics(sample.Metrics, now);
                 ApplySort();
                 UpdateHeader();
             }
@@ -348,6 +351,24 @@ public partial class TerminateDialog : Window
                (group.Rows[idx].Source.StartTime ?? DateTime.MinValue) >= rowStart)
             idx++;
         group.Rows.Insert(idx, row);
+    }
+
+    private static SampleResult SampleAll(int[] pids, Dictionary<int, (TimeSpan Cpu, DateTime When)> prevSample, DateTime now)
+    {
+        var metrics = SampleMetrics(pids, prevSample, now);
+        long? freeBytes = null;
+        try
+        {
+            var gc = GC.GetGCMemoryInfo();
+            if (gc.TotalAvailableMemoryBytes > 0)
+                freeBytes = Math.Max(0, gc.TotalAvailableMemoryBytes - gc.MemoryLoadBytes);
+        }
+        catch
+        {
+            // GC info unavailable – leave freeBytes null
+        }
+
+        return new SampleResult(metrics, freeBytes);
     }
 
     private static Dictionary<int, PidMetric> SampleMetrics(int[] pids, Dictionary<int, (TimeSpan Cpu, DateTime When)> prevSample, DateTime now)
@@ -555,6 +576,8 @@ public partial class TerminateDialog : Window
     }
 
     private readonly record struct PidMetric(double? CpuPercent, long? RamBytes, TimeSpan CpuTime);
+
+    private readonly record struct SampleResult(Dictionary<int, PidMetric> Metrics, long? FreeBytes);
 
     private enum SortColumn
     {

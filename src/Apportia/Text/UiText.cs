@@ -184,7 +184,7 @@ public static class UiText
         public const string TerminateHeaderSingleFormat = "The following process from {0} will be terminated:";
         public const string TerminateTitle = "Terminate";
         public const string TerminateTitleFormat = "Terminate {0}";
-        public const string TerminateTotalsFormat = "Total: {0} CPU \u00b7 {1} RAM";
+        public const string TerminateTotalsFormat = "Total: {0} CPU \u00b7 {1} RAM \u00b7 Free: {2}";
 
         #endregion
 
