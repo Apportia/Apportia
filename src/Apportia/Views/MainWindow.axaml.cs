@@ -1918,10 +1918,14 @@ public partial class MainWindow : Window, IInstallUi
         if (DataContext is not MainViewModel vm)
         {
             TerminateAllButton.IsVisible = false;
+            TerminateAllCount.Text = "";
             return;
         }
 
-        TerminateAllButton.IsVisible = vm.AllNodes.Any(n => !n.IsPlugin && RunningAppsService.IsRunning(n.SectionName));
+        var count = vm.AllNodes.Count(n => !n.IsPlugin && RunningAppsService.IsRunning(n.SectionName));
+        TerminateAllButton.IsVisible = count > 0;
+        TerminateAllBadge.IsVisible = count > 1;
+        TerminateAllCount.Text = count.ToString();
     }
 
     private async void OnTerminateAllApps(object? sender, RoutedEventArgs e)
