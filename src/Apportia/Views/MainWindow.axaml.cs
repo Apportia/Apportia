@@ -307,10 +307,7 @@ public partial class MainWindow : Window, IInstallUi
 
         static double ResolveViewport(double bounds, double requested, double min)
         {
-            foreach (var v in new[] { bounds, requested, min })
-                if (!double.IsNaN(v) && v > 0)
-                    return v;
-            return 0;
+            return new[] { bounds, requested, min }.FirstOrDefault(v => !double.IsNaN(v) && v > 0);
         }
     }
 
@@ -771,28 +768,34 @@ public partial class MainWindow : Window, IInstallUi
                 UiText.Button.MoveToCustomApps, UiText.Button.Delete, UiText.Button.Skip);
             await choose.ShowDialog(this);
 
-            if (choose.Result == UiText.Button.MoveToCustomApps)
+            switch (choose.Result)
             {
-                if (await ImportUnknownAsCustomAsync(dir, vm))
-                    changed = true;
-            }
-            else if (choose.Result == UiText.Button.Delete)
-            {
-                var confirm = new AppDialog(
-                    UiText.Dialog.MainDeleteFolderTitle,
-                    string.Format(UiText.Dialog.MainDeleteFolderBodyFormat, name),
-                    UiText.Button.Delete, UiText.Button.Cancel);
-                await confirm.ShowDialog(this);
-                if (confirm.Result == UiText.Button.Delete)
+                case UiText.Button.MoveToCustomApps:
                 {
-                    try
+                    if (await ImportUnknownAsCustomAsync(dir, vm))
+                        changed = true;
+                    break;
+                }
+                case UiText.Button.Delete:
+                {
+                    var confirm = new AppDialog(
+                        UiText.Dialog.MainDeleteFolderTitle,
+                        string.Format(UiText.Dialog.MainDeleteFolderBodyFormat, name),
+                        UiText.Button.Delete, UiText.Button.Cancel);
+                    await confirm.ShowDialog(this);
+                    if (confirm.Result == UiText.Button.Delete)
                     {
-                        Directory.Delete(dir, true);
+                        try
+                        {
+                            Directory.Delete(dir, true);
+                        }
+                        catch
+                        {
+                            /* best effort – dir may be in use */
+                        }
                     }
-                    catch
-                    {
-                        /* best effort – dir may be in use */
-                    }
+
+                    break;
                 }
             }
         }
@@ -1449,7 +1452,9 @@ public partial class MainWindow : Window, IInstallUi
                         vmCustom.RemoveCustomApp(node);
                 }
                 else
+                {
                     AppExecutableService.Remove(node.SectionName);
+                }
 
                 if (node is { IsPlugin: false, IsCustom: false })
                 {

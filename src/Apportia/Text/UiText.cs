@@ -2,10 +2,7 @@ namespace Apportia.Text;
 
 /// Centralized user-facing string constants for the Apportia UI.
 /// Nested classes group strings by role. Fields are sorted alphabetically within each class.
-/// Fields with a
-/// <c>Format</c>
-/// suffix are
-/// <see cref="string.Format(string, object?)" />
+/// Fields with a <c>Format</c> suffix are <see cref="string.Format(string, object?)" />
 /// patterns.
 public static class UiText
 {
