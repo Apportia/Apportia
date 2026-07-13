@@ -278,6 +278,19 @@ public partial class TerminateDialog : Window
                             cpuSum = (cpuSum ?? 0) + percent;
                         }
                     }
+                    else
+                    {
+                        var lifetimeMs = (DateTime.Now - p.StartTime).TotalMilliseconds;
+                        if (lifetimeMs > 0)
+                        {
+                            var percent = cpu.TotalMilliseconds / (lifetimeMs * ProcessorCount) * 100.0;
+                            if (percent < 0)
+                                percent = 0;
+                            row.CpuText = percent.ToString("0.0") + " %";
+                            row.CpuPercent = percent;
+                            cpuSum = (cpuSum ?? 0) + percent;
+                        }
+                    }
 
                     row.RamText = AppDiskUsageService.FormatSize(ram);
                     row.RamBytes = ram;
