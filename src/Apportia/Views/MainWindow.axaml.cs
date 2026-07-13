@@ -1835,7 +1835,7 @@ public partial class MainWindow : Window, IInstallUi
     {
         var appExe = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName, node.DownloadFile);
         if (File.Exists(appExe))
-            AppDeployService.LaunchApp(appExe, args, true);
+            AppDeployService.LaunchApp(appExe, args);
     }
 
     private async Task TryLaunchWithArgsAsync(AppNode node)

@@ -347,12 +347,11 @@ public sealed class AppDeployService : IDisposable
         }
     }
 
-    public static void LaunchApp(string exePath, string? args = null, bool isCustomApp = false)
+    public static void LaunchApp(string exePath, string? args = null)
     {
         var appDir = Path.GetDirectoryName(exePath)!;
         var sectionName = Path.GetFileNameWithoutExtension(exePath);
-        if (!isCustomApp)
-            PrepareAppConfig(appDir, sectionName);
+        PrepareAppConfig(appDir, sectionName);
         StartProcess(exePath, string.IsNullOrWhiteSpace(args) ? null : args);
     }
 
@@ -381,17 +380,39 @@ public sealed class AppDeployService : IDisposable
 
     private static void PrepareAppConfig(string appDir, string sectionName)
     {
+        var sourceDir = Path.Combine(appDir, "Other", "Source");
+        if (!Directory.Exists(sourceDir))
+            return;
+
+        var marker = Path.Combine(sourceDir, ".no-app-name-ini");
+        if (File.Exists(marker))
+            return;
+
         var targetIni = Path.Combine(appDir, sectionName + ".ini");
         if (File.Exists(targetIni))
             return;
 
-        var sourceIni = Path.Combine(appDir, "Other", "Source", "AppNamePortable.ini");
-        var lines = File.Exists(sourceIni)
-            ? File.ReadAllLines(sourceIni).ToList()
-            : [];
+        var preferred = new[]
+        {
+            Path.Combine(sourceDir, sectionName + ".ini"),
+            Path.Combine(sourceDir, "AppNamePortable.ini")
+        };
+        var fallback = Directory.EnumerateFiles(sourceDir, "*.ini", SearchOption.TopDirectoryOnly)
+                                .Where(p => !preferred.Contains(p, StringComparer.OrdinalIgnoreCase));
 
-        SetIniValue(lines, "DisableSplashScreen", "true");
-        File.WriteAllLines(targetIni, lines);
+        foreach (var candidate in preferred.Concat(fallback))
+        {
+            if (!File.Exists(candidate))
+                continue;
+            var lines = File.ReadAllLines(candidate).ToList();
+            if (!lines.Any(l => l.TrimStart().StartsWith("DisableSplashScreen=", StringComparison.OrdinalIgnoreCase)))
+                continue;
+            SetIniValue(lines, "DisableSplashScreen", "true");
+            File.WriteAllLines(targetIni, lines);
+            return;
+        }
+
+        File.WriteAllBytes(marker, []);
     }
 
     /// Sets key=value in an ini line list, preserving the key's existing section if present.
