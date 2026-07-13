@@ -5,8 +5,8 @@
         xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.TerminateDialog"
         Title="{x:Static text:UiText+Dialog.TerminateTitle}"
-        Width="640"
-        Height="360"
+        Width="800"
+        Height="600"
         MinWidth="480"
         MinHeight="260"
         WindowStartupLocation="CenterOwner"
@@ -35,7 +35,7 @@
                         HorizontalAlignment="Right"
                         Spacing="8"
                         Margin="0,12,0,0">
-                <Button Content="{x:Static text:UiText+Button.Terminate}" Click="OnTerminate" IsDefault="True" />
+                <Button Content="{x:Static text:UiText+Button.TerminateAll}" Click="OnTerminate" IsDefault="True" />
                 <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" IsCancel="True" />
             </StackPanel>
 
@@ -45,7 +45,7 @@
                     Background="Transparent">
                 <DockPanel>
                     <Grid DockPanel.Dock="Top"
-                          ColumnDefinitions="70,*,120,2*,32"
+                          ColumnDefinitions="70,*,80,2*,32"
                           Background="{DynamicResource AppColHeaderBrush}">
                         <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminatePid}"
                                    Padding="8,4" FontWeight="SemiBold"
@@ -62,43 +62,83 @@
                     </Grid>
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ProcessList">
+                        <ItemsControl x:Name="GroupList">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="views:TerminateRow">
-                                    <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
-                                            BorderThickness="0,0,0,1">
-                                        <Grid ColumnDefinitions="70,*,120,2*,32">
-                                            <TextBlock Grid.Column="0" Text="{Binding PidText}"
-                                                       Padding="8,4"
-                                                       Foreground="{DynamicResource AppTextBrush}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Exe}"
-                                                       Padding="8,4"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       ToolTip.Tip="{Binding Exe}"
-                                                       Foreground="{DynamicResource AppTextBrush}" />
-                                            <TextBlock Grid.Column="2" Text="{Binding StartedText}"
-                                                       Padding="8,4"
-                                                       Foreground="{DynamicResource AppTextBrush}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                            <TextBlock Grid.Column="3" Text="{Binding CommandLine}"
-                                                       Padding="8,4"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       ToolTip.Tip="{Binding CommandLine}"
-                                                       Foreground="{DynamicResource AppSubTextBrush}" />
-                                            <Button Grid.Column="4"
-                                                    Content="&#x2715;"
-                                                    Tag="{Binding}"
-                                                    Click="OnTerminateRow"
-                                                    ToolTip.Tip="{x:Static text:UiText+Button.Terminate}"
-                                                    Padding="6,2"
-                                                    Margin="4,2"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Background="Transparent"
-                                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                                        </Grid>
-                                    </Border>
+                                <DataTemplate x:DataType="views:TerminateGroup">
+                                    <StackPanel>
+                                        <Border Background="{DynamicResource AppColHeaderBrush}"
+                                                BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                                BorderThickness="0,0,0,1">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,32">
+                                                <Image Grid.Column="0" Source="{Binding Icon}"
+                                                       Width="20" Height="20" Margin="8,4" />
+                                                <TextBlock Grid.Column="1" Text="{Binding AppName}"
+                                                           Padding="4,4" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource AppTextBrush}" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding Rows.Count, StringFormat='({0})'}"
+                                                           Padding="4,4"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource AppSubTextBrush}" />
+                                                <Button Grid.Column="3"
+                                                        Tag="{Binding}"
+                                                        Click="OnTerminateGroup"
+                                                        ToolTip.Tip="{x:Static text:UiText+Button.TerminateAll}"
+                                                        Padding="4"
+                                                        Margin="4,2"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Background="Transparent"
+                                                        BorderThickness="0">
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4db.svg"
+                                                             Width="16" Height="16" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                        <ItemsControl ItemsSource="{Binding Rows}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="views:TerminateRow">
+                                                    <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                                                            BorderThickness="0,0,0,1">
+                                                        <Grid ColumnDefinitions="70,*,80,2*,32">
+                                                            <TextBlock Grid.Column="0" Text="{Binding PidText}"
+                                                                       Padding="8,4"
+                                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                            <TextBlock Grid.Column="1" Text="{Binding Exe}"
+                                                                       Padding="8,4"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       ToolTip.Tip="{Binding Exe}"
+                                                                       Foreground="{DynamicResource AppTextBrush}" />
+                                                            <TextBlock Grid.Column="2" Text="{Binding StartedText}"
+                                                                       Padding="8,4"
+                                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                            <TextBlock Grid.Column="3" Text="{Binding CommandLine}"
+                                                                       Padding="8,4"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       ToolTip.Tip="{Binding CommandLine}"
+                                                                       Foreground="{DynamicResource AppSubTextBrush}" />
+                                                            <Button Grid.Column="4"
+                                                                    Tag="{Binding}"
+                                                                    Click="OnTerminateRow"
+                                                                    ToolTip.Tip="{x:Static text:UiText+Button.Terminate}"
+                                                                    Padding="4"
+                                                                    Margin="4,2"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0">
+                                                                <svg:Svg Path="avares://Apportia/Assets/Emoji/274c.svg"
+                                                                         Width="16" Height="16" />
+                                                            </Button>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

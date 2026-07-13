@@ -473,6 +473,7 @@ public static class UiText
         public const string ScanWithVirusTotal = "Scan with VirusTotal";
         public const string Select = "Select";
         public const string Terminate = "Terminate";
+        public const string TerminateAll = "Terminate All";
         public const string Update = "Update";
         public const string UploadAndScan = "Upload & Scan";
         public const string VtRescan = "Rescan";

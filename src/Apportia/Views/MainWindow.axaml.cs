@@ -1290,7 +1290,7 @@ public partial class MainWindow : Window, IInstallUi
             if (candidates.Count == 0)
                 return;
 
-            var dialog = new TerminateDialog(node.Name, candidates)
+            var dialog = new TerminateDialog(node.Name, [new TerminateGroupInput(node.Name, node.Icon, candidates)])
             {
                 Icon = new WindowIcon(node.Icon)
             };
@@ -1931,13 +1931,18 @@ public partial class MainWindow : Window, IInstallUi
             if (DataContext is not MainViewModel vm)
                 return;
             var running = vm.AllNodes.Where(n => n is { IsRunning: true, IsPlugin: false }).ToList();
-            var candidates = new List<RunningAppsService.KillCandidate>();
+            var groups = new List<TerminateGroupInput>();
             foreach (var node in running)
-                candidates.AddRange(RunningAppsService.GetKillCandidates(node.SectionName));
-            if (candidates.Count == 0)
+            {
+                var c = RunningAppsService.GetKillCandidates(node.SectionName);
+                if (c.Count > 0)
+                    groups.Add(new TerminateGroupInput(node.Name, node.Icon, c));
+            }
+
+            if (groups.Count == 0)
                 return;
 
-            var dialog = new TerminateDialog(UiText.Dialog.TerminateAllAppsName, candidates);
+            var dialog = new TerminateDialog(UiText.Dialog.TerminateAllAppsName, groups);
             await dialog.ShowDialog(this);
             if (!dialog.Confirmed)
                 return;
