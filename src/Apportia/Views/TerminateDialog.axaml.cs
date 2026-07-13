@@ -49,12 +49,41 @@ public sealed class TerminateRow(RunningAppsService.KillCandidate source) : INot
     public event PropertyChangedEventHandler? PropertyChanged;
 }
 
-public sealed class TerminateGroup(string sectionName, string appName, Bitmap? icon, IEnumerable<TerminateRow> rows)
+public sealed class TerminateGroup(string sectionName, string appName, Bitmap? icon, IEnumerable<TerminateRow> rows) : INotifyPropertyChanged
 {
+    private string _cpuText = "\u2014";
+    private string _ramText = "\u2014";
+
     public string SectionName { get; } = sectionName;
     public string AppName { get; } = appName;
     public Bitmap? Icon { get; } = icon;
     public ObservableCollection<TerminateRow> Rows { get; } = new(rows);
+
+    public string CpuText
+    {
+        get => _cpuText;
+        set
+        {
+            if (_cpuText == value)
+                return;
+            _cpuText = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CpuText)));
+        }
+    }
+
+    public string RamText
+    {
+        get => _ramText;
+        set
+        {
+            if (_ramText == value)
+                return;
+            _ramText = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RamText)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 public sealed record TerminateGroupInput(string SectionName, string AppName, Bitmap? Icon);
@@ -213,6 +242,9 @@ public partial class TerminateDialog : Window
         var now = DateTime.UtcNow;
         foreach (var group in _groups)
         {
+            double? cpuSum = null;
+            long ramSum = 0;
+            var anyRam = false;
             foreach (var row in group.Rows)
             {
                 var pid = row.Source.Pid;
@@ -233,10 +265,13 @@ public partial class TerminateDialog : Window
                             if (percent < 0)
                                 percent = 0;
                             row.CpuText = percent.ToString("0.0") + " %";
+                            cpuSum = (cpuSum ?? 0) + percent;
                         }
                     }
 
                     row.RamText = AppDiskUsageService.FormatSize(ram);
+                    ramSum += ram;
+                    anyRam = true;
                     _lastSample[pid] = (cpu, now);
                 }
                 catch
@@ -244,6 +279,9 @@ public partial class TerminateDialog : Window
                     /* process gone – Refresh will remove it next tick */
                 }
             }
+
+            group.CpuText = cpuSum is { } c ? c.ToString("0.0") + " %" : "\u2014";
+            group.RamText = anyRam ? AppDiskUsageService.FormatSize(ramSum) : "\u2014";
         }
     }
 

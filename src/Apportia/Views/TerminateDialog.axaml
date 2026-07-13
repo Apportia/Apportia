@@ -83,19 +83,41 @@
                                         <Border Background="{DynamicResource AppColHeaderBrush}"
                                                 BorderBrush="{DynamicResource AppSeparatorBrush}"
                                                 BorderThickness="0,0,0,1">
-                                            <Grid ColumnDefinitions="Auto,*,Auto,32">
-                                                <Image Grid.Column="0" Source="{Binding Icon}"
-                                                       Width="20" Height="20" Margin="8,4" />
-                                                <TextBlock Grid.Column="1" Text="{Binding AppName}"
-                                                           Padding="4,4" FontWeight="SemiBold"
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="60" />
+                                                    <ColumnDefinition Width="60" />
+                                                    <ColumnDefinition Width="80" />
+                                                    <ColumnDefinition Width="Auto" SharedSizeGroup="ExeCol" />
+                                                    <ColumnDefinition Width="80" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="32" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="1" Text="{Binding CpuText}"
+                                                           Padding="8,4" FontWeight="SemiBold"
                                                            VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource AppTextBrush}" />
-                                                <TextBlock Grid.Column="2"
-                                                           Text="{Binding Rows.Count, StringFormat='({0})'}"
-                                                           Padding="4,4"
+                                                           Foreground="{DynamicResource AppTextBrush}"
+                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                <TextBlock Grid.Column="2" Text="{Binding RamText}"
+                                                           Padding="8,4" FontWeight="SemiBold"
                                                            VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource AppSubTextBrush}" />
-                                                <Button Grid.Column="3"
+                                                           Foreground="{DynamicResource AppTextBrush}"
+                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                <StackPanel Grid.Column="3" Grid.ColumnSpan="3"
+                                                            Orientation="Horizontal"
+                                                            VerticalAlignment="Center">
+                                                    <Image Source="{Binding Icon}"
+                                                           Width="20" Height="20" Margin="8,4" />
+                                                    <TextBlock Text="{Binding AppName}"
+                                                               Padding="4,4" FontWeight="SemiBold"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource AppTextBrush}" />
+                                                    <TextBlock Text="{Binding Rows.Count, StringFormat='({0})'}"
+                                                               Padding="4,4"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource AppSubTextBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="6"
                                                         Tag="{Binding}"
                                                         Click="OnTerminateGroup"
                                                         ToolTip.Tip="{x:Static text:UiText+Button.TerminateAll}"
