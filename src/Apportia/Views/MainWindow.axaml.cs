@@ -38,6 +38,7 @@ public partial class MainWindow : Window, IInstallUi
     private FilterViewSettings _defaultView = new();
 
     private bool _forceClose;
+    private ScrollViewer? _gridScrollerCache;
     private int _historyIndex = -1;
     private CancellationTokenSource? _iconDownloadCts;
     private CancellationTokenSource? _ipcDebounceCts;
@@ -104,8 +105,11 @@ public partial class MainWindow : Window, IInstallUi
     private ScrollViewer? ListScroller =>
         _listScrollerCache ??= MainList.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
 
+    private ScrollViewer? GridScroller =>
+        _gridScrollerCache ??= MainGridList.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+
     private ScrollViewer? ActiveScroller =>
-        (DataContext as MainViewModel)?.Columns.IsGridView == true ? MainGridScroller : ListScroller;
+        (DataContext as MainViewModel)?.Columns.IsGridView == true ? GridScroller : ListScroller;
 
     Task<string?> IInstallUi.ShowDialogAsync(AppNode? node, string title, string message, params string[] buttons)
     {
@@ -970,26 +974,64 @@ public partial class MainWindow : Window, IInstallUi
 
     private void ScrollToFlatRowIndex(int index, double viewportTargetY)
     {
+        if (DataContext is not MainViewModel vm) return;
+        var node = index >= 0 && index < vm.FlatRows.Count ? vm.FlatRows[index] : null;
+        if (node != null) ScrollToNode(node, viewportTargetY);
+    }
+
+    private void ScrollToNode(object node, double viewportTargetY)
+    {
+        if (DataContext is not MainViewModel vm) return;
         var list = ActiveList;
         var scroller = ActiveScroller;
         if (scroller == null) return;
 
-        var c = list.ContainerFromIndex(index);
+        var idx = vm.Columns.IsGridView ? FindGridRowIndexFor(node, vm) : vm.FlatRows.IndexOf(node);
+        if (idx < 0) return;
+
+        var c = list.ContainerFromIndex(idx);
         if (c != null)
         {
             ScrollContainerToViewportY(c, viewportTargetY);
             return;
         }
 
-        if (list is ListBox lb)
+        if (list is not ListBox lb)
+            return;
+        lb.ScrollIntoView(idx);
+        Dispatcher.UIThread.Post(() =>
         {
-            lb.ScrollIntoView(index);
-            Dispatcher.UIThread.Post(() =>
-            {
-                var c2 = list.ContainerFromIndex(index);
-                if (c2 != null) ScrollContainerToViewportY(c2, viewportTargetY);
-            }, DispatcherPriority.Background);
+            var c2 = list.ContainerFromIndex(idx);
+            if (c2 != null) ScrollContainerToViewportY(c2, viewportTargetY);
+        }, DispatcherPriority.Background);
+    }
+
+    private static int FindGridRowIndexFor(object node, MainViewModel vm)
+    {
+        for (var i = 0; i < vm.GridRows.Count; i++)
+        {
+            var r = vm.GridRows[i];
+            if (ReferenceEquals(r, node) || node is AppNode app && r is GridTileRow row && row.Tiles.Contains(app))
+                return i;
         }
+
+        return -1;
+    }
+
+    private void OnMainGridListSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        if (DataContext is MainViewModel { Columns.IsGridView: true } vm)
+            RecomputeGridColumns(vm);
+    }
+
+    private void RecomputeGridColumns(MainViewModel vm)
+    {
+        var tileWidth = vm.Columns.TileWidth;
+        if (tileWidth <= 0) return;
+        var w = MainGridList.Bounds.Width;
+        if (w <= 0) return;
+        var cols = Math.Max(1, (int)Math.Floor(w / tileWidth));
+        vm.GridColumns = cols;
     }
 
     private void OnAppRowPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -2294,10 +2336,14 @@ public partial class MainWindow : Window, IInstallUi
             UpdateFontSizeButton();
         };
         Closing += OnWindowClosing;
-        MainGridScroller.ScrollChanged += (_, _) => UpdateStickyHeader();
         MainList.AttachedToVisualTree += (_, _) =>
         {
             var s = ListScroller;
+            if (s != null) s.ScrollChanged += (_, _) => UpdateStickyHeader();
+        };
+        MainGridList.AttachedToVisualTree += (_, _) =>
+        {
+            var s = GridScroller;
             if (s != null) s.ScrollChanged += (_, _) => UpdateStickyHeader();
         };
         KeyDown += OnWindowKeyDown;
@@ -2516,6 +2562,21 @@ public partial class MainWindow : Window, IInstallUi
         }
 
         AttachInstallListeners();
+        vm.SetGridActive(vm.Columns.IsGridView);
+        RecomputeGridColumns(vm);
+        vm.Columns.PropertyChanged += (_, ev) =>
+        {
+            switch (ev.PropertyName)
+            {
+                case nameof(ColumnWidths.IsGridView):
+                    vm.SetGridActive(vm.Columns.IsGridView);
+                    if (vm.Columns.IsGridView) RecomputeGridColumns(vm);
+                    break;
+                case nameof(ColumnWidths.TileWidth):
+                    if (vm.Columns.IsGridView) RecomputeGridColumns(vm);
+                    break;
+            }
+        };
         vm.PropertyChanged += (sender, e) =>
         {
             switch (e.PropertyName)
@@ -2584,13 +2645,15 @@ public partial class MainWindow : Window, IInstallUi
         if (DataContext is not MainViewModel vm)
             return null;
         var list = ActiveList;
+        var rows = ActiveRows(vm);
         Control? best = null;
         var bestY = double.PositiveInfinity;
         foreach (var c in list.GetRealizedContainers())
         {
             var idx = list.IndexFromContainer(c);
-            if (idx < 0 || idx >= vm.FlatRows.Count) continue;
-            if (vm.FlatRows[idx] is not AppNode) continue;
+            if (idx < 0 || idx >= rows.Count) continue;
+            var row = rows[idx];
+            if (row is not AppNode && row is not GridTileRow) continue;
             var y = GetViewportY(c);
             if (y is not { } yv || yv < 0) continue;
             if (yv < bestY)
@@ -2602,24 +2665,28 @@ public partial class MainWindow : Window, IInstallUi
 
         if (best == null) return null;
         var bIdx = list.IndexFromContainer(best);
-        return bIdx >= 0 && bIdx < vm.FlatRows.Count
-            ? (vm.FlatRows[bIdx] as AppNode)?.SectionName
-            : null;
+        if (bIdx < 0 || bIdx >= rows.Count) return null;
+        return rows[bIdx] switch
+        {
+            AppNode a => a.SectionName,
+            GridTileRow g => g.Tiles.FirstOrDefault()?.SectionName,
+            _ => null
+        };
     }
 
     private bool TryScrollToSectionName(string sectionName)
     {
         if (DataContext is not MainViewModel vm)
             return false;
-        for (var i = 0; i < vm.FlatRows.Count; i++)
-        {
-            if (vm.FlatRows[i] is not AppNode node || node.SectionName != sectionName)
-                continue;
-            ScrollToFlatRowIndex(i, GetStickyOffset(vm));
-            return true;
-        }
+        var node = vm.FlatRows.OfType<AppNode>().FirstOrDefault(n => n.SectionName == sectionName);
+        if (node == null) return false;
+        ScrollToNode(node, GetStickyOffset(vm));
+        return true;
+    }
 
-        return false;
+    private static IList<object> ActiveRows(MainViewModel vm)
+    {
+        return vm.Columns.IsGridView ? vm.GridRows : vm.FlatRows;
     }
 
     private double GetStickyOffset(MainViewModel vm)
@@ -2639,6 +2706,7 @@ public partial class MainWindow : Window, IInstallUi
         }
 
         var list = ActiveList;
+        var rows = ActiveRows(vm);
         var topRealizedIndex = -1;
         var topY = double.PositiveInfinity;
         foreach (var c in list.GetRealizedContainers())
@@ -2661,7 +2729,7 @@ public partial class MainWindow : Window, IInstallUi
         string? currentCategory = null;
         for (var i = topRealizedIndex - 1; i >= 0; i--)
         {
-            if (vm.FlatRows[i] is not CategoryNode { HasCategory: true } cat) continue;
+            if (rows[i] is not CategoryNode { HasCategory: true } cat) continue;
             currentCategory = cat.Category;
             break;
         }

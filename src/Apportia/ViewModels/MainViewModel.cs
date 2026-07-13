@@ -19,6 +19,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _batchDirty;
     private CategoryDisplayMode _categoryDisplay = CategoryDisplayMode.Full;
     private CategoryScope _categoryScope = CategoryScope.Standard;
+    private bool _gridActive;
+
+    private int _gridColumns = 1;
 
     private bool _hasInstalledApps;
     private InstallFilter _installFilter = InstallFilter.All;
@@ -112,6 +115,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public ColumnWidths Columns { get; } = new();
     public AvaloniaList<object> FlatRows { get; } = [];
+    public AvaloniaList<object> GridRows { get; } = [];
+
+    public int GridColumns
+    {
+        get => _gridColumns;
+        set
+        {
+            var v = Math.Max(1, value);
+            if (_gridColumns == v) return;
+            _gridColumns = v;
+            if (_gridActive) RebuildGridRows();
+        }
+    }
+
     public IEnumerable<AppNode> AllNodes => _grouped.SelectMany(g => g.Nodes);
 
     public IReadOnlyList<string> Categories =>
@@ -209,6 +226,55 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public bool IsBuildingRows { get; private set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void SetGridActive(bool active)
+    {
+        if (_gridActive == active) return;
+        _gridActive = active;
+        if (active) RebuildGridRows();
+        else GridRows.Clear();
+    }
+
+    private void NotifyRowsFullyLoaded()
+    {
+        if (_gridActive) RebuildGridRows();
+        RowsFullyLoaded?.Invoke();
+    }
+
+    public void RebuildGridRows()
+    {
+        var cols = Math.Max(1, _gridColumns);
+        var newRows = new List<object>(FlatRows.Count);
+        var tileBatch = new List<AppNode>(cols);
+        foreach (var row in FlatRows)
+        {
+            if (row is AppNode app)
+            {
+                tileBatch.Add(app);
+                if (tileBatch.Count >= cols)
+                {
+                    newRows.Add(new GridTileRow(tileBatch.ToArray()));
+                    tileBatch.Clear();
+                }
+            }
+            else
+            {
+                if (tileBatch.Count > 0)
+                {
+                    newRows.Add(new GridTileRow(tileBatch.ToArray()));
+                    tileBatch.Clear();
+                }
+
+                newRows.Add(row);
+            }
+        }
+
+        if (tileBatch.Count > 0)
+            newRows.Add(new GridTileRow(tileBatch.ToArray()));
+
+        GridRows.Clear();
+        GridRows.AddRange(newRows);
+    }
 
     public void MergeUpstreamEntries(IReadOnlyList<AppEntry> entries)
     {
@@ -451,7 +517,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 FlatRows.InsertRange(idx + 1, items);
         }
 
-        RowsFullyLoaded?.Invoke();
+        NotifyRowsFullyLoaded();
     }
 
     private void ToggleCategoryInPlace(CategoryNode catNode)
@@ -489,7 +555,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 FlatRows.InsertRange(idx + 1, items);
         }
 
-        RowsFullyLoaded?.Invoke();
+        NotifyRowsFullyLoaded();
     }
 
     private void UpdateScopeTailInPlace()
@@ -572,7 +638,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
         }
 
-        RowsFullyLoaded?.Invoke();
+        NotifyRowsFullyLoaded();
     }
 
     private List<object> BuildCategoryItems(CategoryNode catNode)
@@ -747,7 +813,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
         else
         {
-            RowsFullyLoaded?.Invoke();
+            NotifyRowsFullyLoaded();
         }
     }
 
@@ -778,7 +844,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             // One extra yield so layout (higher priority) runs before signalling
             await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background, ct);
             if (!ct.IsCancellationRequested)
-                RowsFullyLoaded?.Invoke();
+                NotifyRowsFullyLoaded();
         }
     }
 
