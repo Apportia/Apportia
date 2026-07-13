@@ -1024,6 +1024,13 @@ public partial class MainWindow : Window, IInstallUi
             RecomputeGridColumns(vm);
     }
 
+    private static void ReclaimMemory()
+    {
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, true, true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, true, true);
+    }
+
     private void RecomputeGridColumns(MainViewModel vm)
     {
         var tileWidth = vm.Columns.TileWidth;
@@ -2590,6 +2597,8 @@ public partial class MainWindow : Window, IInstallUi
                     break;
                 case nameof(MainViewModel.InstallFilter):
                     ApplyViewPreset(vm);
+                    if (vm.InstallFilter == InstallFilter.Installed)
+                        Dispatcher.UIThread.Post(ReclaimMemory, DispatcherPriority.Background);
                     break;
             }
         };
