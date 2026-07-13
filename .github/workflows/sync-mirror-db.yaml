@@ -2,7 +2,7 @@ name: Sync Mirror DB
 
 on:
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 permissions:
@@ -98,17 +98,34 @@ jobs:
                   mirrors_raw[slug] = loc
               if not mirrors_raw:
                   sys.exit("ERROR: No SourceForge mirrors parsed — page structure may have changed.")
-              def loc_key(loc):
-                  parts = [p.strip() for p in loc.split(",")]
-                  return (parts[-1].casefold(), parts[0].casefold() if len(parts) > 1 else "")
+              return {"downloads": "Auto-select"} | mirrors_raw
 
-              sorted_mirrors = dict(sorted(mirrors_raw.items(), key=lambda kv: loc_key(kv[1])))
-              return {"downloads": "Auto-select"} | sorted_mirrors
+
+          def loc_key(loc):
+              parts = [p.strip() for p in loc.split(",")]
+              return (parts[-1].casefold(), parts[0].casefold() if len(parts) > 1 else "")
+
+
+          def merge_sourceforge(existing, fetched):
+              # Preserve every mirror already known; only add slugs not yet present.
+              merged = dict(existing)
+              added = {k: v for k, v in fetched.items() if k not in merged}
+              merged.update(added)
+              auto = merged.pop("downloads", "Auto-select")
+              rest = dict(sorted(merged.items(), key=lambda kv: loc_key(kv[1])))
+              return {"downloads": auto} | rest
 
 
           def main():
+              existing = {}
+              if TARGET.exists():
+                  try:
+                      existing = json.loads(TARGET.read_text(encoding="utf-8"))
+                  except json.JSONDecodeError:
+                      existing = {}
+              existing_sf = existing.get("downloads.sourceforge.net", {})
               data = {
-                  "downloads.sourceforge.net": fetch_sourceforge(),
+                  "downloads.sourceforge.net": merge_sourceforge(existing_sf, fetch_sourceforge()),
                   "downloads.portableapps.com": PORTABLEAPPS_MIRRORS,
               }
               result = json.dumps(data, indent=4, ensure_ascii=False) + "\n"
