@@ -45,18 +45,24 @@
                     Background="Transparent">
                 <DockPanel>
                     <Grid DockPanel.Dock="Top"
-                          ColumnDefinitions="70,*,80,2*,32"
+                          ColumnDefinitions="60,60,80,*,80,2*,32"
                           Background="{DynamicResource AppColHeaderBrush}">
                         <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminatePid}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="1" Text="{x:Static text:UiText+Column.TerminateExecutable}"
+                        <TextBlock Grid.Column="1" Text="{x:Static text:UiText+Column.TerminateCpu}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="2" Text="{x:Static text:UiText+Column.TerminateStarted}"
+                        <TextBlock Grid.Column="2" Text="{x:Static text:UiText+Column.TerminateRam}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="3" Text="{x:Static text:UiText+Column.TerminateCommand}"
+                        <TextBlock Grid.Column="3" Text="{x:Static text:UiText+Column.TerminateExecutable}"
+                                   Padding="8,4" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                        <TextBlock Grid.Column="4" Text="{x:Static text:UiText+Column.TerminateStarted}"
+                                   Padding="8,4" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                        <TextBlock Grid.Column="5" Text="{x:Static text:UiText+Column.TerminateCommand}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
                     </Grid>
@@ -101,26 +107,34 @@
                                                 <DataTemplate x:DataType="views:TerminateRow">
                                                     <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
                                                             BorderThickness="0,0,0,1">
-                                                        <Grid ColumnDefinitions="70,*,80,2*,32">
+                                                        <Grid ColumnDefinitions="60,60,80,*,80,2*,32">
                                                             <TextBlock Grid.Column="0" Text="{Binding PidText}"
                                                                        Padding="8,4"
                                                                        Foreground="{DynamicResource AppTextBrush}"
                                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                            <TextBlock Grid.Column="1" Text="{Binding Exe}"
+                                                            <TextBlock Grid.Column="1" Text="{Binding CpuText}"
+                                                                       Padding="8,4"
+                                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                            <TextBlock Grid.Column="2" Text="{Binding RamText}"
+                                                                       Padding="8,4"
+                                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                            <TextBlock Grid.Column="3" Text="{Binding Exe}"
                                                                        Padding="8,4"
                                                                        TextTrimming="CharacterEllipsis"
                                                                        ToolTip.Tip="{Binding Exe}"
                                                                        Foreground="{DynamicResource AppTextBrush}" />
-                                                            <TextBlock Grid.Column="2" Text="{Binding StartedText}"
+                                                            <TextBlock Grid.Column="4" Text="{Binding StartedText}"
                                                                        Padding="8,4"
                                                                        Foreground="{DynamicResource AppTextBrush}"
                                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                            <TextBlock Grid.Column="3" Text="{Binding CommandLine}"
+                                                            <TextBlock Grid.Column="5" Text="{Binding CommandLine}"
                                                                        Padding="8,4"
                                                                        TextTrimming="CharacterEllipsis"
                                                                        ToolTip.Tip="{Binding CommandLine}"
                                                                        Foreground="{DynamicResource AppSubTextBrush}" />
-                                                            <Button Grid.Column="4"
+                                                            <Button Grid.Column="6"
                                                                     Tag="{Binding}"
                                                                     Click="OnTerminateRow"
                                                                     ToolTip.Tip="{x:Static text:UiText+Button.Terminate}"

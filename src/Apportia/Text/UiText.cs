@@ -360,8 +360,10 @@ public static class UiText
 
         // TerminateDialog columns
         public const string TerminateCommand = "Command";
+        public const string TerminateCpu = "CPU";
         public const string TerminateExecutable = "Executable";
         public const string TerminatePid = "PID";
+        public const string TerminateRam = "RAM";
         public const string TerminateStarted = "Started";
 
         // VirusTotal columns

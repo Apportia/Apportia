@@ -1286,11 +1286,11 @@ public partial class MainWindow : Window, IInstallUi
         {
             if (NodeFromMenu(sender) is not { } node)
                 return;
-            var candidates = RunningAppsService.GetKillCandidates(node.SectionName);
-            if (candidates.Count == 0)
+            if (RunningAppsService.GetKillCandidates(node.SectionName).Count == 0)
                 return;
 
-            var dialog = new TerminateDialog(node.Name, [new TerminateGroupInput(node.Name, node.Icon, candidates)])
+            var dialog = new TerminateDialog(node.Name,
+                                             () => [new TerminateGroupInput(node.SectionName, node.Name, node.Icon)])
             {
                 Icon = new WindowIcon(node.Icon)
             };
@@ -1930,19 +1930,15 @@ public partial class MainWindow : Window, IInstallUi
         {
             if (DataContext is not MainViewModel vm)
                 return;
-            var running = vm.AllNodes.Where(n => n is { IsRunning: true, IsPlugin: false }).ToList();
-            var groups = new List<TerminateGroupInput>();
-            foreach (var node in running)
-            {
-                var c = RunningAppsService.GetKillCandidates(node.SectionName);
-                if (c.Count > 0)
-                    groups.Add(new TerminateGroupInput(node.Name, node.Icon, c));
-            }
-
-            if (groups.Count == 0)
+            if (!vm.AllNodes.Any(n => n is { IsRunning: true, IsPlugin: false } &&
+                                      RunningAppsService.GetKillCandidates(n.SectionName).Count > 0))
                 return;
 
-            var dialog = new TerminateDialog(UiText.Dialog.TerminateAllAppsName, groups);
+            var dialog = new TerminateDialog(UiText.Dialog.TerminateAllAppsName,
+                                             () => vm.AllNodes
+                                                     .Where(n => n is { IsPlugin: false } && RunningAppsService.IsRunning(n.SectionName))
+                                                     .Select(n => new TerminateGroupInput(n.SectionName, n.Name, n.Icon))
+                                                     .ToList());
             await dialog.ShowDialog(this);
             if (!dialog.Confirmed)
                 return;
