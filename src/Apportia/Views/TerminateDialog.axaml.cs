@@ -102,6 +102,7 @@ public partial class TerminateDialog : Window
     private readonly Dictionary<int, (TimeSpan Cpu, DateTime When)> _lastSample = [];
     private readonly Func<IReadOnlyList<TerminateGroupInput>> _sourceProvider;
     private DispatcherTimer? _sampleTimer;
+    private bool _sampling;
 
     private SortColumn _sortColumn = SortColumn.Started;
     private bool _sortDesc = true;
@@ -183,17 +184,49 @@ public partial class TerminateDialog : Window
 
     private void Refresh()
     {
-        ReconcileGroups();
-        SampleUsage();
-        if (_groups.Count == 0)
-        {
-            Confirmed = false;
-            Close();
-            return;
-        }
+        _ = RefreshAsync();
+    }
 
-        ApplySort();
-        UpdateHeader();
+    private async Task RefreshAsync()
+    {
+        try
+        {
+            ReconcileGroups();
+            if (_groups.Count == 0)
+            {
+                Confirmed = false;
+                Close();
+                return;
+            }
+
+            if (_sampling)
+            {
+                UpdateHeader();
+                return;
+            }
+
+            _sampling = true;
+            try
+            {
+                var pids = _groups.SelectMany(g => g.Rows.Select(r => r.Source.Pid)).ToArray();
+                var prevSample = new Dictionary<int, (TimeSpan Cpu, DateTime When)>(_lastSample);
+                var now = DateTime.UtcNow;
+                var metrics = await Task.Run(() => SampleMetrics(pids, prevSample, now));
+                if (_sampleTimer == null)
+                    return;
+                ApplyMetrics(metrics, now);
+                ApplySort();
+                UpdateHeader();
+            }
+            finally
+            {
+                _sampling = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("TerminateDialog.Refresh failed: " + ex.Message);
+        }
     }
 
     private void ReconcileGroups()
@@ -264,9 +297,52 @@ public partial class TerminateDialog : Window
         group.Rows.Insert(idx, row);
     }
 
-    private void SampleUsage()
+    private static Dictionary<int, PidMetric> SampleMetrics(int[] pids, Dictionary<int, (TimeSpan Cpu, DateTime When)> prevSample, DateTime now)
     {
-        var now = DateTime.UtcNow;
+        var result = new Dictionary<int, PidMetric>(pids.Length);
+        foreach (var pid in pids)
+        {
+            try
+            {
+                using var p = Process.GetProcessById(pid);
+                if (p.HasExited)
+                    continue;
+                var cpu = p.TotalProcessorTime;
+                var ram = p.WorkingSet64;
+                double? percent = null;
+                if (prevSample.TryGetValue(pid, out var prev))
+                {
+                    var elapsedMs = (now - prev.When).TotalMilliseconds;
+                    if (elapsedMs > 0)
+                    {
+                        var cpuMs = (cpu - prev.Cpu).TotalMilliseconds;
+                        var pct = cpuMs / (elapsedMs * ProcessorCount) * 100.0;
+                        percent = pct < 0 ? 0 : pct;
+                    }
+                }
+                else
+                {
+                    var lifetimeMs = (DateTime.Now - p.StartTime).TotalMilliseconds;
+                    if (lifetimeMs > 0)
+                    {
+                        var pct = cpu.TotalMilliseconds / (lifetimeMs * ProcessorCount) * 100.0;
+                        percent = pct < 0 ? 0 : pct;
+                    }
+                }
+
+                result[pid] = new PidMetric(percent, ram, cpu);
+            }
+            catch
+            {
+                // process gone – Refresh will remove it next tick
+            }
+        }
+
+        return result;
+    }
+
+    private void ApplyMetrics(Dictionary<int, PidMetric> metrics, DateTime now)
+    {
         foreach (var group in _groups)
         {
             double? cpuSum = null;
@@ -274,52 +350,24 @@ public partial class TerminateDialog : Window
             var anyRam = false;
             foreach (var row in group.Rows)
             {
-                var pid = row.Source.Pid;
-                try
+                if (!metrics.TryGetValue(row.Source.Pid, out var m))
+                    continue;
+                if (m.CpuPercent is { } pct)
                 {
-                    using var p = Process.GetProcessById(pid);
-                    if (p.HasExited)
-                        continue;
-                    var cpu = p.TotalProcessorTime;
-                    var ram = p.WorkingSet64;
-                    if (_lastSample.TryGetValue(pid, out var prev))
-                    {
-                        var elapsedMs = (now - prev.When).TotalMilliseconds;
-                        if (elapsedMs > 0)
-                        {
-                            var cpuMs = (cpu - prev.Cpu).TotalMilliseconds;
-                            var percent = cpuMs / (elapsedMs * ProcessorCount) * 100.0;
-                            if (percent < 0)
-                                percent = 0;
-                            row.CpuText = percent.ToString("0.0") + " %";
-                            row.CpuPercent = percent;
-                            cpuSum = (cpuSum ?? 0) + percent;
-                        }
-                    }
-                    else
-                    {
-                        var lifetimeMs = (DateTime.Now - p.StartTime).TotalMilliseconds;
-                        if (lifetimeMs > 0)
-                        {
-                            var percent = cpu.TotalMilliseconds / (lifetimeMs * ProcessorCount) * 100.0;
-                            if (percent < 0)
-                                percent = 0;
-                            row.CpuText = percent.ToString("0.0") + " %";
-                            row.CpuPercent = percent;
-                            cpuSum = (cpuSum ?? 0) + percent;
-                        }
-                    }
+                    row.CpuText = pct.ToString("0.0") + " %";
+                    row.CpuPercent = pct;
+                    cpuSum = (cpuSum ?? 0) + pct;
+                }
 
+                if (m.RamBytes is { } ram)
+                {
                     row.RamText = AppDiskUsageService.FormatSize(ram);
                     row.RamBytes = ram;
                     ramSum += ram;
                     anyRam = true;
-                    _lastSample[pid] = (cpu, now);
                 }
-                catch
-                {
-                    /* process gone – Refresh will remove it next tick */
-                }
+
+                _lastSample[row.Source.Pid] = (m.CpuTime, now);
             }
 
             group.CpuText = cpuSum is { } c ? c.ToString("0.0") + " %" : "\u2014";
@@ -424,6 +472,8 @@ public partial class TerminateDialog : Window
         _lastSample.Clear();
         base.OnClosed(e);
     }
+
+    private readonly record struct PidMetric(double? CpuPercent, long? RamBytes, TimeSpan CpuTime);
 
     private enum SortColumn
     {
