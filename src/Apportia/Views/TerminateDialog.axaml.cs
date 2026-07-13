@@ -134,6 +134,24 @@ public partial class TerminateDialog : Window
         HeaderText.Text = count == 1
             ? string.Format(UiText.Dialog.TerminateHeaderSingleFormat, _appName)
             : string.Format(UiText.Dialog.TerminateHeaderMultipleFormat, count, _appName);
+
+        double? cpuSum = null;
+        long ramSum = 0;
+        var anyRam = false;
+        foreach (var group in _groups)
+        {
+            if (group.CpuPercent is { } c)
+                cpuSum = (cpuSum ?? 0) + c;
+            if (group.RamBytes is { } r)
+            {
+                ramSum += r;
+                anyRam = true;
+            }
+        }
+
+        var cpuText = cpuSum is { } cs ? cs.ToString("0.0") + " %" : "\u2014";
+        var ramText = anyRam ? AppDiskUsageService.FormatSize(ramSum) : "\u2014";
+        TotalsText.Text = string.Format(UiText.Dialog.TerminateTotalsFormat, cpuText, ramText);
     }
 
     private void OnTerminate(object? sender, RoutedEventArgs e)
