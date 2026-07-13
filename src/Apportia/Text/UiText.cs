@@ -248,6 +248,7 @@ public static class UiText
         public const string MainDeleteFolderTitle = "Delete Folder";
         public const string MainInstallInProgressTitle = "Installation Running";
         public const string MainInstallPromptFormat = "Would you like to install {0}?";
+        public const string MainInstallPromptSizeSuffixFormat = "\n\nRequired:   {0}\nAvailable:  {1}\n\nRequired size covers the app only.\nUser data created later is not counted.";
         public const string MainNoPreviewBodyFormat = "No preview available for {0}.";
         public const string MainNoPreviewTitle = "No Preview";
         public const string MainNotEnoughSpaceBody = "Not enough disk space to install {0}.\n\nRequired:   {1}\nAvailable:  {2}\n\nFree up disk space and click Retry, or Cancel to abort.";

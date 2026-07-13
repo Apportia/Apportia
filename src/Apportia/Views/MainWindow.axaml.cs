@@ -683,6 +683,19 @@ public partial class MainWindow : Window, IInstallUi
         return vm;
     }
 
+    private static string BuildInstallPrompt(AppNode node, string appsBaseDir)
+    {
+        var prompt = string.Format(UiText.Dialog.MainInstallPromptFormat, node.Name);
+        var required = (node.DownloadSizeMb + node.InstallSizeMb) * 1_048_576L;
+        if (required <= 0)
+            return prompt;
+        var free = AppDiskUsageService.GetAvailableFreeSpace(appsBaseDir);
+        return prompt + string.Format(
+            UiText.Dialog.MainInstallPromptSizeSuffixFormat,
+            AppDiskUsageService.FormatSize(required, floor: true),
+            AppDiskUsageService.FormatSize(free, floor: true));
+    }
+
     private static IReadOnlyList<AppEntry> BuildInstalledEntries()
     {
         var db = CurrentAppService.LoadAll();
@@ -1043,7 +1056,7 @@ public partial class MainWindow : Window, IInstallUi
 
                 var choice = await ShowDialog(
                     node, node.Name,
-                    string.Format(UiText.Dialog.MainInstallPromptFormat, node.Name),
+                    BuildInstallPrompt(node, appsBaseDir),
                     UiText.Button.Install, UiText.Button.Cancel);
                 if (choice == UiText.Button.Install)
                     await _installer.InstallAsync(node, appsBaseDir, false);
@@ -1164,7 +1177,7 @@ public partial class MainWindow : Window, IInstallUi
 
         var installChoice = await ShowDialog(
             node, node.Name,
-            string.Format(UiText.Dialog.MainInstallPromptFormat, node.Name),
+            BuildInstallPrompt(node, appsBaseDir),
             UiText.Button.Install, UiText.Button.InstallAndRun, UiText.Button.Cancel);
 
         switch (installChoice)

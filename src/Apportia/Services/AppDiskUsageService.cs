@@ -46,7 +46,7 @@ public static class AppDiskUsageService
         }
     }
 
-    public static string FormatSize(long value, bool fromMb = false)
+    public static string FormatSize(long value, bool fromMb = false, bool floor = false)
     {
         var bytes = fromMb ? value * 1_048_576 : value;
         var linux = OperatingSystem.IsLinux();
@@ -58,8 +58,10 @@ public static class AppDiskUsageService
             _ => $"{bytes} B"
         };
 
-        static string Fmt(double v)
+        string Fmt(double v)
         {
+            if (floor)
+                return $"{Math.Floor(v):F0}";
             return v % 1 == 0 ? $"{v:F0}" : $"{v:F1}";
         }
     }
