@@ -2540,6 +2540,7 @@ public partial class MainWindow : Window, IInstallUi
             node.Icon = node.IsCustom
                 ? _iconManager.GetCustomIcon(node.SectionName, size)
                 : _iconManager.GetIcon(node.SectionName, size);
+        _iconManager.EvictIconsForOtherSizes(size);
         await StartIconDownloadsAsync(vm);
     }
 

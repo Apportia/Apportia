@@ -60,6 +60,23 @@ public sealed class AppImageManager(string cacheDir) : IDisposable
         return File.Exists(iconPath) ? _cache.GetOrAdd("custom:" + folderName, _ => new Bitmap(iconPath)) : Placeholder(size);
     }
 
+    public void EvictIconsForOtherSizes(int keepSize)
+    {
+        var keepPrefix = $"{keepSize}:";
+        var keepPlaceholder = $"placeholder:{keepSize}";
+        foreach (var key in _cache.Keys)
+        {
+            if (key.StartsWith("custom:", StringComparison.Ordinal))
+                continue;
+            if (key.StartsWith(keepPrefix, StringComparison.Ordinal))
+                continue;
+            if (key == keepPlaceholder)
+                continue;
+            if (_cache.TryRemove(key, out var old))
+                old.Dispose();
+        }
+    }
+
     public Bitmap ReloadCustomIcon(string folderName)
     {
         var key = "custom:" + folderName;
