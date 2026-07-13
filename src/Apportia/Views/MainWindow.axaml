@@ -243,9 +243,10 @@
                 </StackPanel>
                 <AutoCompleteBox x:Name="SearchBox"
                                  Grid.Column="1"
-                                 HorizontalAlignment="Center"
-                                 MinWidth="280"
-                                 MaxWidth="480"
+                                 HorizontalAlignment="Stretch"
+                                 Margin="8,0"
+                                 MinWidth="140"
+                                 MaxWidth="320"
                                  PlaceholderText="{Binding SearchPlaceholder}"
                                  FilterMode="None"
                                  DropDownClosed="OnSearchDropDownClosed"
@@ -256,6 +257,7 @@
                             VerticalAlignment="Center"
                             Height="28"
                             FontSize="13"
+                            Background="{DynamicResource AppUpdateBrush}"
                             ToolTip.Tip="{x:Static text:UiText+Tip.UpdateApportia}"
                             Click="OnUpdateApp" />
                     <Button x:Name="TerminateAllButton"
