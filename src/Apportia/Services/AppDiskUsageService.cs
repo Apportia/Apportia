@@ -71,13 +71,38 @@ public static class AppDiskUsageService
         try
         {
             Directory.CreateDirectory(path);
-            var root = Path.GetPathRoot(Path.GetFullPath(path)) ?? path;
-            return new DriveInfo(root).AvailableFreeSpace;
+            var full = Path.GetFullPath(path);
+            var drive = ResolveDrive(full);
+            return drive.AvailableFreeSpace;
         }
         catch (Exception ex)
         {
             Log.Write(string.Format(LogText.DiskUsage.DiskSpaceCheckFailedFormat, path, ex.Message));
             return long.MaxValue; // assume sufficient if check fails
+        }
+
+        static DriveInfo ResolveDrive(string full)
+        {
+            if (!OperatingSystem.IsLinux())
+                return new DriveInfo(Path.GetPathRoot(full) ?? full);
+
+            DriveInfo? best = null;
+            var bestLen = -1;
+            foreach (var d in DriveInfo.GetDrives())
+            {
+                var name = d.Name.TrimEnd('/');
+                if (name.Length == 0)
+                    name = "/";
+                var matches = full == name
+                              || full.StartsWith(name == "/" ? "/" : name + "/", StringComparison.Ordinal);
+                if (matches && name.Length > bestLen)
+                {
+                    best = d;
+                    bestLen = name.Length;
+                }
+            }
+
+            return best ?? new DriveInfo("/");
         }
     }
 
