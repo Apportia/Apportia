@@ -1,13 +1,36 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Apportia.Platform;
 using Apportia.Text;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Platform.Storage;
 
 namespace Apportia.Views;
+
+public sealed class ArgItem(string value) : INotifyPropertyChanged
+{
+    private string _value = value;
+
+    public string Value
+    {
+        get => _value;
+        set
+        {
+            if (_value == value) return;
+            _value = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? name = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+}
 
 public partial class RunArgsDialog : Window
 {
@@ -22,6 +45,17 @@ public partial class RunArgsDialog : Window
     public RunArgsDialog()
     {
         InitializeComponent();
+        ArgsList.ItemsSource = Args;
+        Args.CollectionChanged += (_, e) =>
+        {
+            if (e.NewItems != null)
+                foreach (ArgItem item in e.NewItems)
+                    item.PropertyChanged += OnArgValueChanged;
+            if (e.OldItems != null)
+                foreach (ArgItem item in e.OldItems)
+                    item.PropertyChanged -= OnArgValueChanged;
+            UpdateRunButtons();
+        };
     }
 
     public RunArgsDialog(string appName, string[] prefilledArgs) : this()
@@ -29,29 +63,30 @@ public partial class RunArgsDialog : Window
         RunAsAdminButton.IsVisible = OperatingSystem.IsWindows();
         AppLabel.Text = appName;
         foreach (var arg in prefilledArgs)
-            AddArgRow(arg);
+            Args.Add(new ArgItem(arg));
 
-        if (ArgsList.Children.Count == 0)
-            AddArgRow(string.Empty);
+        if (Args.Count == 0)
+            Args.Add(new ArgItem(string.Empty));
     }
+
+    public ObservableCollection<ArgItem> Args { get; } = new();
 
     public RunChoice Choice { get; private set; } = RunChoice.Cancel;
 
     public string[] ArgsArray =>
-        ArgsList.Children
-                .OfType<Grid>()
-                .Select(g => (g.Children[0] as TextBox)?.Text?.Trim() ?? string.Empty)
-                .Where(s => !string.IsNullOrEmpty(s))
-                .ToArray();
+        Args.Select(a => a.Value.Trim())
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToArray();
+
+    private void OnArgValueChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        UpdateRunButtons();
+    }
 
     private void OnAddArg(object? sender, RoutedEventArgs e)
     {
-        var hasEmpty =
-            ArgsList.Children
-                    .OfType<Grid>()
-                    .Any(g => string.IsNullOrWhiteSpace((g.Children[0] as TextBox)?.Text));
-        if (!hasEmpty)
-            AddArgRow(string.Empty);
+        if (!Args.Any(a => string.IsNullOrWhiteSpace(a.Value)))
+            Args.Add(new ArgItem(string.Empty));
     }
 
     private async void OnAddFile(object? sender, RoutedEventArgs e)
@@ -67,7 +102,7 @@ public partial class RunArgsDialog : Window
                 return;
             RemoveEmptyRows();
             foreach (var f in files)
-                AddArgRow(f.TryGetLocalPath() ?? f.Path.LocalPath);
+                Args.Add(new ArgItem(f.TryGetLocalPath() ?? f.Path.LocalPath));
         }
         catch
         {
@@ -88,7 +123,7 @@ public partial class RunArgsDialog : Window
                 return;
             RemoveEmptyRows();
             foreach (var d in folders)
-                AddArgRow(d.TryGetLocalPath() ?? d.Path.LocalPath);
+                Args.Add(new ArgItem(d.TryGetLocalPath() ?? d.Path.LocalPath));
         }
         catch
         {
@@ -98,49 +133,18 @@ public partial class RunArgsDialog : Window
 
     private void RemoveEmptyRows()
     {
-        var empty =
-            ArgsList.Children
-                    .OfType<Grid>()
-                    .Where(g => string.IsNullOrWhiteSpace((g.Children[0] as TextBox)?.Text))
-                    .ToList();
-        foreach (var row in empty)
-            ArgsList.Children.Remove(row);
+        for (var i = Args.Count - 1; i >= 0; i--)
+            if (string.IsNullOrWhiteSpace(Args[i].Value))
+                Args.RemoveAt(i);
     }
 
-    private void AddArgRow(string value)
+    private void OnRemoveArg(object? sender, RoutedEventArgs e)
     {
-        var textBox = new TextBox
-        {
-            Text = value,
-            FontFamily = new FontFamily("Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"),
-            HorizontalAlignment = HorizontalAlignment.Stretch
-        };
-
-        var removeBtn = new Button
-        {
-            Content = UiText.Button.RemoveArg,
-            Padding = new Thickness(6, 2),
-            Margin = new Thickness(4, 0, 0, 0),
-            VerticalAlignment = VerticalAlignment.Center
-        };
-
-        var row = new Grid
-        {
-            ColumnDefinitions = new ColumnDefinitions("*,Auto")
-        };
-        row.Children.Add(textBox);
-        Grid.SetColumn(removeBtn, 1);
-        row.Children.Add(removeBtn);
-
-        textBox.TextChanged += (_, _) => UpdateRunButtons();
-        removeBtn.Click += (_, _) =>
-        {
-            ArgsList.Children.Remove(row);
-            UpdateRunButtons();
-        };
-
-        ArgsList.Children.Add(row);
-        UpdateRunButtons();
+        if (sender is not Button { DataContext: ArgItem item }) return;
+        if (Args.Count <= 1)
+            item.Value = string.Empty;
+        else
+            Args.Remove(item);
     }
 
     private void UpdateRunButtons()

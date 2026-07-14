@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:text="using:Apportia.Text"
+        xmlns:views="using:Apportia.Views"
         x:Class="Apportia.Views.RunArgsDialog"
         Title="{x:Static text:UiText+Dialog.RunArgsTitle}"
         Width="540"
@@ -21,15 +22,51 @@
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,0,0,2" />
 
-        <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
-                BorderThickness="1" CornerRadius="4" Padding="4">
-            <ScrollViewer MaxHeight="200"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          Padding="6,2,6,0">
-                <StackPanel x:Name="ArgsList" Spacing="4" Margin="2,2,2,6" />
-            </ScrollViewer>
-        </Border>
+        <ListBox x:Name="ArgsList"
+                 MaxHeight="240"
+                 Background="Transparent"
+                 BorderBrush="{DynamicResource AppSeparatorBrush}"
+                 BorderThickness="1"
+                 CornerRadius="4"
+                 Padding="4"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListBox.ItemContainerTheme>
+                <ControlTheme TargetType="ListBoxItem" x:DataType="views:ArgItem">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0,0,0,4" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Template">
+                        <ControlTemplate>
+                            <ContentPresenter Name="PART_ContentPresenter"
+                                              Background="{TemplateBinding Background}"
+                                              HorizontalContentAlignment="Stretch"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Padding="{TemplateBinding Padding}" />
+                        </ControlTemplate>
+                    </Setter>
+                </ControlTheme>
+            </ListBox.ItemContainerTheme>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="views:ArgItem">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,4,0">
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding Value, Mode=TwoWay}"
+                                 FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
+                                 HorizontalAlignment="Stretch"
+                                 MinWidth="0" />
+                        <Button Grid.Column="1"
+                                Content="{x:Static text:UiText+Button.RemoveArg}"
+                                Padding="6,2"
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Center"
+                                Click="OnRemoveArg" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
             <Button Content="{x:Static text:UiText+Button.AddParameter}" Click="OnAddArg" />
