@@ -2343,6 +2343,7 @@ public partial class MainWindow : Window, IInstallUi
             UpdateInstallFilterButton();
             UpdateViewModeButton();
             UpdateFontSizeButton();
+            RefreshUpdateButton();
         };
         Closing += OnWindowClosing;
         MainList.AttachedToVisualTree += (_, _) =>
@@ -2567,6 +2568,8 @@ public partial class MainWindow : Window, IInstallUi
                 {
                     if (ev.PropertyName == nameof(AppNode.IsInstalled))
                         Dispatcher.UIThread.Post(UpdateInstallFilterButton);
+                    else if (ev.PropertyName == nameof(AppNode.NeedsUpdate))
+                        Dispatcher.UIThread.Post(RefreshUpdateButton);
                 };
             }
         }
@@ -2580,10 +2583,15 @@ public partial class MainWindow : Window, IInstallUi
             {
                 case nameof(ColumnWidths.IsGridView):
                     vm.SetGridActive(vm.Columns.IsGridView);
-                    if (vm.Columns.IsGridView) RecomputeGridColumns(vm);
+                    if (vm.Columns.IsGridView)
+                        RecomputeGridColumns(vm);
                     break;
                 case nameof(ColumnWidths.TileWidth):
-                    if (vm.Columns.IsGridView) RecomputeGridColumns(vm);
+                    if (vm.Columns.IsGridView)
+                        RecomputeGridColumns(vm);
+                    break;
+                case nameof(ColumnWidths.ShowCurrentColumn):
+                    RefreshUpdateButton();
                     break;
             }
         };
@@ -2605,7 +2613,11 @@ public partial class MainWindow : Window, IInstallUi
                     break;
             }
         };
-        vm.RowsFullyLoaded += AttachInstallListeners;
+        vm.RowsFullyLoaded += () =>
+        {
+            AttachInstallListeners();
+            RefreshUpdateButton();
+        };
         SearchBox.AsyncPopulator = (text, _) =>
             Task.FromResult(vm.SearchAppNames(text ?? string.Empty).Cast<object>());
         vm.BeforeRebuildRows += () =>
@@ -2889,11 +2901,52 @@ public partial class MainWindow : Window, IInstallUi
 
     private async Task CheckForUpdateAsync()
     {
-        var info = await _selfUpdate.CheckAsync();
-        if (info == null)
+        try
+        {
+            await _selfUpdate.CheckAsync();
+        }
+        catch
+        {
+            // best-effort: refresh update button even if self-update check fails
+        }
+
+        RefreshUpdateButton();
+    }
+
+    private void RefreshUpdateButton()
+    {
+        var info = _selfUpdate.Pending;
+        if (info != null)
+        {
+            UpdateButton.IsVisible = true;
+            UpdateButton.Content = string.Format(UiText.Status.UpdateVersionFormat, info.Version);
+            ToolTip.SetTip(UpdateButton, UiText.Tip.UpdateApportia);
             return;
-        UpdateButton.IsVisible = true;
-        UpdateButton.Content = string.Format(UiText.Status.UpdateVersionFormat, info.Version);
+        }
+
+        if (DataContext is MainViewModel vm && vm.AllNodes.Count(n => n.NeedsUpdate) >= 2)
+        {
+            UpdateButton.IsVisible = true;
+            UpdateButton.Content = UiText.Status.UpdateAll;
+            ToolTip.SetTip(UpdateButton, UiText.Tip.UpdateAllApps);
+            return;
+        }
+
+        UpdateButton.IsVisible = false;
+    }
+
+    private void OnUpdateAllApps()
+    {
+        if (DataContext is not MainViewModel vm)
+            return;
+        var pending = vm.AllNodes.Where(n => n.NeedsUpdate).ToList();
+        if (pending.Count == 0)
+            return;
+
+        foreach (var node in pending.Skip(1))
+            _installQueue.Enqueue(node, false);
+
+        _ = _installer.InstallAsync(pending[0], AppDeployService.AppsDir, false);
     }
 
     private async void OnUpdateApp(object? sender, RoutedEventArgs e)
@@ -2902,7 +2955,10 @@ public partial class MainWindow : Window, IInstallUi
         {
             var info = _selfUpdate.Pending;
             if (info == null)
+            {
+                OnUpdateAllApps();
                 return;
+            }
 
             var changelog = new ChangelogDialog(info.Version, info.Changelog);
             await changelog.ShowDialog(this);

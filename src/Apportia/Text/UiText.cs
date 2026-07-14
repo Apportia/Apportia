@@ -345,6 +345,7 @@ public static class UiText
         public const string Tips = "Tips";
         public const string ToggleTheme = "Toggle Theme";
         public const string UpdateApportia = "Update Apportia";
+        public const string UpdateAllApps = "Update all apps with pending updates";
         public const string ViewMode = "View Mode";
         public const string WineSetup = "Wine Setup";
     }
@@ -531,5 +532,6 @@ public static class UiText
         public const string DownloadingUpdateFormat = "Downloading update {0}...";
         public const string DownloadingUpdateProgressFormat = "Downloading update {0}... {1}%";
         public const string UpdateVersionFormat = "Update {0}";
+        public const string UpdateAll = "Update All";
     }
 }
