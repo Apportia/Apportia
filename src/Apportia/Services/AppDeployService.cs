@@ -603,7 +603,7 @@ public sealed class AppDeployService : IDisposable
         {
             psi = new ProcessStartInfo(exePath)
             {
-                UseShellExecute = false,
+                UseShellExecute = true,
                 WorkingDirectory = workingDir,
                 Arguments = args ?? string.Empty
             };

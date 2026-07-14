@@ -59,14 +59,67 @@ public static class RunningAppsService
         return OperatingSystem.IsWindows() ? GetKillCandidatesWindows(sectionName, bases) : [];
     }
 
-    public static void KillPids(IEnumerable<int> pids)
+    public static List<int> KillPids(IEnumerable<int> pids)
     {
         var list = pids.Distinct().ToList();
+        var failed = new List<int>();
         if (list.Count == 0)
-            return;
+            return failed;
         foreach (var pid in SortLeafFirst(list))
-            TryKill(pid);
+            if (!TryKill(pid) && ProcessStillAlive(pid))
+                failed.Add(pid);
         _ = Task.Run(Poll);
+        return failed;
+    }
+
+    public static void KillPidsWithElevation(IEnumerable<int> pids)
+    {
+        var failed = KillPids(pids);
+        if (failed.Count == 0)
+            return;
+        if (OperatingSystem.IsWindows() && !Win32Process.IsCurrentProcessElevated())
+            ElevatedKill(failed);
+    }
+
+    public static bool ElevatedKill(IEnumerable<int> pids)
+    {
+        if (!OperatingSystem.IsWindows())
+            return false;
+        var args = string.Join(" ", pids.Distinct().Select(p => $"/PID {p}"));
+        if (args.Length == 0)
+            return false;
+        try
+        {
+            var psi = new ProcessStartInfo("taskkill.exe", "/F /T " + args)
+            {
+                UseShellExecute = true,
+                Verb = "runas",
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true
+            };
+            using var proc = Process.Start(psi);
+            proc?.WaitForExit(5000);
+            _ = Task.Run(Poll);
+            return proc?.ExitCode == 0;
+        }
+        catch
+        {
+            /* UAC cancelled or taskkill unavailable */
+            return false;
+        }
+    }
+
+    private static bool ProcessStillAlive(int pid)
+    {
+        try
+        {
+            using var p = Process.GetProcessById(pid);
+            return !p.HasExited;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static List<int> SortLeafFirst(List<int> pids)
@@ -241,7 +294,7 @@ public static class RunningAppsService
         {
             try
             {
-                var path = proc.MainModule?.FileName;
+                var path = Win32Process.TryGetImagePath(proc.Id);
                 if (string.IsNullOrEmpty(path))
                     continue;
                 var single = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -262,7 +315,8 @@ public static class RunningAppsService
                 }
 
                 var cmd = WindowsCommandLine.TryGet(proc.Id) ?? path;
-                result.Add(new KillCandidate(proc.Id, Path.GetFileName(path), cmd, started));
+                var elevated = Win32Process.IsProcessElevated(proc.Id);
+                result.Add(new KillCandidate(proc.Id, Path.GetFileName(path), cmd, started, elevated));
             }
             catch
             {
@@ -376,16 +430,18 @@ public static class RunningAppsService
         }
     }
 
-    private static void TryKill(int pid)
+    private static bool TryKill(int pid)
     {
         try
         {
             using var p = Process.GetProcessById(pid);
             p.Kill();
+            return true;
         }
         catch
         {
-            /* already gone */
+            /* already gone or access denied */
+            return false;
         }
     }
 
@@ -506,6 +562,7 @@ public static class RunningAppsService
         return result;
     }
 
+    [SupportedOSPlatform("windows")]
     private static HashSet<string> ScanWindows(List<string> bases)
     {
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -513,7 +570,7 @@ public static class RunningAppsService
         {
             try
             {
-                var path = proc.MainModule?.FileName;
+                var path = Win32Process.TryGetImagePath(proc.Id);
                 if (!string.IsNullOrEmpty(path))
                     TryExtractSection(path, bases, Path.DirectorySeparatorChar, result);
             }
@@ -566,5 +623,5 @@ public static class RunningAppsService
         }
     }
 
-    public sealed record KillCandidate(int Pid, string Exe, string CommandLine, DateTime? StartTime);
+    public sealed record KillCandidate(int Pid, string Exe, string CommandLine, DateTime? StartTime, bool IsElevated = false);
 }

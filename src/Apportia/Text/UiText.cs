@@ -335,6 +335,7 @@ public static class UiText
         // MainWindow toolbar tooltips
         public const string CategoryDisplay = "Category Display";
         public const string CategoryScope = "Category Scope";
+        public const string ElevatedProcess = "Runs as Administrator";
         public const string FontSize = "Font Size";
         public const string IconSize = "Icon Size";
         public const string ImportCustomApp = "Import Custom App";

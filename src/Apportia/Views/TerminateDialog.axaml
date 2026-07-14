@@ -173,11 +173,20 @@
                                                                        TextAlignment="Right"
                                                                        Foreground="{Binding RamBrush}"
                                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                            <TextBlock Grid.Column="3" Text="{Binding Exe}"
-                                                                       Padding="8,4"
-                                                                       TextTrimming="CharacterEllipsis"
-                                                                       ToolTip.Tip="{Binding Exe}"
-                                                                       Foreground="{DynamicResource AppTextBrush}" />
+                                                            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                                <svg:Svg
+                                                                    Path="avares://Apportia/Assets/Emoji/1f6e1.svg"
+                                                                    Width="14" Height="14"
+                                                                    Margin="6,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    ToolTip.Tip="{x:Static text:UiText+Tip.ElevatedProcess}"
+                                                                    IsVisible="{Binding IsElevated}" />
+                                                                <TextBlock Text="{Binding Exe}"
+                                                                           Padding="8,4"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           ToolTip.Tip="{Binding Exe}"
+                                                                           Foreground="{DynamicResource AppTextBrush}" />
+                                                            </StackPanel>
                                                             <TextBlock Grid.Column="4" Text="{Binding StartedText}"
                                                                        Padding="8,4"
                                                                        Foreground="{DynamicResource AppTextBrush}"

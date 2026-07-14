@@ -121,6 +121,7 @@ public static partial class SelfUpdater
         Environment.Exit(0);
     }
 
+    [SupportedOSPlatform("windows")]
     private static void ApplyWindows(string tempDir, string installDir, Version version)
     {
         var batPath = Path.Combine(Path.GetTempPath(), $"Apportia-update-{version}.bat");

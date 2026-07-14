@@ -1034,9 +1034,11 @@ public partial class MainWindow : Window, IInstallUi
     private void RecomputeGridColumns(MainViewModel vm)
     {
         var tileWidth = vm.Columns.TileWidth;
-        if (tileWidth <= 0) return;
+        if (tileWidth <= 0)
+            return;
         var w = MainGridList.Bounds.Width;
-        if (w <= 0) return;
+        if (w <= 0)
+            return;
         var cols = Math.Max(1, (int)Math.Floor(w / tileWidth));
         vm.GridColumns = cols;
     }
@@ -1415,7 +1417,7 @@ public partial class MainWindow : Window, IInstallUi
             if (!dialog.Confirmed)
                 return;
 
-            RunningAppsService.KillPids(dialog.RemainingPids);
+            RunningAppsService.KillPidsWithElevation(dialog.RemainingPids);
         }
         catch (Exception ex)
         {
@@ -2064,7 +2066,7 @@ public partial class MainWindow : Window, IInstallUi
             if (!dialog.Confirmed)
                 return;
 
-            RunningAppsService.KillPids(dialog.RemainingPids);
+            RunningAppsService.KillPidsWithElevation(dialog.RemainingPids);
         }
         catch (Exception ex)
         {

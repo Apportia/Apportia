@@ -26,6 +26,7 @@ public sealed class TerminateRow(RunningAppsService.KillCandidate source) : INot
     public string Exe => Source.Exe;
     public string CommandLine => Source.CommandLine;
     public string StartedText => Source.StartTime is { } t ? t.ToString("HH:mm:ss") : "\u2014";
+    public bool IsElevated => Source.IsElevated;
 
     public string CpuText
     {
@@ -188,11 +189,10 @@ public partial class TerminateDialog : Window
         {
             if (group.CpuPercent is { } c)
                 cpuSum = (cpuSum ?? 0) + c;
-            if (group.RamBytes is { } r)
-            {
-                ramSum += r;
-                anyRam = true;
-            }
+            if (group.RamBytes is not { } r)
+                continue;
+            ramSum += r;
+            anyRam = true;
         }
 
         var cpuText = cpuSum is { } cs ? cs.ToString("0.0") + " %" : "\u2014";
@@ -216,7 +216,7 @@ public partial class TerminateDialog : Window
     {
         if (sender is not Button { Tag: TerminateRow row })
             return;
-        RunningAppsService.KillPids([row.Source.Pid]);
+        RunningAppsService.KillPidsWithElevation([row.Source.Pid]);
         Refresh();
     }
 
@@ -224,7 +224,7 @@ public partial class TerminateDialog : Window
     {
         if (sender is not Button { Tag: TerminateGroup group })
             return;
-        RunningAppsService.KillPids(group.Rows.Select(r => r.Source.Pid).ToList());
+        RunningAppsService.KillPidsWithElevation(group.Rows.Select(r => r.Source.Pid).ToList());
         Refresh();
     }
 
