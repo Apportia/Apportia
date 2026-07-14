@@ -27,7 +27,7 @@
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto"
                       Padding="20,10,0,10">
-            <StackPanel Margin="0,0,20,0">
+            <StackPanel Margin="0,0,48,0">
                 <StackPanel x:Name="ChangelogPanel" />
                 <Border Height="40" />
             </StackPanel>
