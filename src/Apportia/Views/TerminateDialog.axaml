@@ -46,15 +46,15 @@
                     <Grid DockPanel.Dock="Top"
                           Background="{DynamicResource AppColHeaderBrush}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="60" />
-                            <ColumnDefinition Width="60" />
-                            <ColumnDefinition Width="80" />
                             <ColumnDefinition Width="Auto" SharedSizeGroup="ExeCol" />
+                            <ColumnDefinition Width="60" />
                             <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="60" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="32" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminatePid}"
+                        <TextBlock Grid.Column="0" Text="{x:Static text:UiText+Column.TerminateExecutable}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
                         <TextBlock Grid.Column="1" x:Name="CpuHeader" Tag="cpu"
@@ -71,14 +71,14 @@
                                    Cursor="Hand"
                                    Tapped="OnSortHeaderClicked"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="3" Text="{x:Static text:UiText+Column.TerminateExecutable}"
-                                   Padding="8,4" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource AppSubTextBrush}" />
-                        <TextBlock Grid.Column="4" x:Name="StartedHeader" Tag="started"
+                        <TextBlock Grid.Column="3" x:Name="StartedHeader" Tag="started"
                                    Text="{x:Static text:UiText+Column.TerminateStarted}"
                                    Padding="8,4" FontWeight="SemiBold"
                                    Cursor="Hand"
                                    Tapped="OnSortHeaderClicked"
+                                   Foreground="{DynamicResource AppSubTextBrush}" />
+                        <TextBlock Grid.Column="4" Text="{x:Static text:UiText+Column.TerminatePid}"
+                                   Padding="8,4" FontWeight="SemiBold"
                                    Foreground="{DynamicResource AppSubTextBrush}" />
                         <TextBlock Grid.Column="5" Text="{x:Static text:UiText+Column.TerminateCommand}"
                                    Padding="8,4" FontWeight="SemiBold"
@@ -95,27 +95,15 @@
                                                 BorderThickness="0,0,0,1">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="60" />
-                                                    <ColumnDefinition Width="60" />
-                                                    <ColumnDefinition Width="80" />
                                                     <ColumnDefinition Width="Auto" SharedSizeGroup="ExeCol" />
+                                                    <ColumnDefinition Width="60" />
                                                     <ColumnDefinition Width="80" />
+                                                    <ColumnDefinition Width="80" />
+                                                    <ColumnDefinition Width="60" />
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="32" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="1" Text="{Binding CpuText}"
-                                                           Padding="8,4" FontWeight="SemiBold"
-                                                           VerticalAlignment="Center"
-                                                           TextAlignment="Right"
-                                                           Foreground="{Binding CpuBrush}"
-                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                <TextBlock Grid.Column="2" Text="{Binding RamText}"
-                                                           Padding="8,4" FontWeight="SemiBold"
-                                                           VerticalAlignment="Center"
-                                                           TextAlignment="Right"
-                                                           Foreground="{Binding RamBrush}"
-                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                <StackPanel Grid.Column="3" Grid.ColumnSpan="3"
+                                                <StackPanel Grid.Column="0"
                                                             Orientation="Horizontal"
                                                             VerticalAlignment="Center">
                                                     <Image Source="{Binding Icon}"
@@ -129,6 +117,18 @@
                                                                VerticalAlignment="Center"
                                                                Foreground="{DynamicResource AppSubTextBrush}" />
                                                 </StackPanel>
+                                                <TextBlock Grid.Column="1" Text="{Binding CpuText}"
+                                                           Padding="8,4" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           TextAlignment="Right"
+                                                           Foreground="{Binding CpuBrush}"
+                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                <TextBlock Grid.Column="2" Text="{Binding RamText}"
+                                                           Padding="8,4" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           TextAlignment="Right"
+                                                           Foreground="{Binding RamBrush}"
+                                                           FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
                                                 <Button Grid.Column="6"
                                                         Tag="{Binding}"
                                                         Click="OnTerminateGroup"
@@ -151,29 +151,15 @@
                                                             BorderThickness="0,0,0,1">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="60" />
-                                                                <ColumnDefinition Width="60" />
-                                                                <ColumnDefinition Width="80" />
                                                                 <ColumnDefinition Width="Auto" SharedSizeGroup="ExeCol" />
+                                                                <ColumnDefinition Width="60" />
                                                                 <ColumnDefinition Width="80" />
+                                                                <ColumnDefinition Width="80" />
+                                                                <ColumnDefinition Width="60" />
                                                                 <ColumnDefinition Width="*" />
                                                                 <ColumnDefinition Width="32" />
                                                             </Grid.ColumnDefinitions>
-                                                            <TextBlock Grid.Column="0" Text="{Binding PidText}"
-                                                                       Padding="8,4"
-                                                                       Foreground="{DynamicResource AppTextBrush}"
-                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                            <TextBlock Grid.Column="1" Text="{Binding CpuText}"
-                                                                       Padding="8,4"
-                                                                       TextAlignment="Right"
-                                                                       Foreground="{Binding CpuBrush}"
-                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                            <TextBlock Grid.Column="2" Text="{Binding RamText}"
-                                                                       Padding="8,4"
-                                                                       TextAlignment="Right"
-                                                                       Foreground="{Binding RamBrush}"
-                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
-                                                            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                            <StackPanel Grid.Column="0" Orientation="Horizontal">
                                                                 <svg:Svg
                                                                     Path="avares://Apportia/Assets/Emoji/1f6e1.svg"
                                                                     Width="14" Height="14"
@@ -187,7 +173,21 @@
                                                                            ToolTip.Tip="{Binding Exe}"
                                                                            Foreground="{DynamicResource AppTextBrush}" />
                                                             </StackPanel>
-                                                            <TextBlock Grid.Column="4" Text="{Binding StartedText}"
+                                                            <TextBlock Grid.Column="1" Text="{Binding CpuText}"
+                                                                       Padding="8,4"
+                                                                       TextAlignment="Right"
+                                                                       Foreground="{Binding CpuBrush}"
+                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                            <TextBlock Grid.Column="2" Text="{Binding RamText}"
+                                                                       Padding="8,4"
+                                                                       TextAlignment="Right"
+                                                                       Foreground="{Binding RamBrush}"
+                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                            <TextBlock Grid.Column="3" Text="{Binding StartedText}"
+                                                                       Padding="8,4"
+                                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+                                                            <TextBlock Grid.Column="4" Text="{Binding PidText}"
                                                                        Padding="8,4"
                                                                        Foreground="{DynamicResource AppTextBrush}"
                                                                        FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
