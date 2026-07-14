@@ -77,12 +77,6 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         set => Set(ref field, Clamp(value, 60, 180));
     } = 80;
 
-    public double Current
-    {
-        get;
-        set => Set(ref field, Clamp(value, 70, 160));
-    } = 90;
-
     public double Joined
     {
         get;
@@ -141,7 +135,6 @@ public sealed class ColumnWidths : INotifyPropertyChanged
     public string VersionHeader => Header("Version");
     public string DownloadHeader => Header("Download");
     public string InstallHeader => Header("Install");
-    public string CurrentHeader => "Current";
     public string JoinedHeader => Header("Joined");
     public string UpdatedHeader => Header("Updated");
     public string UsedHeader => Header("Used");

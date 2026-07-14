@@ -430,15 +430,6 @@
                                Tag="Updated" Tapped="OnColumnHeaderTapped" />
 
                     <Thumb Classes="colResizer" DockPanel.Dock="Right"
-                           IsVisible="{Binding Columns.ShowCurrentColumn}"
-                           Tag="Current" DragDelta="OnColumnResize" />
-                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Current}"
-                               IsVisible="{Binding Columns.ShowCurrentColumn}"
-                               Text="{Binding Columns.CurrentHeader}"
-                               TextAlignment="Right" Margin="0,0,4,0"
-                               FontSize="{Binding Columns.FontSizeSub}" />
-
-                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
                            IsVisible="{Binding Columns.ShowJoinedColumn}"
                            Tag="Joined" DragDelta="OnColumnResize" />
                     <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.Joined}"
@@ -769,13 +760,6 @@
                                                        Text="{Binding UpdateDateDisplay}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
                                                        FontSize="{Binding Columns.FontSize}" />
-                                            <TextBlock DockPanel.Dock="Right"
-                                                       Width="{Binding Columns.Current}"
-                                                       IsVisible="{Binding Columns.ShowCurrentColumn}"
-                                                       Text="{Binding CurrentDate}"
-                                                       TextAlignment="Right" Margin="0,0,4,0"
-                                                       FontSize="{Binding Columns.FontSize}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Joined}"
                                                        IsVisible="{Binding Columns.ShowJoinedColumn}"

@@ -3112,7 +3112,6 @@ public partial class MainWindow : Window, IInstallUi
             case "Version": vm.Columns.Version -= delta; break;
             case "Download": vm.Columns.Download -= delta; break;
             case "Install": vm.Columns.Install -= delta; break;
-            case "Current": vm.Columns.Current -= delta; break;
             case "Joined": vm.Columns.Joined -= delta; break;
             case "Updated": vm.Columns.Updated -= delta; break;
             case "Used": vm.Columns.Used -= delta; break;
