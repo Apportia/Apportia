@@ -41,7 +41,7 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         }
 
         Application.Current.RequestedThemeVariant = next;
-        RefreshIcon(next == null);
+        RefreshIcon();
         _ = WinePrefixTheme.ApplyAsync(Application.Current.ActualThemeVariant == ThemeVariant.Dark, true);
     }
 
@@ -50,15 +50,11 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         Win32Window.ApplyDarkTitlebar(window, dark);
     }
 
-    private void RefreshIcon(bool showAutoIcon = false)
+    private void RefreshIcon()
     {
         var requested = Application.Current!.RequestedThemeVariant;
         var isDark = Application.Current.ActualThemeVariant == ThemeVariant.Dark;
-        var svgName =
-            requested == ThemeVariant.Light ? "1f31e" :
-            requested == ThemeVariant.Dark ? "1f31a" :
-            showAutoIcon ? "1f317" :
-            isDark ? "1f31a" : "1f31e";
+        var svgName = requested == ThemeVariant.Light ? "1f31e" : requested == ThemeVariant.Dark ? "1f31a" : "1f317";
         themeIcon.Path = $"avares://Apportia/Assets/Emoji/{svgName}.svg";
         ApplyDarkTitlebar(isDark);
         ApplyNativeWindowColor(isDark);
