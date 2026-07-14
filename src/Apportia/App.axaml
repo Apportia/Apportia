@@ -94,8 +94,8 @@
                     <SolidColorBrush x:Key="AppTextBrush" Color="#DCDCDC" />
                     <SolidColorBrush x:Key="AppUpdateBrush" Color="#3A2E00" />
                     <SolidColorBrush x:Key="AppWarnBrush" Color="#E8A040" />
-                    <SolidColorBrush x:Key="AppWindowBrush" Color="#1E1E1E" />
-                    <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBackground" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="AppWindowBrush" Color="#1D2122" />
+                    <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBackground" Color="#1D2122" />
                     <SolidColorBrush x:Key="AutoCompleteBoxSuggestionsListBorderBrush" Color="#484850" />
                     <SolidColorBrush x:Key="ButtonBackground" Color="#272727" />
                     <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2A2A2A" />
@@ -122,7 +122,7 @@
                     <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPointerOver" Color="#2A2A2A" />
                     <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="#DCDCDC" />
                     <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="#DCDCDC" />
-                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#1D2122" />
                     <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#383838" />
                     <SolidColorBrush x:Key="ScrollBarButtonArrowForeground" Color="#484850" />
                     <SolidColorBrush x:Key="ScrollBarButtonArrowForegroundPointerOver" Color="#DCDCDC" />
