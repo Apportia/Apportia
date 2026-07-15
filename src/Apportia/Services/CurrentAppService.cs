@@ -124,34 +124,37 @@ public static class CurrentAppService
                 structureChanged = true;
 
             var pendingBefore = PendingUnknownDirs.Count;
-            if (Directory.Exists(appsDir))
+            if (Directory.Exists(appsDir) && File.Exists(AppDatabaseUpdater.CachePath))
             {
                 var upstream = LoadUpstreamByKey();
-                foreach (var dir in Directory.EnumerateDirectories(appsDir))
-                {
-                    var section = Path.GetFileName(dir);
-                    if (string.IsNullOrEmpty(section) || ReservedSectionNames.Contains(section))
-                        continue;
-                    if (db.ContainsKey(section))
-                        continue;
-                    var (exe, _) = AppExecutableService.Resolve(dir, section);
-                    if (exe == null)
-                        continue;
+                // Without a loaded upstream DB every installed app would be flagged as unknown
+                // and the user would be offered to move them all to CustomApps.
+                if (upstream.Count > 0)
+                    foreach (var dir in Directory.EnumerateDirectories(appsDir))
+                    {
+                        var section = Path.GetFileName(dir);
+                        if (string.IsNullOrEmpty(section) || ReservedSectionNames.Contains(section))
+                            continue;
+                        if (db.ContainsKey(section))
+                            continue;
+                        var (exe, _) = AppExecutableService.Resolve(dir, section);
+                        if (exe == null)
+                            continue;
 
-                    if (upstream.TryGetValue(section, out var entry))
-                    {
-                        var info = new CurrentAppInfo();
-                        ApplyReflected(info, entry);
-                        info.LocalPackageVersion = info.PackageVersion;
-                        info.LocalDisplayVersion = info.DisplayVersion;
-                        db[section] = info;
-                        structureChanged = true;
+                        if (upstream.TryGetValue(section, out var entry))
+                        {
+                            var info = new CurrentAppInfo();
+                            ApplyReflected(info, entry);
+                            info.LocalPackageVersion = info.PackageVersion;
+                            info.LocalDisplayVersion = info.DisplayVersion;
+                            db[section] = info;
+                            structureChanged = true;
+                        }
+                        else if (!PendingUnknownDirs.Contains(dir))
+                        {
+                            PendingUnknownDirs.Add(dir);
+                        }
                     }
-                    else if (!PendingUnknownDirs.Contains(dir))
-                    {
-                        PendingUnknownDirs.Add(dir);
-                    }
-                }
             }
 
             if (structureChanged)
@@ -301,7 +304,7 @@ public static class CurrentAppService
         {
             var upstream = LoadUpstreamByKey();
 
-            if (hasInstalledDirs)
+            if (hasInstalledDirs && upstream.Count > 0)
             {
                 foreach (var dir in Directory.EnumerateDirectories(appsDir))
                 {
