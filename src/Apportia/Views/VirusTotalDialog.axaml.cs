@@ -67,11 +67,11 @@ public sealed record VtTridRow(string FileType, string Probability);
 
 public partial class VirusTotalDialog : Window
 {
-    private readonly string _appDir = string.Empty;
     private readonly ObservableCollection<VtFileEntry> _entries = [];
     private readonly AppNode? _node;
     private readonly Dictionary<string, string> _sessionHashes = new();
     private readonly VtStore _store = new();
+    private readonly string _appDir = string.Empty;
     private GridLength _engineHeaderEngineColWidth;
     private string? _sha256PendingUpload;
 
@@ -80,7 +80,7 @@ public partial class VirusTotalDialog : Window
         InitializeComponent();
     }
 
-    public VirusTotalDialog(AppNode node) : this()
+    public VirusTotalDialog(AppNode node, string? downloadedFilePath = null) : this()
     {
         _node = node;
 
@@ -90,6 +90,13 @@ public partial class VirusTotalDialog : Window
         ApiKeyBox.Text = _store.ApiKey;
 
         FileCombo.ItemsSource = _entries;
+
+        if (!string.IsNullOrEmpty(downloadedFilePath) && File.Exists(downloadedFilePath))
+        {
+            _appDir = Path.GetDirectoryName(downloadedFilePath) ?? string.Empty;
+            _entries.Add(new VtFileEntry(Path.GetFileName(downloadedFilePath), null, VtFileStatus.Unknown));
+            return;
+        }
 
         if (!node.IsInstalled)
         {
@@ -248,7 +255,8 @@ public partial class VirusTotalDialog : Window
         if (notFound)
         {
             ResizeWindow(MinWidth, MinHeight);
-            if (_node?.IsInstalled == true)
+            var uploadable = _appDir.Length > 0 && File.Exists(Path.Combine(_appDir, entry.RelativePath));
+            if (uploadable)
             {
                 _sha256PendingUpload = sha256;
                 ScanButton.Content = UiText.Button.UploadAndScan;

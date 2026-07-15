@@ -2162,7 +2162,7 @@ public partial class MainWindow : Window, IInstallUi
             string? presetFolder = null;
             if (source == UiText.Button.ImportGitHub)
             {
-                var gh = new GitHubImportDialog();
+                var gh = new GitHubImportDialog(ConfirmDownloadHashMismatchAsync);
                 await gh.ShowDialog(this);
                 if (!gh.Success)
                     return;
@@ -2184,12 +2184,17 @@ public partial class MainWindow : Window, IInstallUi
                         UiText.Dialog.MainImportMoveOrCopyTitle,
                         string.Format(UiText.Dialog.MainImportMoveOrCopyBodyFormat, win.Name),
                         UiText.Button.Move, UiText.Button.Copy, UiText.Button.Cancel);
-                    if (choice == UiText.Button.Move)
-                        mode = ImportMode.Move;
-                    else if (choice == UiText.Button.Copy)
-                        mode = ImportMode.Copy;
-                    else
-                        return;
+                    switch (choice)
+                    {
+                        case UiText.Button.Move:
+                            mode = ImportMode.Move;
+                            break;
+                        case UiText.Button.Copy:
+                            mode = ImportMode.Copy;
+                            break;
+                        default:
+                            return;
+                    }
                 }
 
                 if (!isInPlace && mode == ImportMode.Copy)
@@ -2396,6 +2401,34 @@ public partial class MainWindow : Window, IInstallUi
         };
         await dialog.ShowDialog(this);
         return dialog.Result;
+    }
+
+    private async Task<bool> ConfirmDownloadHashMismatchAsync(
+        string sectionName, string displayName, string downloadFile, string sha256, string filePath)
+    {
+        if (DataContext is not MainViewModel vm)
+            return false;
+
+        var entry = new AppEntry(
+            sectionName, displayName, string.Empty, string.Empty, string.Empty, string.Empty,
+            string.Empty, string.Empty, string.Empty,
+            DateTime.Today.ToString("yyyy-MM-dd"),
+            downloadFile, sha256, string.Empty, string.Empty, string.Empty, string.Empty);
+        var node = new AppNode(entry, _iconManager.GetIcon(sectionName, vm.Columns.IconSize), vm.Columns);
+
+        var choice = await ShowDialog(
+            UiText.Dialog.InstallHashMismatchTitle, UiText.Dialog.InstallHashMismatchBody,
+            UiText.Button.ScanWithVirusTotal, UiText.Button.ProceedAnyway, UiText.Button.Cancel);
+        if (choice == UiText.Button.ScanWithVirusTotal)
+        {
+            await new VirusTotalDialog(node, filePath) { Icon = Icon }.ShowDialog(this);
+            choice = await ShowDialog(
+                UiText.Dialog.InstallHashMismatchTitle, UiText.Dialog.InstallHashProceedQuestion,
+                UiText.Button.Proceed, UiText.Button.Cancel);
+            return choice == UiText.Button.Proceed;
+        }
+
+        return choice == UiText.Button.ProceedAnyway;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -3053,7 +3086,9 @@ public partial class MainWindow : Window, IInstallUi
                     DownloadProgressBar.Value = p;
                     DownloadSizeText.Text = string.Format(UiText.Status.DownloadingUpdateProgressFormat, info.Version, p);
                 });
-                await _selfUpdate.ApplyAsync(progress);
+                await _selfUpdate.ApplyAsync(
+                    progress,
+                    (file, sha256, path) => ConfirmDownloadHashMismatchAsync("Apportia", "Apportia", file, sha256, path));
             }
             catch (Exception ex)
             {

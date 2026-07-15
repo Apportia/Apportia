@@ -10,8 +10,10 @@ public sealed class SelfUpdateCoordinator(CancellationToken shutdownToken)
         return Pending;
     }
 
-    public Task ApplyAsync(IProgress<int>? progress)
+    public Task ApplyAsync(IProgress<int>? progress, Func<string, string, string, Task<bool>>? onHashMismatch = null)
     {
-        return Pending == null ? Task.CompletedTask : SelfUpdater.ApplyAsync(Pending, progress, shutdownToken);
+        return Pending == null
+            ? Task.CompletedTask
+            : SelfUpdater.ApplyAsync(Pending, progress, onHashMismatch, shutdownToken);
     }
 }

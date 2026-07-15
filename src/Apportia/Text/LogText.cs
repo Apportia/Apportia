@@ -40,6 +40,7 @@ public static class LogText
         public const string ConnectionTimedOutFormat = "Connection to {0} timed out.";
         public const string DownloadFailedFormat = "Download failed for '{0}': {1}";
         public const string DownloadUrlFailedFormat = "Failed to download {0}";
+        public const string HashMismatchFormat = "Hash verification failed for '{0}'";
         public const string LaunchFailedFormat = "Launch failed for '{0}': {1}";
         public const string SevenZipStartFailed = "Failed to start 7z process";
     }

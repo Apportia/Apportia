@@ -10,6 +10,7 @@ namespace Apportia.Views;
 
 public partial class GitHubImportDialog : Window
 {
+    private readonly Func<string, string, string, string, string, Task<bool>>? _confirmHashMismatch;
     private List<GhAsset> _assets = [];
     private double _lastHeight;
     private GhRelease? _release;
@@ -18,6 +19,11 @@ public partial class GitHubImportDialog : Window
     {
         InitializeComponent();
         PropertyChanged += OnPropertyChanged;
+    }
+
+    public GitHubImportDialog(Func<string, string, string, string, string, Task<bool>> confirmHashMismatch) : this()
+    {
+        _confirmHashMismatch = confirmHashMismatch;
     }
 
     public bool Success { get; private set; }
@@ -145,6 +151,21 @@ public partial class GitHubImportDialog : Window
                     FetchButton.IsEnabled = true;
                     HideStatus();
                     return;
+                }
+
+                var sha256 = asset.Sha256Hex;
+                if (sha256.Length > 0 && AppDeployService.VerifyHash(tempZip, sha256) == HashResult.Invalid)
+                {
+                    var proceed = _confirmHashMismatch != null &&
+                                  await _confirmHashMismatch(repo, repo, asset.Name, sha256, tempZip);
+                    if (!proceed)
+                    {
+                        ShowError(UiText.Dialog.InstallHashMismatchBody);
+                        DownloadButton.IsEnabled = true;
+                        FetchButton.IsEnabled = true;
+                        HideStatus();
+                        return;
+                    }
                 }
 
                 ShowStatus(UiText.Dialog.GitHubImportExtracting);

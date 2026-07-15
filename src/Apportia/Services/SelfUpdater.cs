@@ -8,11 +8,13 @@ using SharpCompress.Archives.Zip;
 
 namespace Apportia.Services;
 
-public sealed class SelfUpdateInfo(Version version, string downloadUrl, string? changelog)
+public sealed class SelfUpdateInfo(Version version, string downloadUrl, string? changelog, string sha256, string assetName)
 {
     public Version Version { get; } = version;
     public string DownloadUrl { get; } = downloadUrl;
     public string? Changelog { get; } = changelog;
+    public string Sha256 { get; } = sha256;
+    public string AssetName { get; } = assetName;
 }
 
 public static partial class SelfUpdater
@@ -39,8 +41,10 @@ public static partial class SelfUpdater
             return null;
 
         var release = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
-        var url = release?.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))?.DownloadUrl;
-        return url == null ? null : new SelfUpdateInfo(latest, url, release?.Body);
+        var asset = release?.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+        return asset == null
+            ? null
+            : new SelfUpdateInfo(latest, asset.DownloadUrl, release?.Body, asset.Sha256Hex, asset.Name);
 
         static void TouchMarker()
         {
@@ -56,13 +60,35 @@ public static partial class SelfUpdater
         }
     }
 
-    public static async Task ApplyAsync(SelfUpdateInfo info, IProgress<int>? progress, CancellationToken ct)
+    public static async Task ApplyAsync(
+        SelfUpdateInfo info,
+        IProgress<int>? progress,
+        Func<string, string, string, Task<bool>>? onHashMismatch,
+        CancellationToken ct)
     {
         var tempDir = Path.Combine(Path.GetTempPath(), $"Apportia-{info.Version}");
         Directory.CreateDirectory(tempDir);
 
         var zipPath = Path.Combine(tempDir, "update.zip");
         await DownloadAsync(info.DownloadUrl, zipPath, progress, ct);
+
+        if (AppDeployService.VerifyHash(zipPath, info.Sha256) == HashResult.Invalid)
+        {
+            var proceed = onHashMismatch != null && await onHashMismatch(info.AssetName, info.Sha256, zipPath);
+            if (!proceed)
+            {
+                try
+                {
+                    File.Delete(zipPath);
+                }
+                catch
+                {
+                    // best-effort cleanup; temp dir will be reused on the next attempt
+                }
+
+                throw new IOException(string.Format(LogText.Install.HashMismatchFormat, info.AssetName));
+            }
+        }
 
         var tempRoot = Path.GetFullPath(tempDir + Path.DirectorySeparatorChar);
         using (var archive = ZipArchive.OpenArchive(zipPath))
