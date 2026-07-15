@@ -48,6 +48,14 @@
         <ComboBox x:Name="ExeSourceCombo" HorizontalAlignment="Stretch"
                   SelectionChanged="OnExeSelectionChanged" />
 
+        <StackPanel x:Name="SectionSection">
+            <TextBlock Text="{x:Static text:UiText+Header.CustomSection}"
+                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                       Margin="0,8,0,2" />
+            <TextBox x:Name="SectionBox" Foreground="{DynamicResource AppTextBrush}"
+                     TextChanged="OnSectionBoxTextChanged" />
+        </StackPanel>
+
         <TextBlock Text="{x:Static text:UiText+Header.CustomName}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />

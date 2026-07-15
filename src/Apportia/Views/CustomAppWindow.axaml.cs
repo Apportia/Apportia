@@ -34,7 +34,9 @@ public partial class CustomAppWindow : Window
     private bool _galleryShifted;
     private bool _iconManuallySelected;
     private string _rawVersion = string.Empty;
+    private bool _sectionManuallyEdited;
     private Border? _selectedThumb;
+    private bool _suppressSectionEdit;
     private string? _tempIconPath;
 
     public CustomAppWindow()
@@ -76,6 +78,10 @@ public partial class CustomAppWindow : Window
         Title = UiText.Dialog.CustomAppEditTitle;
         ActionButton.Content = UiText.Button.CustomAppSave;
         FolderSection.IsVisible = false;
+        _suppressSectionEdit = true;
+        SectionBox.Text = node.SectionName;
+        _suppressSectionEdit = false;
+        _sectionManuallyEdited = true;
 
         CategoryCombo.ItemsSource = categories;
         CategoryCombo.SelectedItem = node.Category;
@@ -149,6 +155,7 @@ public partial class CustomAppWindow : Window
     public string ExeFile { get; private set; } = string.Empty;
     public string VersionSourceExe { get; private set; } = string.Empty;
     public string FolderName { get; private set; } = string.Empty;
+    public string SectionName { get; private set; } = string.Empty;
     public string IconSourcePath { get; private set; } = string.Empty;
 
     private async void OnBrowseFolder(object? sender, RoutedEventArgs e)
@@ -191,6 +198,8 @@ public partial class CustomAppWindow : Window
             ExeSourceCombo.SelectedIndex = exeFiles.Count > 0 ? 0 : -1;
 
             var selectedExe = ExeSourceCombo.SelectedItem as string;
+            if (!_sectionManuallyEdited && !string.IsNullOrEmpty(selectedExe))
+                SetSectionBoxFromExe(selectedExe);
 
             VersionSourceCombo.ItemsSource = versionItems;
             var matchedVersionItem = versionItems.FirstOrDefault(s => s.Display.Equals(selectedExe, StringComparison.OrdinalIgnoreCase));
@@ -263,6 +272,9 @@ public partial class CustomAppWindow : Window
             return;
         }
 
+        if (!_sectionManuallyEdited)
+            SetSectionBoxFromExe(exeFile);
+
         var folder = FolderBox.Text;
         if (string.IsNullOrEmpty(folder))
             return;
@@ -272,6 +284,23 @@ public partial class CustomAppWindow : Window
         var (n, d) = PeReader.ReadVersionInfo(path);
         NameBox.Text = n;
         DescriptionBox.Text = d;
+    }
+
+    private void SetSectionBoxFromExe(string exeFile)
+    {
+        var baseName = Path.GetFileNameWithoutExtension(exeFile);
+        if (string.IsNullOrEmpty(baseName))
+            return;
+        _suppressSectionEdit = true;
+        SectionBox.Text = baseName;
+        _suppressSectionEdit = false;
+    }
+
+    private void OnSectionBoxTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_initializing || _suppressSectionEdit)
+            return;
+        _sectionManuallyEdited = true;
     }
 
     private void OnVersionExeSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -533,29 +562,38 @@ public partial class CustomAppWindow : Window
 
         if (string.IsNullOrWhiteSpace(FolderBox.Text))
         {
-            ShowError(UiText.Error.CustomAppSelectFolder);
+            ShowError(UiText.Dialog.CustomAppSelectFolder);
             return;
         }
 
         if (ExeSourceCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
         {
-            ShowError(UiText.Error.CustomAppSelectExe);
+            ShowError(UiText.Dialog.CustomAppSelectExe);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(NameBox.Text))
         {
-            ShowError(UiText.Error.CustomAppEnterName);
+            ShowError(UiText.Dialog.CustomAppEnterName);
+            return;
+        }
+
+        var sectionInput = SectionBox.Text?.Trim() ?? string.Empty;
+        var sectionError = CustomAppService.ValidateSectionName(sectionInput);
+        if (sectionError != null)
+        {
+            ShowError(sectionError);
             return;
         }
 
         var effectiveIconPath = string.IsNullOrEmpty(IconBox.Text) ? _tempIconPath : IconBox.Text;
         if (string.IsNullOrWhiteSpace(effectiveIconPath))
         {
-            ShowError(UiText.Error.CustomAppSelectIcon);
+            ShowError(UiText.Dialog.CustomAppSelectIcon);
             return;
         }
 
+        SectionName = sectionInput;
         FolderName = FolderBox.Text.Trim();
         ExeFile = exeFile;
         Category = CategoryCombo.SelectedItem as string ?? string.Empty;
@@ -583,18 +621,34 @@ public partial class CustomAppWindow : Window
 
         if (ExeSourceCombo.SelectedItem is not string exeFile || string.IsNullOrEmpty(exeFile))
         {
-            ShowError(UiText.Error.CustomAppSelectExe);
+            ShowError(UiText.Dialog.CustomAppSelectExe);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(NameBox.Text))
         {
-            ShowError(UiText.Error.CustomAppEnterName);
+            ShowError(UiText.Dialog.CustomAppEnterName);
+            return;
+        }
+
+        var sectionInput = SectionBox.Text?.Trim() ?? string.Empty;
+        var sectionError = CustomAppService.ValidateSectionName(sectionInput, _sectionName);
+        if (sectionError != null)
+        {
+            ShowError(sectionError);
+            return;
+        }
+
+        var sectionChanged = !string.Equals(sectionInput, _sectionName, StringComparison.Ordinal);
+        if (sectionChanged && RunningAppsService.IsRunning(_sectionName))
+        {
+            ShowError(UiText.Dialog.CustomAppSectionRunning);
             return;
         }
 
         var effectiveIconPath = string.IsNullOrEmpty(IconBox.Text) ? _tempIconPath : IconBox.Text;
 
+        SectionName = sectionInput;
         ExeFile = exeFile;
         Category = CategoryCombo.SelectedItem as string ?? string.Empty;
         SubCategory = SubCategoryCombo.SelectedItem as string ?? string.Empty;

@@ -53,12 +53,21 @@ public static class UiText
         #region CustomAppWindow
 
         public const string CustomAppEditTitle = "App Settings";
+        public const string CustomAppEnterName = "Please enter a name.";
+        public const string CustomAppEnterSection = "Please enter a section name.";
         public const string CustomAppFolderPickerTitle = "Select App Folder";
         public const string CustomAppIconCurrentFormat = "Current icon ({0} x {1} px)";
         public const string CustomAppIconFileTypeName = "PNG Image";
         public const string CustomAppIconPickerTitle = "Select Icon (PNG)";
         public const string CustomAppIconSizeFormat = "{0} ({1} x {2} px)";
         public const string CustomAppImportTitle = "Import App";
+        public const string CustomAppInvalidSection = "The section name contains invalid characters.";
+        public const string CustomAppSectionExists = "A custom app with this section name already exists.";
+        public const string CustomAppSectionRunning = "The app must be closed before the section name can be changed.";
+        public const string CustomAppSectionTooShort = "The section name must be at least 3 characters long.";
+        public const string CustomAppSelectExe = "Please select an executable.";
+        public const string CustomAppSelectFolder = "Please select an app folder.";
+        public const string CustomAppSelectIcon = "Please select an icon.";
         public const string CustomAppVersionUpdatedFormat = "Updated from stored version: {0}";
         public const string CustomAppVersionUpdatedNone = "none";
 
@@ -326,14 +335,6 @@ public static class UiText
         #endregion
     }
 
-    public static class Error
-    {
-        public const string CustomAppEnterName = "Please enter a name.";
-        public const string CustomAppSelectExe = "Please select an executable.";
-        public const string CustomAppSelectFolder = "Please select an app folder.";
-        public const string CustomAppSelectIcon = "Please select an icon.";
-    }
-
     public static class Tip
     {
         // MainWindow toolbar tooltips
@@ -400,6 +401,7 @@ public static class UiText
         public const string CustomIcon = "Icon";
         public const string CustomIconSource = "Icon Source";
         public const string CustomName = "Name";
+        public const string CustomSection = "Section Name";
         public const string CustomSubCategory = "SubCategory";
         public const string CustomVersion = "Version";
         public const string CustomVersionSource = "Version Source";

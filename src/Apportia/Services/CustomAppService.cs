@@ -18,8 +18,19 @@ public sealed record ImportResult(string FolderName, string? SourceDeleteError);
 
 public static class CustomAppService
 {
+    public const int MinSectionNameLength = 3;
     private static readonly Lock DbGate = new();
     private static Dictionary<string, CustomAppInfo>? _cache;
+
+    private static readonly char[] InvalidSectionChars =
+        ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
+
+    private static readonly HashSet<string> ReservedSectionNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    };
 
     public static string CustomAppsDir =>
         Path.Combine(AppContext.BaseDirectory, "CustomApps");
@@ -117,13 +128,16 @@ public static class CustomAppService
         string displayVersion = "",
         IProgress<CopyProgress>? copyProgress = null,
         CancellationToken ct = default,
-        ImportMode mode = ImportMode.Copy)
+        ImportMode mode = ImportMode.Copy,
+        string? preferredFolderName = null)
     {
         Directory.CreateDirectory(CustomAppsDir);
 
         var isInPlace = IsDirectChildOfCustomApps(sourceFolder);
         var currentName = isInPlace ? Path.GetFileName(sourceFolder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)) : null;
-        var baseFolderName = Path.GetFileNameWithoutExtension(exeFile);
+        var baseFolderName = string.IsNullOrWhiteSpace(preferredFolderName)
+            ? Path.GetFileNameWithoutExtension(exeFile)
+            : preferredFolderName.Trim();
         var folderName = baseFolderName;
         while (Directory.Exists(Path.Combine(CustomAppsDir, folderName)) &&
                !(isInPlace && string.Equals(folderName, currentName, StringComparison.OrdinalIgnoreCase)))
@@ -228,6 +242,79 @@ public static class CustomAppService
         catch
         {
             return false;
+        }
+    }
+
+    public static string? ValidateSectionName(string? candidate, string? currentSection = null)
+    {
+        var name = candidate?.Trim() ?? string.Empty;
+        if (string.IsNullOrEmpty(name))
+            return UiText.Dialog.CustomAppEnterSection;
+        if (name.Length < MinSectionNameLength)
+            return UiText.Dialog.CustomAppSectionTooShort;
+        if (name.IndexOfAny(InvalidSectionChars) >= 0)
+            return UiText.Dialog.CustomAppInvalidSection;
+        foreach (var c in name)
+        {
+            if (c < 32)
+                return UiText.Dialog.CustomAppInvalidSection;
+        }
+
+        if (name.EndsWith('.') || name.EndsWith(' '))
+            return UiText.Dialog.CustomAppInvalidSection;
+        if (ReservedSectionNames.Contains(name))
+            return UiText.Dialog.CustomAppInvalidSection;
+
+        if (!string.IsNullOrEmpty(currentSection) &&
+            string.Equals(name, currentSection, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        var db = LoadDatabase();
+        foreach (var key in db.Keys)
+        {
+            if (string.Equals(key, name, StringComparison.OrdinalIgnoreCase))
+                return UiText.Dialog.CustomAppSectionExists;
+        }
+
+        if (Directory.Exists(CustomAppsDir))
+        {
+            foreach (var dir in Directory.EnumerateDirectories(CustomAppsDir))
+            {
+                var folder = Path.GetFileName(dir);
+                if (string.Equals(folder, name, StringComparison.OrdinalIgnoreCase))
+                    return UiText.Dialog.CustomAppSectionExists;
+            }
+        }
+
+        return null;
+    }
+
+    public static async Task RenameSectionAsync(string oldName, string newName)
+    {
+        if (string.Equals(oldName, newName, StringComparison.Ordinal))
+            return;
+
+        var oldDir = Path.Combine(CustomAppsDir, oldName);
+        var newDir = Path.Combine(CustomAppsDir, newName);
+        if (Directory.Exists(oldDir))
+            await Task.Run(() => Directory.Move(oldDir, newDir));
+
+        var oldIcon = Path.Combine(CustomAppImagesDir, oldName + ".png");
+        var newIcon = Path.Combine(CustomAppImagesDir, newName + ".png");
+        if (File.Exists(oldIcon))
+        {
+            Directory.CreateDirectory(CustomAppImagesDir);
+            await Task.Run(() => File.Move(oldIcon, newIcon, true));
+        }
+
+        lock (DbGate)
+        {
+            var db = LoadDatabaseUnlocked();
+            if (db.Remove(oldName, out var info))
+            {
+                db[newName] = info;
+                SaveDatabaseUnlocked(db);
+            }
         }
     }
 

@@ -875,7 +875,8 @@ public partial class MainWindow : Window, IInstallUi
                 win.Version,
                 win.VersionSourceExe,
                 win.DisplayVersion,
-                mode: ImportMode.Move);
+                mode: ImportMode.Move,
+                preferredFolderName: win.SectionName);
         }
         catch (Exception ex)
         {
@@ -1742,9 +1743,13 @@ public partial class MainWindow : Window, IInstallUi
 
             try
             {
+                var effectiveSection = string.IsNullOrEmpty(win.SectionName) ? node.SectionName : win.SectionName;
+                if (!string.Equals(effectiveSection, node.SectionName, StringComparison.Ordinal))
+                    await CustomAppService.RenameSectionAsync(node.SectionName, effectiveSection);
+
                 var iconChanged = !string.IsNullOrEmpty(win.IconSourcePath);
                 await CustomAppService.UpdateAppAsync(
-                    node.SectionName,
+                    effectiveSection,
                     win.ExeFile,
                     win.Name,
                     win.Description,
@@ -1769,7 +1774,7 @@ public partial class MainWindow : Window, IInstallUi
                 }
 
                 var entry = new AppEntry(
-                    node.SectionName,
+                    effectiveSection,
                     win.Name,
                     win.Description,
                     win.Website,
@@ -1787,8 +1792,8 @@ public partial class MainWindow : Window, IInstallUi
                     string.Empty);
 
                 var icon = iconChanged
-                    ? _iconManager.ReloadCustomIcon(node.SectionName)
-                    : _iconManager.GetCustomIcon(node.SectionName, vm.Columns.IconSize);
+                    ? _iconManager.ReloadCustomIcon(effectiveSection)
+                    : _iconManager.GetCustomIcon(effectiveSection, vm.Columns.IconSize);
 
                 var oldUsedBytes = node.UsedBytes;
                 vm.RemoveCustomApp(node);
@@ -2203,7 +2208,8 @@ public partial class MainWindow : Window, IInstallUi
                         win.Version,
                         win.VersionSourceExe,
                         win.DisplayVersion,
-                        mode: ImportMode.Move);
+                        mode: ImportMode.Move,
+                        preferredFolderName: win.SectionName);
                 }
                 else
                 {
@@ -2223,7 +2229,8 @@ public partial class MainWindow : Window, IInstallUi
                         win.DisplayVersion,
                         copyProgress,
                         copyDialog.CancellationToken,
-                        mode);
+                        mode,
+                        win.SectionName);
                     _ = importTask.ContinueWith(t =>
                                                     Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
                                                                                  ? copyDialog.NotifyDone
