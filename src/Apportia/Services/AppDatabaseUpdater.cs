@@ -10,7 +10,7 @@ public static class AppDatabaseUpdater
     private const double MinEntryRatio = 0.8;
     private const int MinEntryCount = 100;
 
-    private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(3);
+    private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(1);
     private static readonly TimeSpan[] RetryDelays = [TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(8)];
 
     public static readonly string CachePath = Path.Combine(ResolveDataDir(), "app_database.json");
@@ -25,13 +25,13 @@ public static class AppDatabaseUpdater
         {
             try
             {
-                var json = await GitHubClient.FetchFileContentAsync("Apportia/Apportia", RepoPath, ct: ct);
-                if (json != null)
+                var content = await GitHubClient.FetchFileContentAsync("Apportia/Apportia", RepoPath, ct: ct);
+                if (content != null)
                 {
-                    if (!IsValid(json))
+                    if (!IsValid(content))
                         return;
                     Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
-                    await AtomicFile.WriteAllTextAsync(CachePath, json, Encoding.UTF8, ct);
+                    await AtomicFile.WriteAllTextAsync(CachePath, content, Encoding.UTF8, ct);
                     return;
                 }
             }

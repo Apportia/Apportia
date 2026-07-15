@@ -11,6 +11,8 @@ internal static class MirrorService
 {
     private const string RepoPath = "data/mirror_database.json";
 
+    private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromDays(1);
+
     private static readonly string CachePath =
         Path.Combine(AppContext.BaseDirectory, "Data", "mirror_database.json");
 
@@ -22,14 +24,18 @@ internal static class MirrorService
 
     internal static async Task TryUpdateAsync(CancellationToken ct = default)
     {
+        if (File.Exists(CachePath) &&
+            DateTime.UtcNow - File.GetLastWriteTimeUtc(CachePath) < MinRefreshInterval)
+            return;
+
         try
         {
-            var json = await GitHubClient.FetchFileContentAsync("Apportia/Apportia", RepoPath, ct: ct);
-            if (json is null)
+            var content = await GitHubClient.FetchFileContentAsync("Apportia/Apportia", RepoPath, ct: ct);
+            if (content is null)
                 return;
 
             Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
-            await AtomicFile.WriteAllTextAsync(CachePath, json, ct: ct);
+            await AtomicFile.WriteAllTextAsync(CachePath, content, ct: ct);
             lock (DatabaseLock)
             {
                 _database = null;

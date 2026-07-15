@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,9 +34,10 @@ public static class GitHubClient
         string branch = "main",
         CancellationToken ct = default)
     {
+        var apiUrl = $"https://api.github.com/repos/{repo}/contents/{path}?ref={branch}";
         try
         {
-            using var response = await Http.GetAsync($"https://api.github.com/repos/{repo}/contents/{path}?ref={branch}", ct);
+            using var response = await Http.GetAsync(apiUrl, HttpCompletionOption.ResponseHeadersRead, ct);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync(ct);
@@ -49,14 +49,10 @@ public static class GitHubClient
                         return Encoding.UTF8.GetString(bytes);
                 }
             }
-            else if (!IsRateLimited(response))
-            {
-                return null;
-            }
         }
         catch
         {
-            /* fall through to raw */
+            // fall through to raw
         }
 
         try
@@ -75,7 +71,8 @@ public static class GitHubClient
     {
         try
         {
-            using var response = await Http.GetAsync($"https://api.github.com/repos/{repo}/releases/latest", ct);
+            using var response = await Http.GetAsync(
+                $"https://api.github.com/repos/{repo}/releases/latest", ct);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync(ct);
@@ -84,7 +81,7 @@ public static class GitHubClient
         }
         catch
         {
-            /* fall through to atom */
+            // fall through to atom
         }
 
         var atom = await FetchAtomReleasesAsync(repo, ct);
@@ -114,6 +111,14 @@ public static class GitHubClient
         }
 
         return await FetchAtomReleasesAsync(repo, ct);
+    }
+
+    /// Latest release from the Atom feed only. No API call, doesn't count against
+    /// the API rate limit. Returns tag/name/date/body but never assets.
+    public static async Task<GhRelease?> FetchLatestReleaseFromAtomAsync(string repo, CancellationToken ct = default)
+    {
+        var atom = await FetchAtomReleasesAsync(repo, ct);
+        return atom.Count > 0 ? atom[0] : null;
     }
 
     /// Streams a binary asset with progress. Uses the shared client so Wget UA and any
@@ -192,13 +197,6 @@ public static class GitHubClient
     {
         var idx = atomId.LastIndexOf('/');
         return idx >= 0 && idx < atomId.Length - 1 ? atomId[(idx + 1)..] : string.Empty;
-    }
-
-    private static bool IsRateLimited(HttpResponseMessage r)
-    {
-        if (r.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
-            return true;
-        return r.Headers.TryGetValues("X-RateLimit-Remaining", out var v) && v.FirstOrDefault() == "0";
     }
 
     private static bool VerifyBlobSha(byte[] content, string expectedSha)

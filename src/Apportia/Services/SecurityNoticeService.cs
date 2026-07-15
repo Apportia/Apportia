@@ -17,6 +17,8 @@ public static class SecurityNoticeService
 {
     private const string RepoPath = "data/security_notices.json";
 
+    private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromDays(1);
+
     private static readonly string FilePath =
         Path.Combine(AppContext.BaseDirectory, "Data", "security_notices.json");
 
@@ -24,14 +26,18 @@ public static class SecurityNoticeService
 
     public static async Task TryUpdateAsync(CancellationToken ct = default)
     {
+        if (File.Exists(FilePath) &&
+            DateTime.UtcNow - File.GetLastWriteTimeUtc(FilePath) < MinRefreshInterval)
+            return;
+
         try
         {
-            var json = await GitHubClient.FetchFileContentAsync("Apportia/Apportia", RepoPath, ct: ct);
-            if (json is null || !IsValid(json))
+            var content = await GitHubClient.FetchFileContentAsync("Apportia/Apportia", RepoPath, ct: ct);
+            if (content is null || !IsValid(content))
                 return;
 
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            await AtomicFile.WriteAllTextAsync(FilePath, json, Encoding.UTF8, ct);
+            await AtomicFile.WriteAllTextAsync(FilePath, content, Encoding.UTF8, ct);
             _db = null;
         }
         catch

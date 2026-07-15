@@ -19,20 +19,41 @@ public static partial class SelfUpdater
 {
     private const string Repo = "Apportia/Apportia";
 
+    private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromMinutes(15);
+
+    private static readonly string MarkerPath =
+        Path.Combine(AppContext.BaseDirectory, "Data", "selfupdate_lastcheck");
+
     public static async Task<SelfUpdateInfo?> CheckAsync(CancellationToken ct)
     {
         var current = Assembly.GetEntryAssembly()?.GetName().Version;
         if (current == null)
             return null;
 
-        var release = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
-        if (release == null || !Version.TryParse(release.TagName, out var latest) || latest <= current)
+        if (File.Exists(MarkerPath) && DateTime.UtcNow - File.GetLastWriteTimeUtc(MarkerPath) < MinRefreshInterval)
             return null;
 
-        var url = release.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))?.DownloadUrl;
-        if (url == null)
+        var atom = await GitHubClient.FetchLatestReleaseFromAtomAsync(Repo, ct);
+        TouchMarker();
+        if (atom == null || !Version.TryParse(atom.TagName, out var latest) || latest <= current)
             return null;
-        return new SelfUpdateInfo(latest, url, release.Body);
+
+        var release = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
+        var url = release?.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))?.DownloadUrl;
+        return url == null ? null : new SelfUpdateInfo(latest, url, release?.Body);
+
+        static void TouchMarker()
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(MarkerPath)!);
+                File.WriteAllBytes(MarkerPath, []);
+            }
+            catch
+            {
+                // marker is best-effort; next start will just re-check
+            }
+        }
     }
 
     public static async Task ApplyAsync(SelfUpdateInfo info, IProgress<int>? progress, CancellationToken ct)
