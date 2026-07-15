@@ -23,6 +23,7 @@ public partial class LinuxSetupDialog : Window
     private string _initialVersion = string.Empty;
     private double _lastHeight;
     private IReadOnlyList<WineRunnerRelease> _releases = [];
+    private bool _releasesRequested;
     private bool _updateAvailable;
 
     public LinuxSetupDialog()
@@ -73,13 +74,22 @@ public partial class LinuxSetupDialog : Window
         }
 
         UpdateVersionPanelVisibility();
-        _ = LoadReleasesAsync();
+        EnsureReleasesLoaded();
     }
 
     private void OnModeChanged(object? sender, RoutedEventArgs e)
     {
         UpdateVersionPanelVisibility();
+        EnsureReleasesLoaded();
         RefreshSaveButtonLabel();
+    }
+
+    private void EnsureReleasesLoaded()
+    {
+        if (_releasesRequested || BundledModeRadio.IsChecked != true)
+            return;
+        _releasesRequested = true;
+        _ = LoadReleasesAsync();
     }
 
     private void OnVersionChanged(object? sender, SelectionChangedEventArgs e)
