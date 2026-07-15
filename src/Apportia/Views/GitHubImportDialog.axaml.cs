@@ -107,12 +107,17 @@ public partial class GitHubImportDialog : Window
                 ? string.Format(UiText.Dialog.GitHubImportPublishedFormat, dt.LocalDateTime)
                 : string.Empty;
 
+            var sevenZipAvailable = AppDeployService.FindSevenZip(AppDeployService.AppsDir) != null;
+            _assets = _assets.Where(a => IsSupportedAsset(a.Name, sevenZipAvailable)).ToList();
+
             AssetCombo.ItemsSource = _assets.Select(a => a.Name).ToList();
             var firstZip = _assets.FindIndex(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
             AssetCombo.SelectedIndex = firstZip >= 0 ? firstZip : _assets.Count > 0 ? 0 : -1;
 
             ReleasePanel.IsVisible = true;
             DownloadButton.IsVisible = _assets.Count > 0;
+            if (_assets.Count == 0)
+                ShowError(UiText.Dialog.GitHubImportNoSupportedAssets);
         }
         catch (Exception ex)
         {
@@ -130,14 +135,24 @@ public partial class GitHubImportDialog : Window
                 return;
 
             var asset = _assets[AssetCombo.SelectedIndex];
-            if (!asset.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            var isSevenZip = asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
+            var isZip = asset.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
+            if (!isZip && !isSevenZip)
             {
                 ShowError(UiText.Dialog.GitHubImportUnsupportedAsset);
                 return;
             }
 
+            var sevenZipPath = isSevenZip ? AppDeployService.FindSevenZip(AppDeployService.AppsDir) : null;
+            if (isSevenZip && sevenZipPath == null)
+            {
+                ShowError(UiText.Dialog.GitHubImportSevenZipMissing);
+                return;
+            }
+
             var repo = RepoBox.Text?.Trim() ?? string.Empty;
-            var tempZip = Path.Combine(Path.GetTempPath(), $"apportia_gh_{Guid.NewGuid():N}.zip");
+            var extension = isSevenZip ? ".7z" : ".zip";
+            var tempZip = Path.Combine(Path.GetTempPath(), $"apportia_gh_{Guid.NewGuid():N}{extension}");
 
             try
             {
@@ -177,7 +192,10 @@ public partial class GitHubImportDialog : Window
                 var destDir = Path.Combine(CustomAppService.CustomAppsDir, folderName);
                 try
                 {
-                    await Task.Run(() => ZipFile.ExtractToDirectory(tempZip, destDir));
+                    if (isSevenZip)
+                        await AppDeployService.ExtractAsync(sevenZipPath!, tempZip, destDir);
+                    else
+                        await Task.Run(() => ZipFile.ExtractToDirectory(tempZip, destDir));
                 }
                 catch (Exception ex)
                 {
@@ -254,5 +272,12 @@ public partial class GitHubImportDialog : Window
     private void HideStatus()
     {
         StatusText.IsVisible = false;
+    }
+
+    private static bool IsSupportedAsset(string name, bool sevenZipAvailable)
+    {
+        if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            return true;
+        return sevenZipAvailable && name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
     }
 }

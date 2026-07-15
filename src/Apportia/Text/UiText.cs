@@ -87,7 +87,9 @@ public static class UiText
         public const string GitHubImportNoZipAssets = "This release has no .zip assets.";
         public const string GitHubImportPublishedFormat = "{0:yyyy-MM-dd}";
         public const string GitHubImportTitle = "Import from GitHub";
-        public const string GitHubImportUnsupportedAsset = "Only .zip assets are supported.";
+        public const string GitHubImportUnsupportedAsset = "Only .zip and .7z assets are supported.";
+        public const string GitHubImportNoSupportedAssets = "This release has no supported assets (.zip or .7z).";
+        public const string GitHubImportSevenZipMissing = "7-Zip is not available. Install 7-Zip to use .7z assets.";
         public const string GitHubImportCancelTitle = "Cancel Import";
         public const string GitHubImportCancelBody = "The downloaded files will be removed.\n\nCancel the import?";
 
