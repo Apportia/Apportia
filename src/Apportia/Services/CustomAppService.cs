@@ -286,7 +286,7 @@ public static class CustomAppService
                 return UiText.Dialog.CustomAppSectionExists;
         }
 
-        if (Directory.Exists(CustomAppsDir))
+        if (currentSection != null && Directory.Exists(CustomAppsDir))
         {
             foreach (var dir in Directory.EnumerateDirectories(CustomAppsDir))
             {
