@@ -33,6 +33,7 @@ public partial class CustomAppWindow : Window
     private int _galleryShift;
     private bool _galleryShifted;
     private bool _iconManuallySelected;
+    private readonly string? _presetUpdateDate;
     private string _rawVersion = string.Empty;
     private bool _sectionManuallyEdited;
     private Border? _selectedThumb;
@@ -47,7 +48,10 @@ public partial class CustomAppWindow : Window
     public CustomAppWindow(
         IReadOnlyList<string> categories,
         IReadOnlyDictionary<string, IReadOnlyList<string>> subCategoriesMap,
-        string? presetFolder = null) : this()
+        string? presetFolder = null,
+        string? presetVersion = null,
+        string? presetDisplayVersion = null,
+        string? presetUpdateDate = null) : this()
     {
         _subCategoriesMap = subCategoriesMap;
         Title = UiText.Dialog.CustomAppImportTitle;
@@ -59,7 +63,10 @@ public partial class CustomAppWindow : Window
         if (string.IsNullOrEmpty(presetFolder))
             return;
         FolderBrowseButton.IsVisible = false;
-        Dispatcher.UIThread.Post(() => _ = PopulateFromFolderAsync(presetFolder));
+        _presetUpdateDate = string.IsNullOrEmpty(presetUpdateDate) ? null : presetUpdateDate;
+        var version = presetVersion;
+        var display = presetDisplayVersion;
+        Dispatcher.UIThread.Post(() => _ = PopulateFromFolderAsync(presetFolder, version, display));
     }
 
     public CustomAppWindow(
@@ -182,7 +189,8 @@ public partial class CustomAppWindow : Window
         }
     }
 
-    private async Task PopulateFromFolderAsync(string folder)
+    private async Task PopulateFromFolderAsync(
+        string folder, string? presetVersion = null, string? presetDisplayVersion = null)
     {
         try
         {
@@ -235,6 +243,14 @@ public partial class CustomAppWindow : Window
         catch (Exception ex)
         {
             Log.Write(string.Format(LogText.Custom.PopulateFromFolderFailedFormat, ex.Message));
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(presetVersion))
+            {
+                _rawVersion = string.IsNullOrEmpty(presetDisplayVersion) ? presetVersion : presetDisplayVersion;
+                VersionBox.Text = presetVersion;
+            }
         }
     }
 
@@ -605,9 +621,11 @@ public partial class CustomAppWindow : Window
         VersionSourceExe = (VersionSourceCombo.SelectedItem as SourceItem)?.Display ?? string.Empty;
         var versionRelPath = string.IsNullOrEmpty(VersionSourceExe) ? exeFile : VersionSourceExe;
         var versionPath = Path.Combine(FolderName, versionRelPath);
-        UpdateDate = File.Exists(versionPath)
-            ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
-            : string.Empty;
+        UpdateDate = !string.IsNullOrEmpty(_presetUpdateDate)
+            ? _presetUpdateDate
+            : File.Exists(versionPath)
+                ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
+                : string.Empty;
         DisplayVersion = string.IsNullOrEmpty(_rawVersion) ? Version : _rawVersion;
         JoinedDate = DateTime.Today.ToString("yyyy-MM-dd");
         IconSourcePath = effectiveIconPath;

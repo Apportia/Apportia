@@ -28,6 +28,9 @@ public partial class GitHubImportDialog : Window
 
     public bool Success { get; private set; }
     public string ExtractedFolder { get; private set; } = string.Empty;
+    public string Version { get; private set; } = string.Empty;
+    public string DisplayVersion { get; private set; } = string.Empty;
+    public string UpdateDate { get; private set; } = string.Empty;
 
     private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
@@ -198,6 +201,9 @@ public partial class GitHubImportDialog : Window
                 }
 
                 ExtractedFolder = destDir;
+                Version = GitHubVersion.Derive(_release.TagName, _release.PublishedAt);
+                DisplayVersion = _release.TagName;
+                UpdateDate = (_release.PublishedAt?.LocalDateTime ?? DateTime.Today).ToString("yyyy-MM-dd");
                 Success = true;
                 Close();
             }

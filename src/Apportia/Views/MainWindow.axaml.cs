@@ -2160,6 +2160,9 @@ public partial class MainWindow : Window, IInstallUi
                 return;
 
             string? presetFolder = null;
+            string? presetVersion = null;
+            string? presetDisplayVersion = null;
+            string? presetUpdateDate = null;
             if (source == UiText.Button.ImportGitHub)
             {
                 var gh = new GitHubImportDialog(ConfirmDownloadHashMismatchAsync);
@@ -2167,9 +2170,14 @@ public partial class MainWindow : Window, IInstallUi
                 if (!gh.Success)
                     return;
                 presetFolder = gh.ExtractedFolder;
+                presetVersion = gh.Version;
+                presetDisplayVersion = gh.DisplayVersion;
+                presetUpdateDate = gh.UpdateDate;
             }
 
-            var win = new CustomAppWindow(vm.Categories, vm.SubCategoriesMap, presetFolder);
+            var win = new CustomAppWindow(
+                vm.Categories, vm.SubCategoriesMap,
+                presetFolder, presetVersion, presetDisplayVersion, presetUpdateDate);
             await win.ShowDialog(this);
             if (!win.Success)
                 return;
