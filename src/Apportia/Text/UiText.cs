@@ -244,6 +244,10 @@ public static class UiText
         public const string MainCloseInProgressTitle = "Installation in Progress";
         public const string MainDeleteFolderBodyFormat = "Permanently delete \"{0}\" and everything inside it?";
         public const string MainDeleteFolderTitle = "Delete Folder";
+        public const string MainImportMoveOrCopyBodyFormat = "How do you want to import \"{0}\" into your custom apps?\n\nMove: original folder is removed after import.\nCopy: original folder is left in place.";
+        public const string MainImportMoveOrCopyTitle = "Move or Copy?";
+        public const string MainImportSourceDeleteFailedFormat = "Import copied \"{0}\" successfully, but the original folder could not be deleted:\n\n{1}";
+        public const string MainImportSourceDeleteFailedTitle = "Import: Source Not Removed";
         public const string MainInstallInProgressTitle = "Installation Running";
         public const string MainInstallPromptFormat = "Would you like to install {0}?";
         public const string MainInstallPromptSizeSuffixFormat = "\n\nRequired:   {0}\nAvailable:  {1}\n\nRequired size covers the app only.\nUser data created later is not counted.";
@@ -463,6 +467,7 @@ public static class UiText
         public const string Install = "Install";
         public const string InstallFonts = "Install Fonts";
         public const string InstallUpdate = "Install Update";
+        public const string Move = "Move";
         public const string Ok = "OK";
         public const string Proceed = "Proceed";
         public const string ProceedAnyway = "Proceed Anyway";

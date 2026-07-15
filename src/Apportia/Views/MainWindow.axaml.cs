@@ -875,7 +875,7 @@ public partial class MainWindow : Window, IInstallUi
                 win.Version,
                 win.VersionSourceExe,
                 win.DisplayVersion,
-                move: true);
+                mode: ImportMode.Move);
         }
         catch (Exception ex)
         {
@@ -884,16 +884,16 @@ public partial class MainWindow : Window, IInstallUi
         }
 
         var iconPath = win.IconSourcePath;
-        if (iconPath.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase))
+        if (!iconPath.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        try
         {
-            try
-            {
-                File.Delete(iconPath);
-            }
-            catch
-            {
-                /* file may already be gone */
-            }
+            File.Delete(iconPath);
+        }
+        catch
+        {
+            /* file may already be gone */
         }
 
         return true;
@@ -2153,44 +2153,94 @@ public partial class MainWindow : Window, IInstallUi
 
             try
             {
-                while (true)
+                var isInPlace = CustomAppService.IsDirectChildOfCustomApps(win.FolderName);
+                var mode = ImportMode.Copy;
+                if (!isInPlace)
                 {
-                    var sourceSize = await Task.Run(() => AppDiskUsageService.GetDirectorySize(win.FolderName));
-                    var required = (long)(sourceSize * 1.1);
-                    var available = AppDiskUsageService.GetAvailableFreeSpace(CustomAppService.CustomAppsDir);
-                    if (available < required)
-                    {
-                        var choice = await ShowDiskSpaceDialog(null, win.Name, required, available);
-                        if (choice == UiText.Button.Retry)
-                            continue;
+                    var choice = await ShowDialog(
+                        UiText.Dialog.MainImportMoveOrCopyTitle,
+                        string.Format(UiText.Dialog.MainImportMoveOrCopyBodyFormat, win.Name),
+                        UiText.Button.Move, UiText.Button.Copy, UiText.Button.Cancel);
+                    if (choice == UiText.Button.Move)
+                        mode = ImportMode.Move;
+                    else if (choice == UiText.Button.Copy)
+                        mode = ImportMode.Copy;
+                    else
                         return;
-                    }
-
-                    break;
                 }
 
-                var copyDialog = new CopyProgressDialog(win.FolderName);
-                var copyProgress = new Progress<CopyProgress>(copyDialog.Report);
-                var importTask = CustomAppService.ImportAppAsync(
-                    win.FolderName,
-                    win.ExeFile,
-                    win.Name,
-                    win.Description,
-                    win.Website,
-                    win.IconSourcePath,
-                    win.Category,
-                    win.SubCategory,
-                    win.Version,
-                    win.VersionSourceExe,
-                    win.DisplayVersion,
-                    copyProgress,
-                    copyDialog.CancellationToken);
-                _ = importTask.ContinueWith(t =>
-                                                Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
-                                                                             ? copyDialog.NotifyDone
-                                                                             : copyDialog.Close));
-                await copyDialog.ShowDialog(this);
-                var folderName = await importTask;
+                if (!isInPlace && mode == ImportMode.Copy)
+                {
+                    while (true)
+                    {
+                        var sourceSize = await Task.Run(() => AppDiskUsageService.GetDirectorySize(win.FolderName));
+                        var required = (long)(sourceSize * 1.1);
+                        var available = AppDiskUsageService.GetAvailableFreeSpace(CustomAppService.CustomAppsDir);
+                        if (available < required)
+                        {
+                            var choice = await ShowDiskSpaceDialog(null, win.Name, required, available);
+                            if (choice == UiText.Button.Retry)
+                                continue;
+                            return;
+                        }
+
+                        break;
+                    }
+                }
+
+                ImportResult importResult;
+                if (isInPlace)
+                {
+                    importResult = await CustomAppService.ImportAppAsync(
+                        win.FolderName,
+                        win.ExeFile,
+                        win.Name,
+                        win.Description,
+                        win.Website,
+                        win.IconSourcePath,
+                        win.Category,
+                        win.SubCategory,
+                        win.Version,
+                        win.VersionSourceExe,
+                        win.DisplayVersion,
+                        mode: ImportMode.Move);
+                }
+                else
+                {
+                    var copyDialog = new CopyProgressDialog(win.FolderName);
+                    var copyProgress = new Progress<CopyProgress>(copyDialog.Report);
+                    var importTask = CustomAppService.ImportAppAsync(
+                        win.FolderName,
+                        win.ExeFile,
+                        win.Name,
+                        win.Description,
+                        win.Website,
+                        win.IconSourcePath,
+                        win.Category,
+                        win.SubCategory,
+                        win.Version,
+                        win.VersionSourceExe,
+                        win.DisplayVersion,
+                        copyProgress,
+                        copyDialog.CancellationToken,
+                        mode);
+                    _ = importTask.ContinueWith(t =>
+                                                    Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
+                                                                                 ? copyDialog.NotifyDone
+                                                                                 : copyDialog.Close));
+                    await copyDialog.ShowDialog(this);
+                    importResult = await importTask;
+                }
+
+                var folderName = importResult.FolderName;
+                if (importResult.SourceDeleteError is { } deleteError)
+                {
+                    Log.Write(string.Format(LogText.Main.ImportSourceDeleteFailedFormat, win.Name, deleteError));
+                    await ShowDialog(
+                        UiText.Dialog.MainImportSourceDeleteFailedTitle,
+                        string.Format(UiText.Dialog.MainImportSourceDeleteFailedFormat, win.Name, deleteError),
+                        UiText.Button.Ok);
+                }
 
                 // Remove temp icon file created by the gallery picker
                 var iconPath = win.IconSourcePath;

@@ -54,6 +54,7 @@ public static class LogText
         public const string AddCustomAppFailedFormat = "Add custom app failed: {0}";
         public const string CloseConfirmationFailedFormat = "Close confirmation failed, forcing shutdown: {0}";
         public const string CustomAppUpdateFailedFormat = "Custom app update failed for '{0}': {1}";
+        public const string ImportSourceDeleteFailedFormat = "Import copied '{0}' but the original folder could not be deleted: {1}";
         public const string ImportUnknownAsCustomFailedFormat = "ImportUnknownAsCustomAsync failed: {0}";
         public const string InstallFilterCycleFailedFormat = "OnInstallFilterCycle failed: {0}";
         public const string InstallFilterPointerReleasedFailedFormat = "OnInstallFilterPointerReleased failed: {0}";

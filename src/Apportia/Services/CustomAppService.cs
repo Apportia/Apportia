@@ -8,6 +8,14 @@ using Avalonia.Media.Imaging;
 
 namespace Apportia.Services;
 
+public enum ImportMode
+{
+    Copy,
+    Move
+}
+
+public sealed record ImportResult(string FolderName, string? SourceDeleteError);
+
 public static class CustomAppService
 {
     private static readonly Lock DbGate = new();
@@ -95,7 +103,7 @@ public static class CustomAppService
         return result;
     }
 
-    public static async Task<string> ImportAppAsync(
+    public static async Task<ImportResult> ImportAppAsync(
         string sourceFolder,
         string exeFile,
         string name,
@@ -109,22 +117,32 @@ public static class CustomAppService
         string displayVersion = "",
         IProgress<CopyProgress>? copyProgress = null,
         CancellationToken ct = default,
-        bool move = false)
+        ImportMode mode = ImportMode.Copy)
     {
+        Directory.CreateDirectory(CustomAppsDir);
+
+        var isInPlace = IsDirectChildOfCustomApps(sourceFolder);
+        var currentName = isInPlace ? Path.GetFileName(sourceFolder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)) : null;
         var baseFolderName = Path.GetFileNameWithoutExtension(exeFile);
         var folderName = baseFolderName;
-        Directory.CreateDirectory(CustomAppsDir);
-        while (Directory.Exists(Path.Combine(CustomAppsDir, folderName)))
+        while (Directory.Exists(Path.Combine(CustomAppsDir, folderName)) &&
+               !(isInPlace && string.Equals(folderName, currentName, StringComparison.OrdinalIgnoreCase)))
         {
             var suffix = Convert.ToHexString(RandomNumberGenerator.GetBytes(4)).ToLower();
             folderName = baseFolderName + "_" + suffix;
         }
 
         var destDir = Path.Combine(CustomAppsDir, folderName);
+        string? sourceDeleteError = null;
 
         try
         {
-            if (move)
+            if (isInPlace)
+            {
+                if (!string.Equals(sourceFolder, destDir, StringComparison.OrdinalIgnoreCase))
+                    await Task.Run(() => Directory.Move(sourceFolder, destDir), ct);
+            }
+            else if (mode == ImportMode.Move)
             {
                 try
                 {
@@ -136,11 +154,11 @@ public static class CustomAppService
                     await CopyDirectoryAsync(sourceFolder, destDir, copyProgress, ct);
                     try
                     {
-                        Directory.Delete(sourceFolder, true);
+                        await Task.Run(() => Directory.Delete(sourceFolder, true), ct);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        /* best effort – source may remain if in use */
+                        sourceDeleteError = ex.Message;
                     }
                 }
             }
@@ -151,14 +169,17 @@ public static class CustomAppService
         }
         catch (OperationCanceledException)
         {
-            try
+            if (!isInPlace)
             {
-                if (Directory.Exists(destDir))
-                    Directory.Delete(destDir, true);
-            }
-            catch
-            {
-                /* best effort – partial files may remain */
+                try
+                {
+                    if (Directory.Exists(destDir))
+                        Directory.Delete(destDir, true);
+                }
+                catch
+                {
+                    // Best-effort cleanup after user cancel; partial files may remain if in use.
+                }
             }
 
             throw;
@@ -191,7 +212,23 @@ public static class CustomAppService
             UpdateDate = updateDate
         };
         UpsertEntry(folderName, info);
-        return folderName;
+        return new ImportResult(folderName, sourceDeleteError);
+    }
+
+    public static bool IsDirectChildOfCustomApps(string sourceFolder)
+    {
+        try
+        {
+            var parent = Path.GetDirectoryName(Path.GetFullPath(sourceFolder));
+            return parent != null &&
+                   string.Equals(Path.TrimEndingDirectorySeparator(parent),
+                                 Path.TrimEndingDirectorySeparator(Path.GetFullPath(CustomAppsDir)),
+                                 OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public static Task UpdateAppAsync(
