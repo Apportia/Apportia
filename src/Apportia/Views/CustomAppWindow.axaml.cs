@@ -733,6 +733,13 @@ public partial class CustomAppWindow : Window
     {
         base.OnOpened(e);
         Win32Window.ApplyDarkTitlebar(this);
+        var screen = Screens.ScreenFromWindow(this);
+        if (screen is not null && screen.WorkingArea.Height > 0)
+        {
+            var scale = screen.Scaling > 0 ? screen.Scaling : 1.0;
+            MaxHeight = screen.WorkingArea.Height / scale * 0.85;
+        }
+
         if (IconGalleryBorder.IsVisible)
             ShiftForGallery(true);
         IconGalleryBorder.PropertyChanged += (_, args) =>
