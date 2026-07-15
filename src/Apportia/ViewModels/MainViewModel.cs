@@ -287,7 +287,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 continue;
             if (existing.TryGetValue(entry.SectionName, out var existingNode))
             {
-                existingNode.ApplyUpstream(entry);
+                if (!existingNode.IsCustom)
+                    existingNode.ApplyUpstream(entry);
                 continue;
             }
 
