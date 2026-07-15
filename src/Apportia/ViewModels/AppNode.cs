@@ -26,7 +26,7 @@ public sealed class AppNode : INotifyPropertyChanged
         IsInstalled = isInstalled;
         IsCustom = isCustom;
         IsPlugin = isPlugin;
-        _currentDate = currentDate;
+        _currentDate = string.IsNullOrEmpty(currentDate) && isCustom ? entry.UpdateDate : currentDate;
         SectionName = entry.SectionName;
         Name = entry.Name;
         Description = entry.Description;
@@ -286,6 +286,32 @@ public sealed class AppNode : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void SetUpstreamUpdateDate(string date)
+    {
+        if (UpdateDate == date)
+            return;
+        UpdateDate = date;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UpdateDate)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UpdateDateDisplay)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NeedsUpdate)));
+        NotifyActionStates();
+    }
+
+    public void SetVersion(string displayVersion, string packageVersion)
+    {
+        var displayChanged = DisplayVersion != displayVersion;
+        var packageChanged = PackageVersion != packageVersion;
+        if (!displayChanged && !packageChanged)
+            return;
+        DisplayVersion = displayVersion;
+        PackageVersion = packageVersion;
+        if (displayChanged)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayVersion)));
+        if (packageChanged)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PackageVersion)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShownVersion)));
+    }
 
     public void ApplyUpstream(AppEntry entry)
     {

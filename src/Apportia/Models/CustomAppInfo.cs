@@ -15,6 +15,8 @@ public sealed class CustomAppInfo
     public string PackageVersion { get; set; } = string.Empty;
     public string VersionSource { get; set; } = string.Empty;
     public string UpdateDate { get; set; } = string.Empty;
+    public string UpdateUrl { get; set; } = string.Empty;
+    public string UpdateFile { get; set; } = string.Empty;
 }
 
 [JsonSerializable(typeof(CustomAppInfo))]

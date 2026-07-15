@@ -54,7 +54,10 @@ public partial class CustomAppWindow : Window
         string? presetFolder = null,
         string? presetVersion = null,
         string? presetDisplayVersion = null,
-        string? presetUpdateDate = null) : this()
+        string? presetUpdateDate = null,
+        string? presetUpdateUrl = null,
+        string? presetUpdateFile = null,
+        DateTime? presetUpdateFileMtime = null) : this()
     {
         _subCategoriesMap = subCategoriesMap;
         Title = UiText.Dialog.CustomAppImportTitle;
@@ -68,6 +71,9 @@ public partial class CustomAppWindow : Window
         FolderBrowseButton.IsVisible = false;
         _presetFolderCleanup = presetFolder;
         _presetUpdateDate = string.IsNullOrEmpty(presetUpdateDate) ? null : presetUpdateDate;
+        UpdateUrl = presetUpdateUrl ?? string.Empty;
+        UpdateFile = presetUpdateFile ?? string.Empty;
+        UpdateFileMtime = presetUpdateFileMtime;
         var version = presetVersion;
         var display = presetDisplayVersion;
         Dispatcher.UIThread.Post(() => _ = PopulateFromFolderAsync(presetFolder, version, display));
@@ -168,6 +174,9 @@ public partial class CustomAppWindow : Window
     public string FolderName { get; private set; } = string.Empty;
     public string SectionName { get; private set; } = string.Empty;
     public string IconSourcePath { get; private set; } = string.Empty;
+    public string UpdateUrl { get; private set; } = string.Empty;
+    public string UpdateFile { get; private set; } = string.Empty;
+    public DateTime? UpdateFileMtime { get; private set; }
 
     private async void OnBrowseFolder(object? sender, RoutedEventArgs e)
     {

@@ -668,10 +668,25 @@ public partial class MainWindow : Window, IInstallUi
         DataContext = vm;
         UpdateTerminateAllButton();
         ApplyViewPreset(vm, false);
+        _ = CheckCustomAppUpdatesAsync(vm);
         // In All/NotInstalled the merge flickers, so only stream upstream in for Installed.
         return vm.InstallFilter == InstallFilter.Installed
             ? MergeUpstreamAsync(vm)
             : Task.CompletedTask;
+    }
+
+    private async Task CheckCustomAppUpdatesAsync(MainViewModel vm)
+    {
+        try
+        {
+            await CustomAppUpdateChecker.CheckAsync(vm.AllNodes.Where(n => n.IsCustom), _cts.Token);
+        }
+        catch
+        {
+            // best-effort: skip when the atom feed is unreachable
+        }
+
+        RefreshUpdateButton();
     }
 
     private async Task MergeUpstreamAsync(MainViewModel vm)
@@ -1067,7 +1082,36 @@ public partial class MainWindow : Window, IInstallUi
     {
         if (node.IsCustom)
         {
-            await TryLaunchWithArgsAsync(node);
+            if (!node.NeedsUpdate)
+            {
+                await TryLaunchWithArgsAsync(node);
+                return;
+            }
+
+            if (ctrlHeld)
+            {
+                await UpdateCustomAppAsync(node, false);
+                return;
+            }
+
+            var choice = await ShowDialog(
+                node, string.Format(UiText.Dialog.MainUpdateAvailableFormat, node.Name),
+                string.Format(UiText.Dialog.MainUpdateAvailableBodyFormat, node.Name),
+                UiText.Button.UpdateAndRun, UiText.Button.Update, UiText.Button.Run, UiText.Button.Cancel);
+
+            switch (choice)
+            {
+                case UiText.Button.UpdateAndRun:
+                    await UpdateCustomAppAsync(node, true);
+                    break;
+                case UiText.Button.Update:
+                    await UpdateCustomAppAsync(node, false);
+                    break;
+                case UiText.Button.Run:
+                    await TryLaunchWithArgsAsync(node);
+                    break;
+            }
+
             return;
         }
 
@@ -1312,14 +1356,44 @@ public partial class MainWindow : Window, IInstallUi
 
     private void OnMenuUpdateRun(object? sender, RoutedEventArgs e)
     {
-        if (NodeFromMenu(sender) is { } node)
-            _ = _installer.InstallAsync(node, AppDeployService.AppsDir, true);
+        if (NodeFromMenu(sender) is not { } node)
+            return;
+        _ = node.IsCustom
+            ? UpdateCustomAppAsync(node, true)
+            : _installer.InstallAsync(node, AppDeployService.AppsDir, true);
     }
 
     private void OnMenuUpdate(object? sender, RoutedEventArgs e)
     {
-        if (NodeFromMenu(sender) is { } node)
-            _ = _installer.InstallAsync(node, AppDeployService.AppsDir, false);
+        if (NodeFromMenu(sender) is not { } node)
+            return;
+        _ = node.IsCustom
+            ? UpdateCustomAppAsync(node, false)
+            : _installer.InstallAsync(node, AppDeployService.AppsDir, false);
+    }
+
+    private async Task UpdateCustomAppAsync(AppNode node, bool launchAfter)
+    {
+        try
+        {
+            var ok = await CustomAppUpdater.UpdateAsync(node, ConfirmDownloadHashMismatchAsync, this, _cts.Token);
+            if (ok && launchAfter)
+                await TryLaunchWithArgsAsync(node);
+        }
+        catch (Exception ex)
+        {
+            Log.Write(string.Format(LogText.Main.CustomAppUpdateFailedFormat, node.SectionName, ex.Message));
+        }
+    }
+
+    private async Task UpdateCustomAppsSequentiallyAsync(IReadOnlyList<AppNode> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            if (_cts.IsCancellationRequested)
+                return;
+            await UpdateCustomAppAsync(node, false);
+        }
     }
 
     private void OnMenuAddToQueue(object? sender, RoutedEventArgs e)
@@ -2163,6 +2237,9 @@ public partial class MainWindow : Window, IInstallUi
             string? presetVersion = null;
             string? presetDisplayVersion = null;
             string? presetUpdateDate = null;
+            string? presetUpdateUrl = null;
+            string? presetUpdateFile = null;
+            DateTime? presetUpdateFileMtime = null;
             if (source == UiText.Button.ImportGitHub)
             {
                 var gh = new GitHubImportDialog(ConfirmDownloadHashMismatchAsync);
@@ -2173,11 +2250,15 @@ public partial class MainWindow : Window, IInstallUi
                 presetVersion = gh.Version;
                 presetDisplayVersion = gh.DisplayVersion;
                 presetUpdateDate = gh.UpdateDate;
+                presetUpdateUrl = gh.UpdateUrl;
+                presetUpdateFile = gh.UpdateFile;
+                presetUpdateFileMtime = gh.UpdateFileMtime;
             }
 
             var win = new CustomAppWindow(
                 vm.Categories, vm.SubCategoriesMap,
-                presetFolder, presetVersion, presetDisplayVersion, presetUpdateDate);
+                presetFolder, presetVersion, presetDisplayVersion, presetUpdateDate,
+                presetUpdateUrl, presetUpdateFile, presetUpdateFileMtime);
             await win.ShowDialog(this);
             if (!win.Success)
                 return;
@@ -2240,7 +2321,10 @@ public partial class MainWindow : Window, IInstallUi
                         win.VersionSourceExe,
                         win.DisplayVersion,
                         mode: ImportMode.Move,
-                        preferredFolderName: win.SectionName);
+                        preferredFolderName: win.SectionName,
+                        updateUrl: win.UpdateUrl,
+                        updateFile: win.UpdateFile,
+                        updateFileMtime: win.UpdateFileMtime);
                 }
                 else
                 {
@@ -2261,7 +2345,10 @@ public partial class MainWindow : Window, IInstallUi
                         copyProgress,
                         copyDialog.CancellationToken,
                         mode,
-                        win.SectionName);
+                        win.SectionName,
+                        win.UpdateUrl,
+                        win.UpdateFile,
+                        win.UpdateFileMtime);
                     _ = importTask.ContinueWith(t =>
                                                     Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
                                                                                  ? copyDialog.NotifyDone
@@ -3059,10 +3146,18 @@ public partial class MainWindow : Window, IInstallUi
         if (pending.Count == 0)
             return;
 
-        foreach (var node in pending.Skip(1))
+        var customs = pending.Where(n => n.IsCustom).ToList();
+        if (customs.Count > 0)
+            _ = UpdateCustomAppsSequentiallyAsync(customs);
+
+        var regular = pending.Where(n => !n.IsCustom).ToList();
+        if (regular.Count == 0)
+            return;
+
+        foreach (var node in regular.Skip(1))
             _installQueue.Enqueue(node, false);
 
-        _ = _installer.InstallAsync(pending[0], AppDeployService.AppsDir, false);
+        _ = _installer.InstallAsync(regular[0], AppDeployService.AppsDir, false);
     }
 
     private async void OnUpdateApp(object? sender, RoutedEventArgs e)

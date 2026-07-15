@@ -129,7 +129,10 @@ public static class CustomAppService
         IProgress<CopyProgress>? copyProgress = null,
         CancellationToken ct = default,
         ImportMode mode = ImportMode.Copy,
-        string? preferredFolderName = null)
+        string? preferredFolderName = null,
+        string? updateUrl = null,
+        string? updateFile = null,
+        DateTime? updateFileMtime = null)
     {
         Directory.CreateDirectory(CustomAppsDir);
 
@@ -207,6 +210,18 @@ public static class CustomAppService
 
         var versionExeRelPath = string.IsNullOrEmpty(versionSource) ? exeFile : versionSource;
         var versionExePath = Path.Combine(destDir, versionExeRelPath);
+        if (updateFileMtime is { } mtime && File.Exists(versionExePath))
+        {
+            try
+            {
+                File.SetLastWriteTime(versionExePath, mtime);
+            }
+            catch
+            {
+                // mtime is only a display anchor; failing to stamp it leaves UpdateDate on the extract time
+            }
+        }
+
         var updateDate = File.Exists(versionExePath)
             ? File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd")
             : string.Empty;
@@ -223,7 +238,9 @@ public static class CustomAppService
             DisplayVersion = displayVersion,
             PackageVersion = version,
             VersionSource = versionSource,
-            UpdateDate = updateDate
+            UpdateDate = updateDate,
+            UpdateUrl = updateUrl ?? string.Empty,
+            UpdateFile = updateFile ?? string.Empty
         };
         UpsertEntry(folderName, info);
         return new ImportResult(folderName, sourceDeleteError);
@@ -392,9 +409,56 @@ public static class CustomAppService
             DisplayVersion = displayVersion,
             PackageVersion = version,
             VersionSource = versionSource,
-            UpdateDate = updateDate
+            UpdateDate = updateDate,
+            UpdateUrl = existing?.UpdateUrl ?? string.Empty,
+            UpdateFile = existing?.UpdateFile ?? string.Empty
         };
         UpsertEntry(sectionName, info);
+    }
+
+    public static CustomAppInfo? LoadInfo(string sectionName)
+    {
+        var db = LoadDatabase();
+        return db.GetValueOrDefault(sectionName);
+    }
+
+    public static void ApplyGithubUpdate(
+        string sectionName,
+        string newUpdateFile,
+        DateTime releaseDate,
+        string newVersion,
+        string newDisplayVersion)
+    {
+        lock (DbGate)
+        {
+            var db = LoadDatabaseUnlocked();
+            if (!db.TryGetValue(sectionName, out var info))
+                return;
+            info.UpdateFile = newUpdateFile;
+            info.UpdateDate = releaseDate.ToString("yyyy-MM-dd");
+            if (!string.IsNullOrEmpty(newVersion))
+                info.PackageVersion = newVersion;
+            if (!string.IsNullOrEmpty(newDisplayVersion))
+                info.DisplayVersion = newDisplayVersion;
+            SaveDatabaseUnlocked(db);
+        }
+
+        var versionExeRelPath = string.IsNullOrEmpty(LoadInfo(sectionName)?.VersionSource)
+            ? LoadInfo(sectionName)?.ExeFile ?? string.Empty
+            : LoadInfo(sectionName)!.VersionSource;
+        if (string.IsNullOrEmpty(versionExeRelPath))
+            return;
+        var versionExePath = Path.Combine(CustomAppsDir, sectionName, versionExeRelPath);
+        if (!File.Exists(versionExePath))
+            return;
+        try
+        {
+            File.SetLastWriteTime(versionExePath, releaseDate);
+        }
+        catch
+        {
+            // mtime is only a display anchor; missing stamp isn't fatal
+        }
     }
 
     public static (string Version, string VersionSource, string DisplayVersion) LoadVersionInfo(string sectionName)

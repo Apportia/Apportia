@@ -31,6 +31,9 @@ public partial class GitHubImportDialog : Window
     public string Version { get; private set; } = string.Empty;
     public string DisplayVersion { get; private set; } = string.Empty;
     public string UpdateDate { get; private set; } = string.Empty;
+    public string UpdateUrl { get; private set; } = string.Empty;
+    public string UpdateFile { get; private set; } = string.Empty;
+    public DateTime? UpdateFileMtime { get; private set; }
 
     private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
@@ -221,7 +224,11 @@ public partial class GitHubImportDialog : Window
                 ExtractedFolder = destDir;
                 Version = GitHubVersion.Derive(_release.TagName, _release.PublishedAt);
                 DisplayVersion = _release.TagName;
-                UpdateDate = (_release.PublishedAt?.LocalDateTime ?? DateTime.Today).ToString("yyyy-MM-dd");
+                var publishedLocal = _release.PublishedAt?.LocalDateTime ?? DateTime.Today;
+                UpdateDate = publishedLocal.ToString("yyyy-MM-dd");
+                UpdateUrl = $"https://github.com/{OwnerBox.Text?.Trim()}/{repo}";
+                UpdateFile = asset.Name;
+                UpdateFileMtime = publishedLocal;
                 Success = true;
                 Close();
             }
