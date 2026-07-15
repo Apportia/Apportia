@@ -104,7 +104,7 @@ public partial class GitHubImportDialog : Window
             TagBox.Text = release.TagName;
             NameBox.Text = string.IsNullOrWhiteSpace(release.Name) ? release.TagName : release.Name;
             PublishedBox.Text = release.PublishedAt is { } dt
-                ? string.Format(UiText.Dialog.GitHubImportPublishedFormat, dt.LocalDateTime)
+                ? RelativeDate.Format(dt.LocalDateTime)
                 : string.Empty;
 
             var sevenZipAvailable = AppDeployService.FindSevenZip(AppDeployService.AppsDir) != null;

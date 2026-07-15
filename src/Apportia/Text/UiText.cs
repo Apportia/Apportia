@@ -85,7 +85,6 @@ public static class UiText
         public const string GitHubImportFetching = "Fetching latest release...";
         public const string GitHubImportNoRelease = "No release found for this repository.";
         public const string GitHubImportNoZipAssets = "This release has no .zip assets.";
-        public const string GitHubImportPublishedFormat = "{0:yyyy-MM-dd}";
         public const string GitHubImportTitle = "Import from GitHub";
         public const string GitHubImportUnsupportedAsset = "Only .zip and .7z assets are supported.";
         public const string GitHubImportNoSupportedAssets = "This release has no supported assets (.zip or .7z).";
@@ -474,8 +473,9 @@ public static class UiText
         public const string VtApiKey = "API Key";
         public const string VtFile = "File";
 
-        // Relative-date labels (AppProperties)
+        // Relative-date labels
         public const string RelDaysAgoFormat = "{0}, {1} days ago";
+        public const string RelDaysAgoShortFormat = "{0} days ago";
         public const string RelToday = "Today";
         public const string RelWeekAgo = "1 week ago";
         public const string RelYesterday = "Yesterday";

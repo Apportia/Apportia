@@ -237,8 +237,8 @@ public sealed class AppNode : INotifyPropertyChanged
     public string Hash { get; private set; }
     public string JoinedDate { get; }
     public string UpdateDate { get; private set; }
-    public string JoinedDateDisplay => RelativeDate(JoinedDate);
-    public string UpdateDateDisplay => RelativeDate(UpdateDate);
+    public string JoinedDateDisplay => RelativeDate.FormatShort(JoinedDate);
+    public string UpdateDateDisplay => RelativeDate.FormatShort(UpdateDate);
 
     public string CurrentDate
     {
@@ -373,23 +373,6 @@ public sealed class AppNode : INotifyPropertyChanged
     public bool HasLanguageVariantKey(string language)
     {
         return _languageVariants?.ContainsKey(language) ?? false;
-    }
-
-    private static string RelativeDate(string raw)
-    {
-        if (!DateTime.TryParse(raw, out var date))
-            return raw;
-        var days = (DateTime.Today - date.Date).Days;
-        if (days < 0)
-            return date.ToString("MMM d, yyyy");
-        return days switch
-        {
-            0 => "Today",
-            1 => "Yesterday",
-            <= 6 => $"{days} days ago",
-            7 => "1 week ago",
-            _ => date.ToString("MMM d, yyyy")
-        };
     }
 
     private void NotifyActionStates()

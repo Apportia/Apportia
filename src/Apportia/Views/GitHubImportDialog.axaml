@@ -25,17 +25,20 @@
             <TextBlock Text="{x:Static text:UiText+Header.GhTag}"
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                        Margin="0,8,0,2" />
-            <TextBox x:Name="TagBox" IsReadOnly="True" Foreground="{DynamicResource AppTextBrush}" />
+            <SelectableTextBlock x:Name="TagBox" Foreground="{DynamicResource AppSubTextBrush}"
+                                 Padding="6,4" />
 
             <TextBlock Text="{x:Static text:UiText+Header.GhName}"
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                        Margin="0,8,0,2" />
-            <TextBox x:Name="NameBox" IsReadOnly="True" Foreground="{DynamicResource AppTextBrush}" />
+            <SelectableTextBlock x:Name="NameBox" Foreground="{DynamicResource AppSubTextBrush}"
+                                 Padding="6,4" />
 
             <TextBlock Text="{x:Static text:UiText+Header.GhPublished}"
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                        Margin="0,8,0,2" />
-            <TextBox x:Name="PublishedBox" IsReadOnly="True" Foreground="{DynamicResource AppTextBrush}" />
+            <SelectableTextBlock x:Name="PublishedBox" Foreground="{DynamicResource AppSubTextBrush}"
+                                 Padding="6,4" />
 
             <TextBlock Text="{x:Static text:UiText+Header.GhAsset}"
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"

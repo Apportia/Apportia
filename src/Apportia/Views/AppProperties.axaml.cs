@@ -36,10 +36,7 @@ public partial class AppProperties : Window
     {
         _node = node;
 
-        var updateDate = DateTime.TryParse(node.UpdateDate, out var dt)
-            ? dt.ToString("dddd, MMMM d, yyyy")
-            : node.UpdateDate;
-        Title = string.Format(UiText.Header.PropsTitleFormat, node.Name, updateDate);
+        Title = string.Format(UiText.Header.PropsTitleFormat, node.Name, RelativeDate.Format(node.UpdateDate));
 
         _installLocation = node.IsCustom
             ? Path.Combine(CustomAppService.CustomAppsDir, node.SectionName)
@@ -68,7 +65,7 @@ public partial class AppProperties : Window
                                ? node.SubCategory.Replace(prefix, string.Empty)
                                : node.SubCategory),
             new EntryField(UiText.Header.PropsClass, node.IsAdvanced ? UiText.Header.PropsClassAdvanced : node.IsLegacy ? UiText.Header.PropsClassLegacy : ""),
-            new EntryField(UiText.Header.PropsJoinedDate, RelativeDate(node.JoinedDate)),
+            new EntryField(UiText.Header.PropsJoinedDate, RelativeDate.Format(node.JoinedDate)),
             new EntryField(UiText.Header.PropsRequiresJava, node.RequiresJava ? UiText.Header.PropsYes : "")
         );
 
@@ -81,7 +78,7 @@ public partial class AppProperties : Window
         {
             new(UiText.Header.PropsDisplayVersion, localDisplay, availableDisplay),
             new(UiText.Header.PropsPackageVersion, localPackage, availablePackage),
-            new(UiText.Header.PropsUpdateDate, RelativeDate(node.UpdateDate), string.Empty)
+            new(UiText.Header.PropsUpdateDate, RelativeDate.Format(node.UpdateDate), string.Empty)
         };
 
         if (node.IsCustom)
@@ -165,24 +162,6 @@ public partial class AppProperties : Window
     private void OnClose(object? sender, RoutedEventArgs e)
     {
         Close();
-    }
-
-    private static string RelativeDate(string? raw)
-    {
-        if (!DateTime.TryParse(raw, out var date))
-            return raw ?? string.Empty;
-        var days = (DateTime.Today - date.Date).Days;
-        var dayName = date.ToString("dddd");
-        if (days < 0)
-            return date.ToString("dddd, MMMM d, yyyy");
-        return days switch
-        {
-            0 => $"{dayName}, {UiText.Header.RelToday}",
-            1 => $"{dayName}, {UiText.Header.RelYesterday}",
-            <= 6 => string.Format(UiText.Header.RelDaysAgoFormat, dayName, days),
-            7 => $"{dayName}, {UiText.Header.RelWeekAgo}",
-            _ => date.ToString("dddd, MMMM d, yyyy")
-        };
     }
 
     private static EntryField[] Filter(params EntryField[] fields)
