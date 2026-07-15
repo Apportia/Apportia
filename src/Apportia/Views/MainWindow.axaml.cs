@@ -2041,10 +2041,10 @@ public partial class MainWindow : Window, IInstallUi
         if (!node.TryBeginLaunchFx())
             return;
 
-        if (OperatingSystem.IsLinux() && !node.IsCustom && !await EnsureWineReadyAsync())
+        if (OperatingSystem.IsLinux() && !await EnsureWineReadyAsync())
             return;
 
-        if (OperatingSystem.IsLinux() && !node.IsCustom)
+        if (OperatingSystem.IsLinux())
             await WinePrefixTheme.ApplyAsync(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
 
         if (_cliAppArgs.Length > 0)
@@ -2199,7 +2199,8 @@ public partial class MainWindow : Window, IInstallUi
                 /* window may be closing */
             }
 
-            if (!WineService.IsWineReady())
+            settings = SettingsService.Load();
+            if (!settings.LinuxSetupCompleted || !WineService.IsWineReady())
                 return false;
         }
 
