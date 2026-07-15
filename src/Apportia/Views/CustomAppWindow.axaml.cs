@@ -24,16 +24,19 @@ public partial class CustomAppWindow : Window
     private readonly bool _initializing;
     private readonly string _initialName = string.Empty;
     private readonly bool _isEditMode;
+    private readonly string? _presetFolderCleanup;
+    private readonly string? _presetUpdateDate;
     private readonly string _sectionName = string.Empty;
 
     private readonly IReadOnlyDictionary<string, IReadOnlyList<string>> _subCategoriesMap =
         new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
 
+    private bool _cancelConfirmed;
+
     private List<IconVariant> _galleryIcons = [];
     private int _galleryShift;
     private bool _galleryShifted;
     private bool _iconManuallySelected;
-    private readonly string? _presetUpdateDate;
     private string _rawVersion = string.Empty;
     private bool _sectionManuallyEdited;
     private Border? _selectedThumb;
@@ -63,6 +66,7 @@ public partial class CustomAppWindow : Window
         if (string.IsNullOrEmpty(presetFolder))
             return;
         FolderBrowseButton.IsVisible = false;
+        _presetFolderCleanup = presetFolder;
         _presetUpdateDate = string.IsNullOrEmpty(presetUpdateDate) ? null : presetUpdateDate;
         var version = presetVersion;
         var display = presetDisplayVersion;
@@ -798,6 +802,50 @@ public partial class CustomAppWindow : Window
             _galleryShifted = true;
             Position = new PixelPoint(Position.X, Position.Y - half);
         }, DispatcherPriority.Background);
+    }
+
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+        if (Success || _cancelConfirmed || string.IsNullOrEmpty(_presetFolderCleanup))
+            return;
+        e.Cancel = true;
+        _ = ConfirmCancelAsync();
+    }
+
+    private async Task ConfirmCancelAsync()
+    {
+        try
+        {
+            var dialog = new AppDialog(
+                UiText.Dialog.GitHubImportCancelTitle,
+                UiText.Dialog.GitHubImportCancelBody,
+                UiText.Button.CancelImportYes,
+                UiText.Button.CancelImportNo);
+            await dialog.ShowDialog(this);
+            if (dialog.Result != UiText.Button.CancelImportYes)
+                return;
+            _cancelConfirmed = true;
+            if (!string.IsNullOrEmpty(_presetFolderCleanup) && Directory.Exists(_presetFolderCleanup))
+            {
+                try
+                {
+                    Directory.Delete(_presetFolderCleanup, true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(string.Format(LogText.Custom.CancelCleanupFailedFormat, _presetFolderCleanup, ex.Message));
+                }
+            }
+
+            Close();
+        }
+        catch (Exception ex)
+        {
+            Log.Write(string.Format(LogText.Custom.CancelCleanupFailedFormat, _presetFolderCleanup ?? string.Empty, ex.Message));
+            _cancelConfirmed = true;
+            Close();
+        }
     }
 
     protected override void OnClosed(EventArgs e)

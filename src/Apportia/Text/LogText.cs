@@ -22,6 +22,7 @@ public static class LogText
         public const string FolderPickerFailedFormat = "Custom app folder picker failed: {0}";
         public const string IconPickerFailedFormat = "Icon picker failed: {0}";
         public const string PopulateFromFolderFailedFormat = "PopulateFromFolderAsync failed: {0}";
+        public const string CancelCleanupFailedFormat = "Failed to remove cancelled import folder '{0}': {1}";
     }
 
     public static class DiskUsage

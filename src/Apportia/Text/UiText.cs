@@ -88,6 +88,8 @@ public static class UiText
         public const string GitHubImportPublishedFormat = "{0:yyyy-MM-dd}";
         public const string GitHubImportTitle = "Import from GitHub";
         public const string GitHubImportUnsupportedAsset = "Only .zip assets are supported.";
+        public const string GitHubImportCancelTitle = "Cancel Import";
+        public const string GitHubImportCancelBody = "The downloaded files will be removed.\n\nCancel the import?";
 
         #endregion
 
