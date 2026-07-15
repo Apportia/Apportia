@@ -29,8 +29,9 @@ public static partial class SelfUpdater
         if (release == null || !Version.TryParse(release.TagName, out var latest) || latest <= current)
             return null;
 
-        var url = release.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))?.DownloadUrl
-                  ?? $"https://github.com/{Repo}/releases/download/{release.TagName}/Apportia.zip";
+        var url = release.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))?.DownloadUrl;
+        if (url == null)
+            return null;
         return new SelfUpdateInfo(latest, url, release.Body);
     }
 
