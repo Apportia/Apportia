@@ -229,6 +229,16 @@ public static class CustomAppService
         return new ImportResult(folderName, sourceDeleteError);
     }
 
+    public static string ReserveUniqueFolderName(string baseName)
+    {
+        Directory.CreateDirectory(CustomAppsDir);
+        var name = baseName;
+        var index = 2;
+        while (Directory.Exists(Path.Combine(CustomAppsDir, name)))
+            name = baseName + "_" + index++;
+        return name;
+    }
+
     public static bool IsDirectChildOfCustomApps(string sourceFolder)
     {
         try

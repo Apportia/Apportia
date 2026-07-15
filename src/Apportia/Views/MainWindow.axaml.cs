@@ -2151,7 +2151,25 @@ public partial class MainWindow : Window, IInstallUi
         {
             if (DataContext is not MainViewModel vm)
                 return;
-            var win = new CustomAppWindow(vm.Categories, vm.SubCategoriesMap);
+
+            var source = await ShowDialog(
+                UiText.Dialog.MainImportFromTitle,
+                UiText.Dialog.MainImportFromBody,
+                UiText.Button.ImportLocal, UiText.Button.ImportGitHub, UiText.Button.Cancel);
+            if (source != UiText.Button.ImportLocal && source != UiText.Button.ImportGitHub)
+                return;
+
+            string? presetFolder = null;
+            if (source == UiText.Button.ImportGitHub)
+            {
+                var gh = new GitHubImportDialog();
+                await gh.ShowDialog(this);
+                if (!gh.Success)
+                    return;
+                presetFolder = gh.ExtractedFolder;
+            }
+
+            var win = new CustomAppWindow(vm.Categories, vm.SubCategoriesMap, presetFolder);
             await win.ShowDialog(this);
             if (!win.Success)
                 return;

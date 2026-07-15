@@ -174,6 +174,8 @@ public static class GitHubClient
                       .Select(entry => new GhRelease
                       {
                           TagName = ExtractTag(entry.Element(ns + "id")?.Value ?? string.Empty),
+                          Name = entry.Element(ns + "title")?.Value ?? string.Empty,
+                          PublishedAt = DateTimeOffset.TryParse(entry.Element(ns + "updated")?.Value, out var dt) ? dt : null,
                           Body = entry.Element(ns + "content")?.Value ?? string.Empty,
                           Assets = []
                       })
@@ -221,6 +223,8 @@ public sealed class GhAsset
 public sealed class GhRelease
 {
     [JsonPropertyName("tag_name")] public string TagName { get; set; } = string.Empty;
+    [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
+    [JsonPropertyName("published_at")] public DateTimeOffset? PublishedAt { get; set; }
     [JsonPropertyName("body")] public string Body { get; set; } = string.Empty;
     [JsonPropertyName("assets")] public List<GhAsset> Assets { get; set; } = [];
 }

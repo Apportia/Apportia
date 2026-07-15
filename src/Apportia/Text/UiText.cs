@@ -73,6 +73,24 @@ public static class UiText
 
         #endregion
 
+        #region GitHubImportDialog
+
+        public const string GitHubImportDownloadFailed = "The asset could not be downloaded.";
+        public const string GitHubImportDownloadingFormat = "Downloading {0}...";
+        public const string GitHubImportEnterOwner = "Please enter a user or organization.";
+        public const string GitHubImportEnterRepo = "Please enter a repository name.";
+        public const string GitHubImportExtracting = "Extracting...";
+        public const string GitHubImportExtractionFailed = "The asset could not be extracted.";
+        public const string GitHubImportFetchFailed = "Could not fetch release. Check the repository name and your network.";
+        public const string GitHubImportFetching = "Fetching latest release...";
+        public const string GitHubImportNoRelease = "No release found for this repository.";
+        public const string GitHubImportNoZipAssets = "This release has no .zip assets.";
+        public const string GitHubImportPublishedFormat = "{0:yyyy-MM-dd}";
+        public const string GitHubImportTitle = "Import from GitHub";
+        public const string GitHubImportUnsupportedAsset = "Only .zip assets are supported.";
+
+        #endregion
+
         #region ExePickerDialog
 
         public const string ExePickerPromptLine1 = "Multiple executables were found in the application folder.";
@@ -253,6 +271,8 @@ public static class UiText
         public const string MainCloseInProgressTitle = "Installation in Progress";
         public const string MainDeleteFolderBodyFormat = "Permanently delete \"{0}\" and everything inside it?";
         public const string MainDeleteFolderTitle = "Delete Folder";
+        public const string MainImportFromBody = "Where should Apportia import the app from?";
+        public const string MainImportFromTitle = "Import App";
         public const string MainImportMoveOrCopyBodyFormat = "How do you want to import \"{0}\" into your custom apps?\n\nMove: original folder is removed after import.\nCopy: original folder is left in place.";
         public const string MainImportMoveOrCopyTitle = "Move or Copy?";
         public const string MainImportSourceDeleteFailedFormat = "Import copied \"{0}\" successfully, but the original folder could not be deleted:\n\n{1}";
@@ -407,6 +427,14 @@ public static class UiText
         public const string CustomVersionSource = "Version Source";
         public const string CustomWebsite = "Website";
 
+        // GitHubImportDialog labels
+        public const string GhAsset = "Asset";
+        public const string GhName = "Release";
+        public const string GhOwner = "User / Organization";
+        public const string GhPublished = "Published";
+        public const string GhRepo = "Repository";
+        public const string GhTag = "Tag";
+
         // AppProperties entries (labels)
         public const string PropsAvailable = "Available";
         public const string PropsCategory = "Category";
@@ -465,6 +493,10 @@ public static class UiText
         public const string CustomAppImport = "Import";
         public const string CustomAppSave = "Save";
         public const string DeleteAll = "Delete All";
+        public const string Download = "Download";
+        public const string Fetch = "Fetch";
+        public const string ImportGitHub = "GitHub";
+        public const string ImportLocal = "Local";
         public const string GotIt = "Got it!";
         public const string Install = "Install";
         public const string InstallFonts = "Install Fonts";

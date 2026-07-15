@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Apportia.Text"
+        x:Class="Apportia.Views.GitHubImportDialog"
+        Title="{x:Static text:UiText+Dialog.GitHubImportTitle}"
+        Width="500"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+    <StackPanel Margin="20" Spacing="4">
+
+        <TextBlock Text="{x:Static text:UiText+Header.GhOwner}"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <TextBox x:Name="OwnerBox" Foreground="{DynamicResource AppTextBrush}" />
+
+        <TextBlock Text="{x:Static text:UiText+Header.GhRepo}"
+                   FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                   Margin="0,8,0,2" />
+        <TextBox x:Name="RepoBox" Foreground="{DynamicResource AppTextBrush}" />
+
+        <StackPanel x:Name="ReleasePanel" IsVisible="False" Spacing="4">
+            <TextBlock Text="{x:Static text:UiText+Header.GhTag}"
+                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                       Margin="0,8,0,2" />
+            <TextBox x:Name="TagBox" IsReadOnly="True" Foreground="{DynamicResource AppTextBrush}" />
+
+            <TextBlock Text="{x:Static text:UiText+Header.GhName}"
+                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                       Margin="0,8,0,2" />
+            <TextBox x:Name="NameBox" IsReadOnly="True" Foreground="{DynamicResource AppTextBrush}" />
+
+            <TextBlock Text="{x:Static text:UiText+Header.GhPublished}"
+                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                       Margin="0,8,0,2" />
+            <TextBox x:Name="PublishedBox" IsReadOnly="True" Foreground="{DynamicResource AppTextBrush}" />
+
+            <TextBlock Text="{x:Static text:UiText+Header.GhAsset}"
+                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                       Margin="0,8,0,2" />
+            <ComboBox x:Name="AssetCombo" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <TextBlock x:Name="StatusText"
+                   IsVisible="False"
+                   Foreground="{DynamicResource AppSubTextBrush}"
+                   TextWrapping="Wrap"
+                   Margin="0,8,0,0" />
+
+        <TextBlock x:Name="ErrorText"
+                   IsVisible="False"
+                   Foreground="#E05555"
+                   TextWrapping="Wrap"
+                   Margin="0,8,0,0" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,16,0,0">
+            <Button x:Name="DownloadButton" Content="{x:Static text:UiText+Button.Download}"
+                    IsVisible="False" Click="OnDownload" />
+            <Button x:Name="FetchButton" Content="{x:Static text:UiText+Button.Fetch}"
+                    Click="OnFetch" />
+            <Button Content="{x:Static text:UiText+Button.Cancel}" Click="OnCancel" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>
