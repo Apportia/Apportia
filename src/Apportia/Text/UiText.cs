@@ -349,6 +349,8 @@ public static class UiText
         public const string VtSubmissionUploadError = "Upload Error";
         public const string VtTitle = "VirusTotal Analysis";
         public const string VtTitleFormat = "VirusTotal \u2014 {0}";
+        public const string VtChooseTargetTitle = "Choose Scan Target";
+        public const string VtChooseTargetBody = "An update is available. Which version should be scanned?";
         public const string VtUploadAnalyzingFormat = "File uploaded. VirusTotal is analyzing across all engines... ({0}s elapsed)";
         public const string VtUploadFetching = "Analysis complete. Fetching full report...";
         public const string VtUploadNotFoundInstalled = "File not found in VirusTotal database. Click 'Upload & Scan' to submit it.";
@@ -519,6 +521,8 @@ public static class UiText
         public const string Save = "Save";
         public const string Scan = "Scan";
         public const string ScanWithVirusTotal = "Scan with VirusTotal";
+        public const string VtCheckInstalled = "Installed Version";
+        public const string VtCheckDownload = "Available Update";
         public const string Select = "Select";
         public const string Terminate = "Terminate";
         public const string TerminateAll = "Terminate All";

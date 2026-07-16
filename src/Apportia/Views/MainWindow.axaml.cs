@@ -2008,7 +2008,22 @@ public partial class MainWindow : Window, IInstallUi
         {
             if (NodeFromMenu(sender) is not { } node)
                 return;
-            var dialog = new VirusTotalDialog(node) { Icon = new WindowIcon(node.Icon) };
+            var preferDownload = false;
+            if (node is { IsInstalled: true, NeedsUpdate: true } && !string.IsNullOrEmpty(node.DownloadFile) && !string.IsNullOrEmpty(node.Hash))
+            {
+                var choice = new AppDialog(
+                    UiText.Dialog.VtChooseTargetTitle,
+                    UiText.Dialog.VtChooseTargetBody,
+                    UiText.Button.VtCheckInstalled,
+                    UiText.Button.VtCheckDownload,
+                    UiText.Button.Cancel) { Icon = new WindowIcon(node.Icon) };
+                await choice.ShowDialog(this);
+                if (choice.Result == UiText.Button.Cancel || string.IsNullOrEmpty(choice.Result))
+                    return;
+                preferDownload = choice.Result == UiText.Button.VtCheckDownload;
+            }
+
+            var dialog = new VirusTotalDialog(node, preferDownloadEntries: preferDownload) { Icon = new WindowIcon(node.Icon) };
             await dialog.ShowDialog(this);
         }
         catch

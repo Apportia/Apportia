@@ -67,11 +67,11 @@ public sealed record VtTridRow(string FileType, string Probability);
 
 public partial class VirusTotalDialog : Window
 {
+    private readonly string _appDir = string.Empty;
     private readonly ObservableCollection<VtFileEntry> _entries = [];
     private readonly AppNode? _node;
     private readonly Dictionary<string, string> _sessionHashes = new();
     private readonly VtStore _store = new();
-    private readonly string _appDir = string.Empty;
     private GridLength _engineHeaderEngineColWidth;
     private string? _sha256PendingUpload;
 
@@ -80,7 +80,7 @@ public partial class VirusTotalDialog : Window
         InitializeComponent();
     }
 
-    public VirusTotalDialog(AppNode node, string? downloadedFilePath = null) : this()
+    public VirusTotalDialog(AppNode node, string? downloadedFilePath = null, bool preferDownloadEntries = false) : this()
     {
         _node = node;
 
@@ -98,10 +98,11 @@ public partial class VirusTotalDialog : Window
             return;
         }
 
-        if (!node.IsInstalled)
+        if (!node.IsInstalled || preferDownloadEntries)
         {
             PopulateDownloadEntries();
-            return;
+            if (_entries.Count > 0 || !node.IsInstalled)
+                return;
         }
 
         _appDir = node.IsCustom
