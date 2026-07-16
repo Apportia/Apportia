@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:text="using:Apportia.Text"
         x:Class="Apportia.Views.CustomAppWindow"
-        Width="500"
+        Width="640"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
@@ -50,50 +50,63 @@
             <ComboBox x:Name="ExeSourceCombo" HorizontalAlignment="Stretch"
                       SelectionChanged="OnExeSelectionChanged" />
 
-            <StackPanel x:Name="SectionSection">
-                <TextBlock Text="{x:Static text:UiText+Header.CustomSection}"
-                           FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
-                           Margin="0,8,0,2" />
-                <TextBox x:Name="SectionBox" Foreground="{DynamicResource AppTextBrush}"
-                         TextChanged="OnSectionBoxTextChanged" />
-            </StackPanel>
-
-            <TextBlock Text="{x:Static text:UiText+Header.CustomName}"
-                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
-                       Margin="0,8,0,2" />
-            <TextBox x:Name="NameBox" Foreground="{DynamicResource AppTextBrush}" />
+            <Grid ColumnDefinitions="*,12,*">
+                <StackPanel x:Name="SectionSection" Grid.Column="0">
+                    <TextBlock Text="{x:Static text:UiText+Header.CustomSection}"
+                               FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                               Margin="0,8,0,2" />
+                    <TextBox x:Name="SectionBox" Foreground="{DynamicResource AppTextBrush}"
+                             TextChanged="OnSectionBoxTextChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="{x:Static text:UiText+Header.CustomName}"
+                               FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                               Margin="0,8,0,2" />
+                    <TextBox x:Name="NameBox" Foreground="{DynamicResource AppTextBrush}" />
+                </StackPanel>
+            </Grid>
 
             <TextBlock Text="{x:Static text:UiText+Header.CustomDescription}"
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                        Margin="0,8,0,2" />
             <TextBox x:Name="DescriptionBox" Foreground="{DynamicResource AppTextBrush}" />
 
-            <TextBlock Text="{x:Static text:UiText+Header.CustomCategory}"
-                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
-                       Margin="0,8,0,2" />
-            <ComboBox x:Name="CategoryCombo" HorizontalAlignment="Stretch"
-                      SelectionChanged="OnCategorySelectionChanged" />
-
-            <TextBlock Text="{x:Static text:UiText+Header.CustomSubCategory}"
-                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
-                       Margin="0,8,0,2" />
-            <ComboBox x:Name="SubCategoryCombo" HorizontalAlignment="Stretch" />
+            <Grid ColumnDefinitions="*,12,*">
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{x:Static text:UiText+Header.CustomCategory}"
+                               FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                               Margin="0,8,0,2" />
+                    <ComboBox x:Name="CategoryCombo" HorizontalAlignment="Stretch"
+                              SelectionChanged="OnCategorySelectionChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="{x:Static text:UiText+Header.CustomSubCategory}"
+                               FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                               Margin="0,8,0,2" />
+                    <ComboBox x:Name="SubCategoryCombo" HorizontalAlignment="Stretch" />
+                </StackPanel>
+            </Grid>
 
             <TextBlock Text="{x:Static text:UiText+Header.CustomWebsite}"
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                        Margin="0,8,0,2" />
             <TextBox x:Name="WebsiteBox" Foreground="{DynamicResource AppTextBrush}" />
 
-            <TextBlock Text="{x:Static text:UiText+Header.CustomVersionSource}"
-                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
-                       Margin="0,8,0,2" />
-            <ComboBox x:Name="VersionSourceCombo" HorizontalAlignment="Stretch"
-                      SelectionChanged="OnVersionExeSelectionChanged" />
-
-            <TextBlock Text="{x:Static text:UiText+Header.CustomVersion}"
-                       FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
-                       Margin="0,8,0,2" />
-            <TextBox x:Name="VersionBox" Foreground="{DynamicResource AppTextBrush}" />
+            <Grid ColumnDefinitions="*,12,*">
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{x:Static text:UiText+Header.CustomVersionSource}"
+                               FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                               Margin="0,8,0,2" />
+                    <ComboBox x:Name="VersionSourceCombo" HorizontalAlignment="Stretch"
+                              SelectionChanged="OnVersionExeSelectionChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="{x:Static text:UiText+Header.CustomVersion}"
+                               FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
+                               Margin="0,8,0,2" />
+                    <TextBox x:Name="VersionBox" Foreground="{DynamicResource AppTextBrush}" />
+                </StackPanel>
+            </Grid>
             <TextBlock x:Name="VersionChangedText"
                        IsVisible="False"
                        FontSize="11" Foreground="#E0A020"
