@@ -51,3 +51,4 @@ jobs:
         with:
           files: ${{ steps.package.outputs.archive }}
           generate_release_notes: true
+          token: ${{ secrets.RELEASE_TOKEN }}
