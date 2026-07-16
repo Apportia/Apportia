@@ -7,10 +7,8 @@ using System.Xml.Linq;
 
 namespace Apportia.Services;
 
-/// Unified access point for every GitHub interaction in the app. Primary path uses the
-/// REST API; when that is rate-limited or unreachable we fall back to the Atom release
-/// feed or raw.githubusercontent.com. Optional GITHUB_TOKEN env var lifts the API limit
-/// from 60/h to 5000/h.
+/// REST API with atom-feed / raw.githubusercontent.com fallback. GITHUB_TOKEN env var
+/// lifts the anonymous rate limit (60/h) to 5000/h.
 public static class GitHubClient
 {
     private static readonly HttpClient Http;
@@ -25,9 +23,7 @@ public static class GitHubClient
             Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
-    /// Fetches a UTF-8 text file from a repo. Prefers the API contents endpoint (verifies the
-    /// blob SHA); falls back to raw.githubusercontent.com without SHA verification when the
-    /// API fails or is rate-limited.
+    /// API path verifies the blob SHA; raw.githubusercontent.com fallback does not.
     public static async Task<string?> FetchFileContentAsync(
         string repo,
         string path,
@@ -65,10 +61,8 @@ public static class GitHubClient
         }
     }
 
-    /// Latest release for the repo. Tries the API first, then the Atom feed as fallback
-    /// (Atom entries carry no asset list; callers must reconstruct download URLs).
-    /// Pass allowAtomFallback: false when the caller needs assets — the atom feed can
-    /// never supply them and would only mask a transient API failure.
+    /// Atom fallback never carries assets. Pass allowAtomFallback: false when the caller
+    /// needs assets, otherwise a transient API failure gets masked with an assetless release.
     public static async Task<GhRelease?> FetchLatestReleaseAsync(
         string repo,
         CancellationToken ct = default,
@@ -96,11 +90,11 @@ public static class GitHubClient
         return atom.Count > 0 ? atom[0] : null;
     }
 
-    /// Releases for the repo, newest first. Tries the API first, then the Atom feed.
-    /// Atom entries carry no asset list; callers must reconstruct download URLs when
-    /// releases are returned from the fallback path.
+    /// Newest first. Atom-fallback entries have no assets.
     public static async Task<IReadOnlyList<GhRelease>> FetchReleasesAsync(
-        string repo, int perPage = 30, CancellationToken ct = default)
+        string repo,
+        int perPage = 30,
+        CancellationToken ct = default)
     {
         try
         {
@@ -121,16 +115,14 @@ public static class GitHubClient
         return await FetchAtomReleasesAsync(repo, ct);
     }
 
-    /// Latest release from the Atom feed only. No API call, doesn't count against
-    /// the API rate limit. Returns tag/name/date/body but never assets.
+    /// Atom-only path — no API quota consumed, but the release has no assets.
     public static async Task<GhRelease?> FetchLatestReleaseFromAtomAsync(string repo, CancellationToken ct = default)
     {
         var atom = await FetchAtomReleasesAsync(repo, ct);
         return atom.Count > 0 ? atom[0] : null;
     }
 
-    /// Streams a binary asset with progress. Uses the shared client so Wget UA and any
-    /// token are applied uniformly. Returns null on any error.
+    /// Streams to disk with progress. Returns false on any error.
     public static async Task<bool> DownloadAssetAsync(
         string url,
         string destPath,
@@ -163,7 +155,7 @@ public static class GitHubClient
         }
     }
 
-    /// Fetches a binary asset and returns its bytes. Returns null on any error.
+    /// Returns null on any error.
     public static async Task<byte[]?> GetAssetBytesAsync(string url, CancellationToken ct = default)
     {
         try
@@ -220,30 +212,12 @@ public static class GitHubClient
 
 public sealed class GhAsset
 {
-    private string _digest = string.Empty;
-    private string _downloadUrl = string.Empty;
-    private string _name = string.Empty;
-
-    [JsonPropertyName("name")]
-    public string Name
-    {
-        get => _name;
-        set => _name = value ?? string.Empty;
-    }
+    [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("browser_download_url")]
-    public string DownloadUrl
-    {
-        get => _downloadUrl;
-        set => _downloadUrl = value ?? string.Empty;
-    }
+    public string DownloadUrl { get; set; } = string.Empty;
 
-    [JsonPropertyName("digest")]
-    public string Digest
-    {
-        get => _digest;
-        set => _digest = value ?? string.Empty;
-    }
+    [JsonPropertyName("digest")] public string Digest { get; set; } = string.Empty;
 
     public string Sha256Hex =>
         Digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
@@ -253,40 +227,11 @@ public sealed class GhAsset
 
 public sealed class GhRelease
 {
-    private List<GhAsset> _assets = [];
-    private string _body = string.Empty;
-    private string _name = string.Empty;
-    private string _tagName = string.Empty;
-
-    [JsonPropertyName("tag_name")]
-    public string TagName
-    {
-        get => _tagName;
-        set => _tagName = value ?? string.Empty;
-    }
-
-    [JsonPropertyName("name")]
-    public string Name
-    {
-        get => _name;
-        set => _name = value ?? string.Empty;
-    }
-
+    [JsonPropertyName("tag_name")] public string TagName { get; set; } = string.Empty;
+    [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
     [JsonPropertyName("published_at")] public DateTimeOffset? PublishedAt { get; set; }
-
-    [JsonPropertyName("body")]
-    public string Body
-    {
-        get => _body;
-        set => _body = value ?? string.Empty;
-    }
-
-    [JsonPropertyName("assets")]
-    public List<GhAsset> Assets
-    {
-        get => _assets;
-        set => _assets = value ?? [];
-    }
+    [JsonPropertyName("body")] public string Body { get; set; } = string.Empty;
+    [JsonPropertyName("assets")] public List<GhAsset> Assets { get; set; } = [];
 }
 
 internal sealed class GhContentResponse
