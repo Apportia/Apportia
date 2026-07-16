@@ -4,7 +4,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 
-namespace Apportia.Rendering;
+namespace Apportia.Ui;
 
 internal static class MarkdownRenderer
 {

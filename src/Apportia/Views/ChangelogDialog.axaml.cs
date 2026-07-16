@@ -1,6 +1,6 @@
 using Apportia.Platform;
-using Apportia.Rendering;
 using Apportia.Text;
+using Apportia.Ui;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
