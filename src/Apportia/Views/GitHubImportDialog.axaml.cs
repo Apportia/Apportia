@@ -2,7 +2,7 @@ using System.IO.Compression;
 using Apportia.Platform;
 using Apportia.Services;
 using Apportia.Text;
-using Avalonia;
+using Apportia.Ui;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -12,13 +12,12 @@ public partial class GitHubImportDialog : Window
 {
     private readonly Func<string, string, string, string, string, Task<bool>>? _confirmHashMismatch;
     private List<GhAsset> _assets = [];
-    private double _lastHeight;
     private GhRelease? _release;
 
     public GitHubImportDialog()
     {
         InitializeComponent();
-        PropertyChanged += OnPropertyChanged;
+        WindowAutoRecenter.Attach(this);
     }
 
     public GitHubImportDialog(Func<string, string, string, string, string, Task<bool>> confirmHashMismatch) : this()
@@ -34,25 +33,6 @@ public partial class GitHubImportDialog : Window
     public string UpdateUrl { get; private set; } = string.Empty;
     public string UpdateFile { get; private set; } = string.Empty;
     public DateTime? UpdateFileMtime { get; private set; }
-
-    private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-    {
-        if (e.Property != HeightProperty)
-            return;
-        var newHeight = Height;
-        if (_lastHeight <= 0 || double.IsNaN(newHeight))
-        {
-            _lastHeight = newHeight;
-            return;
-        }
-
-        var delta = newHeight - _lastHeight;
-        _lastHeight = newHeight;
-        var shift = (int)(delta / 2);
-        if (shift == 0)
-            return;
-        Position = new PixelPoint(Position.X, Position.Y - shift);
-    }
 
     protected override void OnOpened(EventArgs e)
     {

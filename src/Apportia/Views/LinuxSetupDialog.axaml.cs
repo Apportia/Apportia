@@ -1,6 +1,7 @@
 using Apportia.Platform;
 using Apportia.Services;
 using Apportia.Text;
+using Apportia.Ui;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -21,7 +22,6 @@ public partial class LinuxSetupDialog : Window
     private CancellationTokenSource? _downloadCts;
     private string _initialMode = string.Empty;
     private string _initialVersion = string.Empty;
-    private double _lastHeight;
     private IReadOnlyList<WineRunnerRelease> _releases = [];
     private bool _releasesRequested;
     private bool _updateAvailable;
@@ -29,26 +29,7 @@ public partial class LinuxSetupDialog : Window
     public LinuxSetupDialog()
     {
         InitializeComponent();
-        PropertyChanged += OnPropertyChanged;
-    }
-
-    private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-    {
-        if (e.Property != HeightProperty)
-            return;
-        var newHeight = Height;
-        if (_lastHeight <= 0 || double.IsNaN(newHeight))
-        {
-            _lastHeight = newHeight;
-            return;
-        }
-
-        var delta = newHeight - _lastHeight;
-        _lastHeight = newHeight;
-        var shift = (int)(delta / 2);
-        if (shift == 0)
-            return;
-        Position = new PixelPoint(Position.X, Position.Y - shift);
+        WindowAutoRecenter.Attach(this);
     }
 
     protected override void OnOpened(EventArgs e)
