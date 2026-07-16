@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ['[0-9]*']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -37,11 +37,17 @@ jobs:
           path: bin/Release/
           retention-days: 30
 
+      - name: Package release archive
+        if: startsWith(github.ref, 'refs/tags/')
+        id: package
+        run: |
+          name="Release_$(date -u +%Y-%m-%d_%H-%M-%S).zip"
+          (cd bin/Release && zip -r "../../$name" .)
+          echo "archive=$name" >> "$GITHUB_OUTPUT"
+
       - name: Create release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            bin/Release/AppsDownloader.exe
-            bin/Release/Apps/PortableApps.com/PortableAppsPlatform.exe
+          files: ${{ steps.package.outputs.archive }}
           generate_release_notes: true
