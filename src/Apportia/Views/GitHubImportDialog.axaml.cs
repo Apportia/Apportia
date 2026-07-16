@@ -14,6 +14,7 @@ public partial class GitHubImportDialog : Window
     private List<GhAsset> _assets = [];
     private GhRelease? _release;
     private double _releaseAgeYears;
+    private bool _suppressSplit;
 
     public GitHubImportDialog()
     {
@@ -248,6 +249,29 @@ public partial class GitHubImportDialog : Window
         Close();
     }
 
+    private void OnOwnerRepoTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_suppressSplit)
+            return;
+        if (sender is not TextBox tb)
+            return;
+        var raw = tb.Text ?? string.Empty;
+        if (!NeedsSplit(raw))
+            return;
+        var segments = SplitSegments(raw).ToList();
+        var owner = segments.Count > 0 ? segments[0] : string.Empty;
+        var repo = segments.Count > 1 ? segments[1] : string.Empty;
+        _suppressSplit = true;
+        OwnerBox.Text = owner;
+        RepoBox.Text = repo;
+        _suppressSplit = false;
+    }
+
+    private static bool NeedsSplit(string s)
+    {
+        return s.Contains('/') || s.Contains('\\');
+    }
+
     private void OnAutoUpdateCheckedChanged(object? sender, RoutedEventArgs e)
     {
         AutoUpdateWarning?.IsVisible = AutoUpdateCheck.IsChecked == true && _releaseAgeYears >= 2.0;
@@ -291,6 +315,17 @@ public partial class GitHubImportDialog : Window
         }
 
         return null;
+    }
+
+    private static IEnumerable<string> SplitSegments(string? input)
+    {
+        var trimmed = input?.Trim() ?? string.Empty;
+        if (trimmed.Length == 0)
+            return [];
+        if (Uri.TryCreate(trimmed, UriKind.Absolute, out var uri)
+            && uri.Host.EndsWith("github.com", StringComparison.OrdinalIgnoreCase))
+            return uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return trimmed.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
     }
 
     private static bool IsSupportedAsset(string name, bool sevenZipAvailable)

@@ -14,12 +14,14 @@
         <TextBlock Text="{x:Static text:UiText+Header.GhOwner}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
-        <TextBox x:Name="OwnerBox" Foreground="{DynamicResource AppTextBrush}" />
+        <TextBox x:Name="OwnerBox" Foreground="{DynamicResource AppTextBrush}"
+                 TextChanged="OnOwnerRepoTextChanged" />
 
         <TextBlock Text="{x:Static text:UiText+Header.GhRepo}"
                    FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                    Margin="0,8,0,2" />
-        <TextBox x:Name="RepoBox" Foreground="{DynamicResource AppTextBrush}" />
+        <TextBox x:Name="RepoBox" Foreground="{DynamicResource AppTextBrush}"
+                 TextChanged="OnOwnerRepoTextChanged" />
 
         <StackPanel x:Name="ReleasePanel" IsVisible="False" Spacing="4">
             <TextBlock Text="{x:Static text:UiText+Header.GhTag}"
