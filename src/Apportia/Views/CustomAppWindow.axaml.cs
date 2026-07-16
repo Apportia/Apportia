@@ -57,9 +57,9 @@ public partial class CustomAppWindow : Window
         string? presetVersion = null,
         string? presetDisplayVersion = null,
         string? presetUpdateDate = null,
-        string? presetUpdateUrl = null,
-        string? presetUpdateFile = null,
-        DateTime? presetUpdateFileMtime = null,
+        string? presetDownloadPath = null,
+        string? presetDownloadFile = null,
+        DateTime? presetDownloadFileMtime = null,
         bool presetUpdateEnabled = true) : this()
     {
         _subCategoriesMap = subCategoriesMap;
@@ -74,9 +74,9 @@ public partial class CustomAppWindow : Window
         FolderBrowseButton.IsVisible = false;
         _presetFolderCleanup = presetFolder;
         _presetUpdateDate = string.IsNullOrEmpty(presetUpdateDate) ? null : presetUpdateDate;
-        UpdateUrl = presetUpdateUrl ?? string.Empty;
-        UpdateFile = presetUpdateFile ?? string.Empty;
-        UpdateFileMtime = presetUpdateFileMtime;
+        DownloadPath = presetDownloadPath ?? string.Empty;
+        DownloadFile = presetDownloadFile ?? string.Empty;
+        DownloadFileMtime = presetDownloadFileMtime;
         UpdateEnabled = presetUpdateEnabled;
         var version = presetVersion;
         var display = presetDisplayVersion;
@@ -178,9 +178,9 @@ public partial class CustomAppWindow : Window
     public string FolderName { get; private set; } = string.Empty;
     public string SectionName { get; private set; } = string.Empty;
     public string IconSourcePath { get; private set; } = string.Empty;
-    public string UpdateUrl { get; private set; } = string.Empty;
-    public string UpdateFile { get; private set; } = string.Empty;
-    public DateTime? UpdateFileMtime { get; private set; }
+    public string DownloadPath { get; private set; } = string.Empty;
+    public string DownloadFile { get; private set; } = string.Empty;
+    public DateTime? DownloadFileMtime { get; private set; }
     public bool UpdateEnabled { get; private set; } = true;
 
     private async void OnBrowseFolder(object? sender, RoutedEventArgs e)

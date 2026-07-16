@@ -463,10 +463,12 @@ public static class UiText
         public const string PropsTitle = "Properties";
         public const string PropsTitleFormat = "{0} ({1})";
         public const string PropsUpdateDate = "Update Date";
+        public const string PropsUpdateEnabled = "Auto Update";
         public const string PropsUsedSize = "Used Size";
         public const string PropsUserAgent = "User Agent";
         public const string PropsWebsite = "Website";
         public const string PropsYes = "Yes";
+        public const string PropsNo = "No";
 
         // VirusTotal labels
         public const string VtApiKey = "API Key";

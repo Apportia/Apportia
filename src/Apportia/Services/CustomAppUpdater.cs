@@ -16,9 +16,9 @@ public static class CustomAppUpdater
         CancellationToken ct = default)
     {
         var info = CustomAppService.LoadInfo(node.SectionName);
-        if (info == null || string.IsNullOrEmpty(info.UpdateUrl))
+        if (info == null || string.IsNullOrEmpty(info.DownloadPath))
             return false;
-        var repo = CustomAppUpdateChecker.ExtractRepoPath(info.UpdateUrl);
+        var repo = CustomAppUpdateChecker.ExtractRepoPath(info.DownloadPath);
         if (repo == null)
             return false;
 
@@ -27,7 +27,7 @@ public static class CustomAppUpdater
             return false;
 
         var sevenZipPath = AppDeployService.FindSevenZip(AppDeployService.AppsDir);
-        var asset = PickBestAsset(release.Assets, info.UpdateFile, sevenZipPath != null);
+        var asset = PickBestAsset(release.Assets, info.DownloadFile, sevenZipPath != null);
         if (asset == null)
             return false;
 

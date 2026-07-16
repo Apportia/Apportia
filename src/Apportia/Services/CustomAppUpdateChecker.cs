@@ -17,9 +17,9 @@ public static class CustomAppUpdateChecker
             if (!node.IsCustom)
                 continue;
             var info = CustomAppService.LoadInfo(node.SectionName);
-            if (info == null || string.IsNullOrEmpty(info.UpdateUrl) || !info.UpdateEnabled)
+            if (info == null || string.IsNullOrEmpty(info.DownloadPath) || !info.UpdateEnabled)
                 continue;
-            var repo = ExtractRepoPath(info.UpdateUrl);
+            var repo = ExtractRepoPath(info.DownloadPath);
             if (repo == null)
                 continue;
 

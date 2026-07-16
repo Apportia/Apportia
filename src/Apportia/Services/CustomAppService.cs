@@ -130,9 +130,9 @@ public static class CustomAppService
         CancellationToken ct = default,
         ImportMode mode = ImportMode.Copy,
         string? preferredFolderName = null,
-        string? updateUrl = null,
-        string? updateFile = null,
-        DateTime? updateFileMtime = null,
+        string? downloadPath = null,
+        string? downloadFile = null,
+        DateTime? downloadFileMtime = null,
         bool updateEnabled = true)
     {
         Directory.CreateDirectory(CustomAppsDir);
@@ -211,7 +211,7 @@ public static class CustomAppService
 
         var versionExeRelPath = string.IsNullOrEmpty(versionSource) ? exeFile : versionSource;
         var versionExePath = Path.Combine(destDir, versionExeRelPath);
-        if (updateFileMtime is { } mtime && File.Exists(versionExePath))
+        if (downloadFileMtime is { } mtime && File.Exists(versionExePath))
         {
             try
             {
@@ -240,8 +240,8 @@ public static class CustomAppService
             PackageVersion = version,
             VersionSource = versionSource,
             UpdateDate = updateDate,
-            UpdateUrl = updateUrl ?? string.Empty,
-            UpdateFile = updateFile ?? string.Empty,
+            DownloadPath = downloadPath ?? string.Empty,
+            DownloadFile = downloadFile ?? string.Empty,
             UpdateEnabled = updateEnabled
         };
         UpsertEntry(folderName, info);
@@ -412,8 +412,8 @@ public static class CustomAppService
             PackageVersion = version,
             VersionSource = versionSource,
             UpdateDate = updateDate,
-            UpdateUrl = existing?.UpdateUrl ?? string.Empty,
-            UpdateFile = existing?.UpdateFile ?? string.Empty,
+            DownloadPath = existing?.DownloadPath ?? string.Empty,
+            DownloadFile = existing?.DownloadFile ?? string.Empty,
             UpdateEnabled = existing?.UpdateEnabled ?? true
         };
         UpsertEntry(sectionName, info);
@@ -427,7 +427,7 @@ public static class CustomAppService
 
     public static void ApplyGithubUpdate(
         string sectionName,
-        string newUpdateFile,
+        string newDownloadFile,
         DateTime releaseDate,
         string newVersion,
         string newDisplayVersion)
@@ -437,7 +437,7 @@ public static class CustomAppService
             var db = LoadDatabaseUnlocked();
             if (!db.TryGetValue(sectionName, out var info))
                 return;
-            info.UpdateFile = newUpdateFile;
+            info.DownloadFile = newDownloadFile;
             info.UpdateDate = releaseDate.ToString("yyyy-MM-dd");
             if (!string.IsNullOrEmpty(newVersion))
                 info.PackageVersion = newVersion;

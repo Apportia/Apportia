@@ -15,8 +15,8 @@ public sealed class CustomAppInfo
     public string PackageVersion { get; set; } = string.Empty;
     public string VersionSource { get; set; } = string.Empty;
     public string UpdateDate { get; set; } = string.Empty;
-    public string UpdateUrl { get; set; } = string.Empty;
-    public string UpdateFile { get; set; } = string.Empty;
+    public string DownloadPath { get; set; } = string.Empty;
+    public string DownloadFile { get; set; } = string.Empty;
     public bool UpdateEnabled { get; set; } = true;
 }
 

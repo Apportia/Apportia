@@ -83,8 +83,23 @@ public partial class AppProperties : Window
 
         if (node.IsCustom)
         {
-            DownloadSection.IsVisible = false;
-            DownloadList.IsVisible = false;
+            var info = CustomAppService.LoadInfo(node.SectionName);
+            var fields = info is null
+                ? []
+                : Filter(
+                    new EntryField(UiText.Header.PropsDownloadFile, info.DownloadFile),
+                    new EntryField(UiText.Header.PropsDownloadPath, info.DownloadPath),
+                    new EntryField(UiText.Header.PropsUpdateEnabled, info.UpdateEnabled ? UiText.Header.PropsYes : UiText.Header.PropsNo)
+                );
+            if (fields.Length == 0)
+            {
+                DownloadSection.IsVisible = false;
+                DownloadList.IsVisible = false;
+            }
+            else
+            {
+                DownloadList.ItemsSource = fields;
+            }
         }
         else
         {

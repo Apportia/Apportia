@@ -32,9 +32,9 @@ public partial class GitHubImportDialog : Window
     public string Version { get; private set; } = string.Empty;
     public string DisplayVersion { get; private set; } = string.Empty;
     public string UpdateDate { get; private set; } = string.Empty;
-    public string UpdateUrl { get; private set; } = string.Empty;
-    public string UpdateFile { get; private set; } = string.Empty;
-    public DateTime? UpdateFileMtime { get; private set; }
+    public string DownloadPath { get; private set; } = string.Empty;
+    public string DownloadFile { get; private set; } = string.Empty;
+    public DateTime? DownloadFileMtime { get; private set; }
     public bool UpdateEnabled { get; private set; } = true;
 
     protected override void OnOpened(EventArgs e)
@@ -215,9 +215,9 @@ public partial class GitHubImportDialog : Window
                 DisplayVersion = _release.TagName;
                 var publishedLocal = _release.PublishedAt?.LocalDateTime ?? DateTime.Today;
                 UpdateDate = publishedLocal.ToString("yyyy-MM-dd");
-                UpdateUrl = $"https://github.com/{OwnerBox.Text?.Trim()}/{repo}";
-                UpdateFile = asset.Name;
-                UpdateFileMtime = publishedLocal;
+                DownloadPath = $"https://github.com/{OwnerBox.Text?.Trim()}/{repo}";
+                DownloadFile = asset.Name;
+                DownloadFileMtime = publishedLocal;
                 UpdateEnabled = AutoUpdateCheck.IsChecked == true;
                 Success = true;
                 Close();

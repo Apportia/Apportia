@@ -2238,9 +2238,9 @@ public partial class MainWindow : Window, IInstallUi
             string? presetVersion = null;
             string? presetDisplayVersion = null;
             string? presetUpdateDate = null;
-            string? presetUpdateUrl = null;
-            string? presetUpdateFile = null;
-            DateTime? presetUpdateFileMtime = null;
+            string? presetDownloadPath = null;
+            string? presetDownloadFile = null;
+            DateTime? presetDownloadFileMtime = null;
             var presetUpdateEnabled = true;
             if (source == UiText.Button.ImportGitHub)
             {
@@ -2252,16 +2252,16 @@ public partial class MainWindow : Window, IInstallUi
                 presetVersion = gh.Version;
                 presetDisplayVersion = gh.DisplayVersion;
                 presetUpdateDate = gh.UpdateDate;
-                presetUpdateUrl = gh.UpdateUrl;
-                presetUpdateFile = gh.UpdateFile;
-                presetUpdateFileMtime = gh.UpdateFileMtime;
+                presetDownloadPath = gh.DownloadPath;
+                presetDownloadFile = gh.DownloadFile;
+                presetDownloadFileMtime = gh.DownloadFileMtime;
                 presetUpdateEnabled = gh.UpdateEnabled;
             }
 
             var win = new CustomAppWindow(
                 vm.Categories, vm.SubCategoriesMap,
                 presetFolder, presetVersion, presetDisplayVersion, presetUpdateDate,
-                presetUpdateUrl, presetUpdateFile, presetUpdateFileMtime, presetUpdateEnabled);
+                presetDownloadPath, presetDownloadFile, presetDownloadFileMtime, presetUpdateEnabled);
             await win.ShowDialog(this);
             if (!win.Success)
                 return;
@@ -2325,9 +2325,9 @@ public partial class MainWindow : Window, IInstallUi
                         win.DisplayVersion,
                         mode: ImportMode.Move,
                         preferredFolderName: win.SectionName,
-                        updateUrl: win.UpdateUrl,
-                        updateFile: win.UpdateFile,
-                        updateFileMtime: win.UpdateFileMtime,
+                        downloadPath: win.DownloadPath,
+                        downloadFile: win.DownloadFile,
+                        downloadFileMtime: win.DownloadFileMtime,
                         updateEnabled: win.UpdateEnabled);
                 }
                 else
@@ -2350,9 +2350,9 @@ public partial class MainWindow : Window, IInstallUi
                         copyDialog.CancellationToken,
                         mode,
                         win.SectionName,
-                        win.UpdateUrl,
-                        win.UpdateFile,
-                        win.UpdateFileMtime,
+                        win.DownloadPath,
+                        win.DownloadFile,
+                        win.DownloadFileMtime,
                         win.UpdateEnabled);
                     _ = importTask.ContinueWith(t =>
                                                     Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
