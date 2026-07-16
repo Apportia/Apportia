@@ -47,8 +47,17 @@ jobs:
 
       - name: Create release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ steps.package.outputs.archive }}
-          generate_release_notes: true
-          token: ${{ secrets.RELEASE_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          archive="${{ steps.package.outputs.archive }}"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" "$archive" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$tag" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$tag" \
+              --generate-notes \
+              "$archive"
+          fi
