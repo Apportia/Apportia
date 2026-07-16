@@ -67,7 +67,12 @@ public static class GitHubClient
 
     /// Latest release for the repo. Tries the API first, then the Atom feed as fallback
     /// (Atom entries carry no asset list; callers must reconstruct download URLs).
-    public static async Task<GhRelease?> FetchLatestReleaseAsync(string repo, CancellationToken ct = default)
+    /// Pass allowAtomFallback: false when the caller needs assets — the atom feed can
+    /// never supply them and would only mask a transient API failure.
+    public static async Task<GhRelease?> FetchLatestReleaseAsync(
+        string repo,
+        CancellationToken ct = default,
+        bool allowAtomFallback = true)
     {
         try
         {
@@ -81,8 +86,11 @@ public static class GitHubClient
         }
         catch
         {
-            // fall through to atom
+            // fall through to atom (or return null if the caller opted out)
         }
+
+        if (!allowAtomFallback)
+            return null;
 
         var atom = await FetchAtomReleasesAsync(repo, ct);
         return atom.Count > 0 ? atom[0] : null;
@@ -212,12 +220,30 @@ public static class GitHubClient
 
 public sealed class GhAsset
 {
-    [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
+    private string _digest = string.Empty;
+    private string _downloadUrl = string.Empty;
+    private string _name = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name
+    {
+        get => _name;
+        set => _name = value ?? string.Empty;
+    }
 
     [JsonPropertyName("browser_download_url")]
-    public string DownloadUrl { get; set; } = string.Empty;
+    public string DownloadUrl
+    {
+        get => _downloadUrl;
+        set => _downloadUrl = value ?? string.Empty;
+    }
 
-    [JsonPropertyName("digest")] public string Digest { get; set; } = string.Empty;
+    [JsonPropertyName("digest")]
+    public string Digest
+    {
+        get => _digest;
+        set => _digest = value ?? string.Empty;
+    }
 
     public string Sha256Hex =>
         Digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
@@ -227,11 +253,40 @@ public sealed class GhAsset
 
 public sealed class GhRelease
 {
-    [JsonPropertyName("tag_name")] public string TagName { get; set; } = string.Empty;
-    [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
+    private List<GhAsset> _assets = [];
+    private string _body = string.Empty;
+    private string _name = string.Empty;
+    private string _tagName = string.Empty;
+
+    [JsonPropertyName("tag_name")]
+    public string TagName
+    {
+        get => _tagName;
+        set => _tagName = value ?? string.Empty;
+    }
+
+    [JsonPropertyName("name")]
+    public string Name
+    {
+        get => _name;
+        set => _name = value ?? string.Empty;
+    }
+
     [JsonPropertyName("published_at")] public DateTimeOffset? PublishedAt { get; set; }
-    [JsonPropertyName("body")] public string Body { get; set; } = string.Empty;
-    [JsonPropertyName("assets")] public List<GhAsset> Assets { get; set; } = [];
+
+    [JsonPropertyName("body")]
+    public string Body
+    {
+        get => _body;
+        set => _body = value ?? string.Empty;
+    }
+
+    [JsonPropertyName("assets")]
+    public List<GhAsset> Assets
+    {
+        get => _assets;
+        set => _assets = value ?? [];
+    }
 }
 
 internal sealed class GhContentResponse

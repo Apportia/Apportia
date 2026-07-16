@@ -84,7 +84,7 @@ public partial class GitHubImportDialog : Window
             ShowStatus(UiText.Dialog.GitHubImportFetching);
             FetchButton.IsEnabled = false;
 
-            var release = await GitHubClient.FetchLatestReleaseAsync($"{owner}/{repo}");
+            var release = await FetchWithRetriesAsync($"{owner}/{repo}");
 
             HideStatus();
             FetchButton.IsEnabled = true;
@@ -279,6 +279,24 @@ public partial class GitHubImportDialog : Window
     private void HideStatus()
     {
         StatusText.IsVisible = false;
+    }
+
+    private async Task<GhRelease?> FetchWithRetriesAsync(string repo)
+    {
+        const int maxAttempts = 3;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            var release = await GitHubClient.FetchLatestReleaseAsync(repo, allowAtomFallback: false);
+            if (release is not null && release.Assets.Count > 0)
+                return release;
+            if (attempt == maxAttempts)
+                return release;
+            ShowStatus(string.Format(UiText.Dialog.GitHubImportRetryingFormat, attempt, maxAttempts));
+            await Task.Delay(TimeSpan.FromMilliseconds(500 * attempt));
+            ShowStatus(UiText.Dialog.GitHubImportFetching);
+        }
+
+        return null;
     }
 
     private static bool IsSupportedAsset(string name, bool sevenZipAvailable)

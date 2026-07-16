@@ -2,7 +2,10 @@ namespace Apportia.Text;
 
 /// Centralized user-facing string constants for the Apportia UI.
 /// Nested classes group strings by role. Fields are sorted alphabetically within each class.
-/// Fields with a <c>Format</c> suffix are <see cref="string.Format(string, object?)" />
+/// Fields with a
+/// <c>Format</c>
+/// suffix are
+/// <see cref="string.Format(string, object?)" />
 /// patterns.
 public static class UiText
 {
@@ -83,8 +86,8 @@ public static class UiText
         public const string GitHubImportExtractionFailed = "The asset could not be extracted.";
         public const string GitHubImportFetchFailed = "Could not fetch release. Check the repository name and your network.";
         public const string GitHubImportFetching = "Fetching latest release...";
+        public const string GitHubImportRetryingFormat = "Fetch failed, retrying ({0}/{1})...";
         public const string GitHubImportNoRelease = "No release found for this repository.";
-        public const string GitHubImportNoZipAssets = "This release has no .zip assets.";
         public const string GitHubImportTitle = "Import from GitHub";
         public const string GitHubImportUnsupportedAsset = "Only .zip and .7z assets are supported.";
         public const string GitHubImportNoSupportedAssets = "This release has no supported assets (.zip or .7z).";
@@ -255,12 +258,10 @@ public static class UiText
         public const string MainAddCustomAppFailed = "Add App Failed";
         public const string MainAddToQueueFormat = "An installation is already in progress.\n\nAdd {0} to the queue to {1} it afterward?";
         public const string MainAppRunningTitle = "App is Running";
-        public const string MainAppRunningBody = "The app is currently running. It must be closed before it can be uninstalled.\n\nForce quit now?";
         public const string MainAppRunningProcessesFormat = "{0} has running processes:\n\n{1}\n\nForce-quit them to proceed?";
         public const string MainBackupExistsBodyFormat = "A backup of {0}'s data already exists.\n\nWhich backup do you want to keep?";
         public const string MainCancelInstallActiveFormat = "{0} is currently being installed.\n\n";
         public const string MainArgsUpdatedTitle = "Arguments Updated";
-        public const string MainBackupAlreadyExistsBody = "A backup already exists.\n\nKeep the new backup or the existing one?";
         public const string MainBackupAlreadyExistsTitle = "Backup Already Exists";
         public const string MainBackupUserDataTitle = "Backup User Data";
         public const string MainBackupUserDataBodyFormat = "Do you want to save a backup of your {0} data before uninstalling?";
@@ -439,7 +440,6 @@ public static class UiText
         public const string GhTag = "Tag";
 
         // AppProperties entries (labels)
-        public const string PropsAvailable = "Available";
         public const string PropsCategory = "Category";
         public const string PropsClass = "Class";
         public const string PropsClassAdvanced = "Advanced";

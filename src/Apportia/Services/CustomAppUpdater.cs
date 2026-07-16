@@ -22,7 +22,7 @@ public static class CustomAppUpdater
         if (repo == null)
             return false;
 
-        var release = await GitHubClient.FetchLatestReleaseAsync(repo, ct);
+        var release = await GitHubClient.FetchLatestReleaseAsync(repo, ct, false);
         if (release?.PublishedAt is not { } published)
             return false;
 
