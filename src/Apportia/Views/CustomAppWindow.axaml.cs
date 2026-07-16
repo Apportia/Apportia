@@ -37,6 +37,7 @@ public partial class CustomAppWindow : Window
     private int _galleryShift;
     private bool _galleryShifted;
     private bool _iconManuallySelected;
+    private double _lastHeight;
     private string _rawVersion = string.Empty;
     private bool _sectionManuallyEdited;
     private Border? _selectedThumb;
@@ -46,6 +47,7 @@ public partial class CustomAppWindow : Window
     public CustomAppWindow()
     {
         InitializeComponent();
+        PropertyChanged += OnWindowPropertyChanged;
     }
 
     public CustomAppWindow(
@@ -177,6 +179,25 @@ public partial class CustomAppWindow : Window
     public string UpdateUrl { get; private set; } = string.Empty;
     public string UpdateFile { get; private set; } = string.Empty;
     public DateTime? UpdateFileMtime { get; private set; }
+
+    private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property != HeightProperty)
+            return;
+        var newHeight = Height;
+        if (_lastHeight <= 0 || double.IsNaN(newHeight))
+        {
+            _lastHeight = newHeight;
+            return;
+        }
+
+        var delta = newHeight - _lastHeight;
+        _lastHeight = newHeight;
+        var shift = (int)(delta / 2);
+        if (shift == 0)
+            return;
+        Position = new PixelPoint(Position.X, Position.Y - shift);
+    }
 
     private async void OnBrowseFolder(object? sender, RoutedEventArgs e)
     {
