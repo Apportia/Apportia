@@ -161,6 +161,13 @@ public partial class CustomAppWindow : Window
         }
 
         RefreshIconGallery();
+
+        var storedInfo = CustomAppService.LoadInfo(node.SectionName);
+        if (storedInfo is not null && !string.IsNullOrEmpty(storedInfo.DownloadPath))
+        {
+            AutoUpdateCheck.IsChecked = storedInfo.UpdateEnabled;
+            AutoUpdateCheck.IsVisible = true;
+        }
     }
 
     public bool Success { get; private set; }
@@ -181,7 +188,7 @@ public partial class CustomAppWindow : Window
     public string DownloadPath { get; private set; } = string.Empty;
     public string DownloadFile { get; private set; } = string.Empty;
     public DateTime? DownloadFileMtime { get; private set; }
-    public bool UpdateEnabled { get; private set; } = true;
+    public bool? UpdateEnabled { get; private set; }
 
     private async void OnBrowseFolder(object? sender, RoutedEventArgs e)
     {
@@ -700,6 +707,8 @@ public partial class CustomAppWindow : Window
             : string.Empty;
         DisplayVersion = string.IsNullOrEmpty(_rawVersion) ? Version : _rawVersion;
         IconSourcePath = effectiveIconPath ?? string.Empty;
+        if (AutoUpdateCheck.IsVisible)
+            UpdateEnabled = AutoUpdateCheck.IsChecked == true;
         Success = true;
         Close();
     }

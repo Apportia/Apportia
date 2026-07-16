@@ -1833,7 +1833,8 @@ public partial class MainWindow : Window, IInstallUi
                     win.SubCategory,
                     win.Version,
                     win.VersionSourceExe,
-                    win.DisplayVersion);
+                    win.DisplayVersion,
+                    win.UpdateEnabled);
 
                 if (iconChanged && win.IconSourcePath.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase))
                 {
@@ -2328,7 +2329,7 @@ public partial class MainWindow : Window, IInstallUi
                         downloadPath: win.DownloadPath,
                         downloadFile: win.DownloadFile,
                         downloadFileMtime: win.DownloadFileMtime,
-                        updateEnabled: win.UpdateEnabled);
+                        updateEnabled: win.UpdateEnabled ?? true);
                 }
                 else
                 {
@@ -2353,7 +2354,7 @@ public partial class MainWindow : Window, IInstallUi
                         win.DownloadPath,
                         win.DownloadFile,
                         win.DownloadFileMtime,
-                        win.UpdateEnabled);
+                        win.UpdateEnabled ?? true);
                     _ = importTask.ContinueWith(t =>
                                                     Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
                                                                                  ? copyDialog.NotifyDone

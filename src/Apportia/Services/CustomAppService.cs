@@ -358,7 +358,8 @@ public static class CustomAppService
         string subCategory = "",
         string version = "",
         string versionSource = "",
-        string displayVersion = "")
+        string displayVersion = "",
+        bool? updateEnabled = null)
     {
         if (!string.IsNullOrEmpty(iconSourcePath))
         {
@@ -367,11 +368,11 @@ public static class CustomAppService
             return Task.Run(() =>
             {
                 SaveIcon(iconSourcePath, iconDest);
-                WriteUpdatedEntry(sectionName, exeFile, name, description, website, category, subCategory, version, versionSource, displayVersion);
+                WriteUpdatedEntry(sectionName, exeFile, name, description, website, category, subCategory, version, versionSource, displayVersion, updateEnabled);
             });
         }
 
-        WriteUpdatedEntry(sectionName, exeFile, name, description, website, category, subCategory, version, versionSource, displayVersion);
+        WriteUpdatedEntry(sectionName, exeFile, name, description, website, category, subCategory, version, versionSource, displayVersion, updateEnabled);
         return Task.CompletedTask;
     }
 
@@ -385,7 +386,8 @@ public static class CustomAppService
         string subCategory,
         string version,
         string versionSource,
-        string displayVersion)
+        string displayVersion,
+        bool? updateEnabled)
     {
         var db = LoadDatabase();
         db.TryGetValue(sectionName, out var existing);
@@ -414,7 +416,7 @@ public static class CustomAppService
             UpdateDate = updateDate,
             DownloadPath = existing?.DownloadPath ?? string.Empty,
             DownloadFile = existing?.DownloadFile ?? string.Empty,
-            UpdateEnabled = existing?.UpdateEnabled ?? true
+            UpdateEnabled = updateEnabled ?? existing?.UpdateEnabled ?? true
         };
         UpsertEntry(sectionName, info);
     }
