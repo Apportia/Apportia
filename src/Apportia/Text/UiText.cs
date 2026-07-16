@@ -2,10 +2,7 @@ namespace Apportia.Text;
 
 /// Centralized user-facing string constants for the Apportia UI.
 /// Nested classes group strings by role. Fields are sorted alphabetically within each class.
-/// Fields with a
-/// <c>Format</c>
-/// suffix are
-/// <see cref="string.Format(string, object?)" />
+/// Fields with a <c>Format</c> suffix are <see cref="string.Format(string, object?)" />
 /// patterns.
 public static class UiText
 {
@@ -94,6 +91,8 @@ public static class UiText
         public const string GitHubImportSevenZipMissing = "7-Zip is not available. Install 7-Zip to use .7z assets.";
         public const string GitHubImportCancelTitle = "Cancel Import";
         public const string GitHubImportCancelBody = "The downloaded files will be removed.\n\nCancel the import?";
+        public const string GitHubImportAutoUpdateLabel = "Check for updates automatically";
+        public const string GitHubImportAutoUpdateStaleWarning = "Not recommended:\nthis release has had no updates for over two years.";
 
         #endregion
 

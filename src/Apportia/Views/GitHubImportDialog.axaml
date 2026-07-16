@@ -44,6 +44,18 @@
                        FontSize="11" Foreground="{DynamicResource AppSubTextBrush}"
                        Margin="0,8,0,2" />
             <ComboBox x:Name="AssetCombo" HorizontalAlignment="Stretch" />
+
+            <CheckBox x:Name="AutoUpdateCheck"
+                      Content="{x:Static text:UiText+Dialog.GitHubImportAutoUpdateLabel}"
+                      Foreground="{DynamicResource AppTextBrush}"
+                      Margin="0,10,0,0"
+                      IsCheckedChanged="OnAutoUpdateCheckedChanged" />
+            <TextBlock x:Name="AutoUpdateWarning"
+                       Text="{x:Static text:UiText+Dialog.GitHubImportAutoUpdateStaleWarning}"
+                       IsVisible="False"
+                       Foreground="#E05555"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0" />
         </StackPanel>
 
         <TextBlock x:Name="StatusText"

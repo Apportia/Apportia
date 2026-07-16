@@ -2241,6 +2241,7 @@ public partial class MainWindow : Window, IInstallUi
             string? presetUpdateUrl = null;
             string? presetUpdateFile = null;
             DateTime? presetUpdateFileMtime = null;
+            var presetUpdateEnabled = true;
             if (source == UiText.Button.ImportGitHub)
             {
                 var gh = new GitHubImportDialog(ConfirmDownloadHashMismatchAsync);
@@ -2254,12 +2255,13 @@ public partial class MainWindow : Window, IInstallUi
                 presetUpdateUrl = gh.UpdateUrl;
                 presetUpdateFile = gh.UpdateFile;
                 presetUpdateFileMtime = gh.UpdateFileMtime;
+                presetUpdateEnabled = gh.UpdateEnabled;
             }
 
             var win = new CustomAppWindow(
                 vm.Categories, vm.SubCategoriesMap,
                 presetFolder, presetVersion, presetDisplayVersion, presetUpdateDate,
-                presetUpdateUrl, presetUpdateFile, presetUpdateFileMtime);
+                presetUpdateUrl, presetUpdateFile, presetUpdateFileMtime, presetUpdateEnabled);
             await win.ShowDialog(this);
             if (!win.Success)
                 return;
@@ -2325,7 +2327,8 @@ public partial class MainWindow : Window, IInstallUi
                         preferredFolderName: win.SectionName,
                         updateUrl: win.UpdateUrl,
                         updateFile: win.UpdateFile,
-                        updateFileMtime: win.UpdateFileMtime);
+                        updateFileMtime: win.UpdateFileMtime,
+                        updateEnabled: win.UpdateEnabled);
                 }
                 else
                 {
@@ -2349,7 +2352,8 @@ public partial class MainWindow : Window, IInstallUi
                         win.SectionName,
                         win.UpdateUrl,
                         win.UpdateFile,
-                        win.UpdateFileMtime);
+                        win.UpdateFileMtime,
+                        win.UpdateEnabled);
                     _ = importTask.ContinueWith(t =>
                                                     Dispatcher.UIThread.Post(t.IsCompletedSuccessfully
                                                                                  ? copyDialog.NotifyDone

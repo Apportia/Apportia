@@ -13,6 +13,7 @@ public partial class GitHubImportDialog : Window
     private readonly Func<string, string, string, string, string, Task<bool>>? _confirmHashMismatch;
     private List<GhAsset> _assets = [];
     private GhRelease? _release;
+    private double _releaseAgeYears;
 
     public GitHubImportDialog()
     {
@@ -33,6 +34,7 @@ public partial class GitHubImportDialog : Window
     public string UpdateUrl { get; private set; } = string.Empty;
     public string UpdateFile { get; private set; } = string.Empty;
     public DateTime? UpdateFileMtime { get; private set; }
+    public bool UpdateEnabled { get; private set; } = true;
 
     protected override void OnOpened(EventArgs e)
     {
@@ -89,6 +91,12 @@ public partial class GitHubImportDialog : Window
             PublishedBox.Text = release.PublishedAt is { } dt
                 ? RelativeDate.Format(dt.LocalDateTime)
                 : string.Empty;
+
+            _releaseAgeYears = release.PublishedAt is { } pub
+                ? (DateTime.UtcNow - pub.UtcDateTime).TotalDays / 365.0
+                : 0.0;
+            AutoUpdateCheck.IsChecked = _releaseAgeYears < 1.0;
+            AutoUpdateWarning.IsVisible = AutoUpdateCheck.IsChecked == true && _releaseAgeYears >= 2.0;
 
             var sevenZipAvailable = AppDeployService.FindSevenZip(AppDeployService.AppsDir) != null;
             _assets = _assets.Where(a => IsSupportedAsset(a.Name, sevenZipAvailable)).ToList();
@@ -209,6 +217,7 @@ public partial class GitHubImportDialog : Window
                 UpdateUrl = $"https://github.com/{OwnerBox.Text?.Trim()}/{repo}";
                 UpdateFile = asset.Name;
                 UpdateFileMtime = publishedLocal;
+                UpdateEnabled = AutoUpdateCheck.IsChecked == true;
                 Success = true;
                 Close();
             }
@@ -237,6 +246,11 @@ public partial class GitHubImportDialog : Window
     private void OnCancel(object? sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void OnAutoUpdateCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        AutoUpdateWarning?.IsVisible = AutoUpdateCheck.IsChecked == true && _releaseAgeYears >= 2.0;
     }
 
     private void ShowError(string message)

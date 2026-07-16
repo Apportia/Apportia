@@ -132,7 +132,8 @@ public static class CustomAppService
         string? preferredFolderName = null,
         string? updateUrl = null,
         string? updateFile = null,
-        DateTime? updateFileMtime = null)
+        DateTime? updateFileMtime = null,
+        bool updateEnabled = true)
     {
         Directory.CreateDirectory(CustomAppsDir);
 
@@ -240,7 +241,8 @@ public static class CustomAppService
             VersionSource = versionSource,
             UpdateDate = updateDate,
             UpdateUrl = updateUrl ?? string.Empty,
-            UpdateFile = updateFile ?? string.Empty
+            UpdateFile = updateFile ?? string.Empty,
+            UpdateEnabled = updateEnabled
         };
         UpsertEntry(folderName, info);
         return new ImportResult(folderName, sourceDeleteError);
@@ -411,7 +413,8 @@ public static class CustomAppService
             VersionSource = versionSource,
             UpdateDate = updateDate,
             UpdateUrl = existing?.UpdateUrl ?? string.Empty,
-            UpdateFile = existing?.UpdateFile ?? string.Empty
+            UpdateFile = existing?.UpdateFile ?? string.Empty,
+            UpdateEnabled = existing?.UpdateEnabled ?? true
         };
         UpsertEntry(sectionName, info);
     }

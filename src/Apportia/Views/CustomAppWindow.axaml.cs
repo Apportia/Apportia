@@ -59,7 +59,8 @@ public partial class CustomAppWindow : Window
         string? presetUpdateDate = null,
         string? presetUpdateUrl = null,
         string? presetUpdateFile = null,
-        DateTime? presetUpdateFileMtime = null) : this()
+        DateTime? presetUpdateFileMtime = null,
+        bool presetUpdateEnabled = true) : this()
     {
         _subCategoriesMap = subCategoriesMap;
         Title = UiText.Dialog.CustomAppImportTitle;
@@ -76,6 +77,7 @@ public partial class CustomAppWindow : Window
         UpdateUrl = presetUpdateUrl ?? string.Empty;
         UpdateFile = presetUpdateFile ?? string.Empty;
         UpdateFileMtime = presetUpdateFileMtime;
+        UpdateEnabled = presetUpdateEnabled;
         var version = presetVersion;
         var display = presetDisplayVersion;
         Dispatcher.UIThread.Post(() => _ = PopulateFromFolderAsync(presetFolder, version, display));
@@ -179,6 +181,7 @@ public partial class CustomAppWindow : Window
     public string UpdateUrl { get; private set; } = string.Empty;
     public string UpdateFile { get; private set; } = string.Empty;
     public DateTime? UpdateFileMtime { get; private set; }
+    public bool UpdateEnabled { get; private set; } = true;
 
     private async void OnBrowseFolder(object? sender, RoutedEventArgs e)
     {
