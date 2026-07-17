@@ -88,15 +88,16 @@ jobs:
 
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$tag" "$archive" --repo "$GITHUB_REPOSITORY" --clobber
-            if [[ -n "$notes" ]]; then
+            existing_body=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+            if [[ -z "$existing_body" && -n "$notes" ]]; then
               gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --notes "$notes"
             else
               gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --title "$title"
             fi
           else
             if [[ -n "$notes" ]]; then
-              gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --notes "$notes" "$archive"
+              gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --notes "$notes" --prerelease "$archive"
             else
-              gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --generate-notes "$archive"
+              gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --generate-notes --prerelease "$archive"
             fi
           fi
