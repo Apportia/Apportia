@@ -170,6 +170,7 @@ public static class UiText
         public const string LinuxSystemModeInstallation = "Installation:";
         public const string LinuxSystemModeSystem = "Use system Wine and ~/.wine";
         public const string LinuxSystemModeBundled = "Use bundled Wine in Data/Linux (isolated)";
+        public const string LinuxSystemWineMissingWarning = "System Wine was not found. You can try bundled Wine, but if required system libraries are missing the Wine prefix may fail to initialize, no Windows applications will run, or they may start without a working GUI.\n\nIf you run into any of these problems, install Wine via your distribution's package manager to pull in the required dependencies.\n\nThen briefly switch to system Wine, confirm the bundled data deletion, and switch back to bundled so the prefix is rebuilt against the newly available libraries.";
         public const string LinuxVersionHeader = "Bundled Wine version:";
 
         #endregion

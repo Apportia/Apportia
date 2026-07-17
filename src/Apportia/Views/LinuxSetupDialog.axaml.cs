@@ -43,6 +43,7 @@ public partial class LinuxSetupDialog : Window
         var systemAvailable = WineService.IsSystemWineAvailable();
 
         SystemWinePanel.IsVisible = systemAvailable;
+        SystemWineMissingWarning.IsVisible = !systemAvailable;
         var bundled = settings.WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase);
         if (systemAvailable)
         {

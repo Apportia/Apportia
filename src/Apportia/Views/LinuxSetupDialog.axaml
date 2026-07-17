@@ -51,6 +51,13 @@
                              IsCheckedChanged="OnModeChanged" />
             </StackPanel>
 
+            <TextBlock x:Name="SystemWineMissingWarning"
+                       IsVisible="False"
+                       Text="{x:Static text:UiText+Dialog.LinuxSystemWineMissingWarning}"
+                       TextWrapping="Wrap"
+                       FontSize="11"
+                       Foreground="#E0A020" />
+
             <StackPanel x:Name="VersionPanel" Spacing="6">
                 <TextBlock Text="{x:Static text:UiText+Dialog.LinuxVersionHeader}" FontWeight="SemiBold"
                            Foreground="{DynamicResource AppTextBrush}" />
