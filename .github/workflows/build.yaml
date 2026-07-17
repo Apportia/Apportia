@@ -56,6 +56,14 @@ jobs:
             --json tagName,createdAt \
             --jq "[.[] | select(.tagName != \"$tag\")] | sort_by(.createdAt) | reverse | .[0].tagName // empty")
 
+          if [[ -n "$prev" ]]; then
+            prev_body=$(gh release view "$prev" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+            if [[ "$prev_body" != "<details>"* ]]; then
+              gh release edit "$prev" --repo "$GITHUB_REPOSITORY" \
+                --notes "$(printf '<details>\n<summary>Details</summary>\n\n%s\n\n</details>' "$prev_body")"
+            fi
+          fi
+
           notes=""
           if [[ -n "$prev" ]]; then
             notes=$(TAG="$tag" PREV="$prev" REPO="$GITHUB_REPOSITORY" python3 <<'PY'
@@ -69,7 +77,7 @@ jobs:
           link = f"**Full Changelog**: https://github.com/{repo}/compare/{prev}...{tag}"
           body = re.sub(
               r"<summary>Details</summary>.*?</details>",
-              f"<summary>Details</summary>\n\n{link}\n</details>",
+              f"<summary>Details</summary>\n\n{link}\n\n</details>",
               body,
               flags=re.DOTALL,
           )
