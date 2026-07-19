@@ -149,8 +149,10 @@ public static class UiText
 
         #region LinuxSetupDialog
 
-        public const string LinuxDeleteBundledBody = "Switching to system Wine.\n\nThe bundled Wine installation and prefix in\n\n{0}\n\nare no longer needed. Delete them now?";
-        public const string LinuxDeleteBundledTitle = "Delete bundled Wine files?";
+        public const string LinuxDeleteBundledBody = "Switching to system Wine.\n\nThe bundled Wine prefix in\n\n{0}\n\nis no longer needed. Delete it now?";
+        public const string LinuxDeleteBundledTitle = "Delete bundled Wine prefix?";
+        public const string LinuxDeleteFontsBody = "You disabled the improved fonts option.\n\nThe downloaded font pack in\n\n{0}\n\nis no longer needed. Delete it now?";
+        public const string LinuxDeleteFontsTitle = "Delete downloaded fonts?";
         public const string LinuxDiskSpaceInsufficientFormat = "Not enough free disk space for the bundled Wine prefix. At least {0} GiB required, only {1:0.0} GiB available in {2}.";
         public const string LinuxDownloadFailed = "Download or extraction failed.";
         public const string LinuxDownloadingArchiveFormat = "Downloading {0}...";

@@ -15,7 +15,8 @@ public static class WineService
     public static readonly string LinuxDir = Path.Combine(AppContext.BaseDirectory, "Data", "Linux");
     public static readonly string RunnersDir = Path.Combine(LinuxDir, "runners");
     public static readonly string FontsDir = Path.Combine(LinuxDir, "fonts");
-    public static readonly string DefaultPrefixDir = Path.Combine(LinuxDir, "prefixes", "default");
+    public static readonly string PrefixesDir = Path.Combine(LinuxDir, "prefixes");
+    public static readonly string DefaultPrefixDir = Path.Combine(PrefixesDir, "default");
 
     private static readonly HashSet<string> CompatibleFsTypes = new(StringComparer.OrdinalIgnoreCase)
     {

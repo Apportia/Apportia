@@ -200,22 +200,34 @@ public partial class LinuxSetupDialog : Window
         var applyTheme = ApplyThemePill.IsChecked == true;
         var settings = SettingsService.Load();
         var wasBundled = settings.WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase);
+        var fontsWereInstalled = settings.WineInstallFonts;
         settings.WineMode = useBundled ? "Bundled" : "System";
         settings.WineInstallFonts = installFonts;
         settings.WineApplyTheme = applyTheme;
 
+        if (!installFonts && fontsWereInstalled && Directory.Exists(WineService.FontsDir))
+        {
+            var confirm = new AppDialog(
+                UiText.Dialog.LinuxDeleteFontsTitle,
+                string.Format(UiText.Dialog.LinuxDeleteFontsBody, WineService.FontsDir),
+                UiText.Button.WineDelete, UiText.Button.WineKeep);
+            await confirm.ShowDialog(this);
+            if (confirm.Result == UiText.Button.WineDelete)
+                TryDeleteDir(WineService.FontsDir);
+        }
+
         if (!useBundled)
         {
-            if (wasBundled && Directory.Exists(WineService.LinuxDir))
+            if (wasBundled && Directory.Exists(WineService.PrefixesDir))
             {
                 var confirm = new AppDialog(
                     UiText.Dialog.LinuxDeleteBundledTitle,
-                    string.Format(UiText.Dialog.LinuxDeleteBundledBody, WineService.LinuxDir),
+                    string.Format(UiText.Dialog.LinuxDeleteBundledBody, WineService.PrefixesDir),
                     UiText.Button.WineDelete, UiText.Button.WineKeep);
                 await confirm.ShowDialog(this);
                 if (confirm.Result == UiText.Button.WineDelete)
                 {
-                    TryDeleteDir(WineService.LinuxDir);
+                    TryDeleteDir(WineService.PrefixesDir);
                     TryDeleteDir(WineService.FallbackPrefixDir);
                 }
             }
