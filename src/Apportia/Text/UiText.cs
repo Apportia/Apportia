@@ -153,6 +153,10 @@ public static class UiText
         public const string LinuxDeleteBundledTitle = "Delete bundled Wine prefix?";
         public const string LinuxDeleteFontsBody = "You disabled the improved fonts option.\n\nThe downloaded font pack in\n\n{0}\n\nis no longer needed. Delete it now?";
         public const string LinuxDeleteFontsTitle = "Delete downloaded fonts?";
+        public const string LinuxSystemFontsPersistBody = "The improved fonts were already installed into the system Wine prefix.\n\nThey will remain there until the prefix is re-created.";
+        public const string LinuxSystemFontsPersistTitle = "Fonts remain in system prefix";
+        public const string LinuxSystemThemePersistBody = "The Apportia theme was already applied to the system Wine prefix.\n\nIt cannot be undone automatically; the theme will remain until the prefix is re-created.";
+        public const string LinuxSystemThemePersistTitle = "Theme remains in system prefix";
         public const string LinuxDiskSpaceInsufficientFormat = "Not enough free disk space for the bundled Wine prefix. At least {0} GiB required, only {1:0.0} GiB available in {2}.";
         public const string LinuxDownloadFailed = "Download or extraction failed.";
         public const string LinuxDownloadingArchiveFormat = "Downloading {0}...";

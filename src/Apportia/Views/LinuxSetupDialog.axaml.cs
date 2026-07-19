@@ -201,6 +201,7 @@ public partial class LinuxSetupDialog : Window
         var settings = SettingsService.Load();
         var wasBundled = settings.WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase);
         var fontsWereInstalled = settings.WineInstallFonts;
+        var themeWasApplied = settings.WineApplyTheme;
         settings.WineMode = useBundled ? "Bundled" : "System";
         settings.WineInstallFonts = installFonts;
         settings.WineApplyTheme = applyTheme;
@@ -214,6 +215,30 @@ public partial class LinuxSetupDialog : Window
             await confirm.ShowDialog(this);
             if (confirm.Result == UiText.Button.WineDelete)
                 TryDeleteDir(WineService.FontsDir);
+        }
+
+        if (!useBundled)
+        {
+            var systemPrefix = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".wine");
+            if (!installFonts && fontsWereInstalled && SystemPrefixFontsInstalled(systemPrefix))
+            {
+                var info = new AppDialog(
+                    UiText.Dialog.LinuxSystemFontsPersistTitle,
+                    UiText.Dialog.LinuxSystemFontsPersistBody,
+                    UiText.Button.Ok);
+                await info.ShowDialog(this);
+            }
+
+            if (!applyTheme && themeWasApplied && SystemPrefixThemeApplied(systemPrefix))
+            {
+                var info = new AppDialog(
+                    UiText.Dialog.LinuxSystemThemePersistTitle,
+                    UiText.Dialog.LinuxSystemThemePersistBody,
+                    UiText.Button.Ok);
+                await info.ShowDialog(this);
+            }
         }
 
         if (!useBundled)
@@ -372,6 +397,27 @@ public partial class LinuxSetupDialog : Window
         catch
         {
             return true;
+        }
+    }
+
+    private static bool SystemPrefixFontsInstalled(string systemPrefix)
+    {
+        return File.Exists(Path.Combine(systemPrefix, ".apportia-fonts-applied"));
+    }
+
+    private static bool SystemPrefixThemeApplied(string systemPrefix)
+    {
+        var userReg = Path.Combine(systemPrefix, "user.reg");
+        if (!File.Exists(userReg))
+            return false;
+        try
+        {
+            return File.ReadAllText(userReg).Contains("Software\\\\Apportia", StringComparison.Ordinal);
+        }
+        catch
+        {
+            /* transient read failure — better to skip the hint than to falsely warn */
+            return false;
         }
     }
 
