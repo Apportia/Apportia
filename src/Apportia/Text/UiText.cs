@@ -581,5 +581,11 @@ public static class UiText
         public const string DownloadingUpdateProgressFormat = "Downloading update {0}... {1}%";
         public const string UpdateVersionFormat = "Update {0}";
         public const string UpdateAll = "Update All";
+
+        // Wine launch prep
+        public const string WineApplyingTheme = "Applying Apportia theme to Wine prefix...";
+        public const string WineDownloadingFonts = "Downloading Windows fonts...";
+        public const string WineInitializingPrefix = "Initializing Wine prefix...";
+        public const string WineInstallingFonts = "Installing Windows fonts into Wine prefix...";
     }
 }

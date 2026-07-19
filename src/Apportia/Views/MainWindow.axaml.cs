@@ -2057,15 +2057,6 @@ public partial class MainWindow : Window, IInstallUi
         if (OperatingSystem.IsLinux() && !await EnsureWineReadyAsync())
             return;
 
-        if (OperatingSystem.IsLinux())
-        {
-            var wineSettings = SettingsService.Load();
-            if (wineSettings.WineInstallFonts)
-                WinePrefixFonts.Apply();
-            await WinePrefixTheme.ApplyImmediatelyAsync(
-                Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
-        }
-
         if (_cliAppArgs.Length > 0)
         {
             var dialog = new RunArgsDialog(node.Name, _cliAppArgs) { Icon = new WindowIcon(node.Icon) };
@@ -2222,10 +2213,11 @@ public partial class MainWindow : Window, IInstallUi
 
         try
         {
-            await WineService.EnsurePrefixReadyAsync();
+            await RunLinuxLaunchPrepAsync(settings);
         }
         catch (Exception ex)
         {
+            ShowDownloadBar(false);
             await ShowDialog(
                 UiText.Dialog.LinuxSetupTitle,
                 string.Format(UiText.Dialog.LinuxSetupFailedFormat, ex.Message),
@@ -2234,6 +2226,59 @@ public partial class MainWindow : Window, IInstallUi
         }
 
         return true;
+    }
+
+    private async Task RunLinuxLaunchPrepAsync(AppSettings settings)
+    {
+        var prefixNeedsInit = !WineService.IsPrefixReady();
+        var fontsNeedDownload = settings.WineInstallFonts
+                                && (!Directory.Exists(WineService.FontsDir)
+                                    || !Directory.EnumerateFiles(WineService.FontsDir).Any());
+        var showBar = prefixNeedsInit || fontsNeedDownload || settings.WineInstallFonts || settings.WineApplyTheme;
+        if (!showBar)
+            return;
+
+        ShowDownloadBar(true);
+        try
+        {
+            if (prefixNeedsInit)
+            {
+                SetWineStatus(UiText.Status.WineInitializingPrefix, true);
+                await WineService.EnsurePrefixReadyAsync();
+            }
+
+            if (fontsNeedDownload)
+            {
+                SetWineStatus(UiText.Status.WineDownloadingFonts, false);
+                DownloadProgressBar.Value = 0;
+                var progress = new Progress<double>(p => DownloadProgressBar.Value = p * 100);
+                await WineFontsClient.EnsureDownloadedAsync(progress);
+            }
+
+            if (settings.WineInstallFonts)
+            {
+                SetWineStatus(UiText.Status.WineInstallingFonts, true);
+                await Task.Run(WinePrefixFonts.Apply);
+            }
+
+            if (settings.WineApplyTheme)
+            {
+                SetWineStatus(UiText.Status.WineApplyingTheme, true);
+                await WinePrefixTheme.ApplyImmediatelyAsync(
+                    Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
+            }
+        }
+        finally
+        {
+            ShowDownloadBar(false);
+        }
+    }
+
+    private void SetWineStatus(string status, bool indeterminate)
+    {
+        DownloadProgressBar.IsIndeterminate = indeterminate;
+        DownloadSizeText.Text = status;
+        DownloadSpeedText.Text = string.Empty;
     }
 
     private async void OnImportApp(object? sender, RoutedEventArgs e)

@@ -27,7 +27,7 @@ public static class WinePrefixTheme
             return;
         if (WineService.ResolveWineBinary() is null)
             return;
-        await ApplyOnceAsync(isDark, force: false, ct);
+        await ApplyOnceAsync(isDark, false, ct);
     }
 
     public static Task ApplyAsync(bool isDark, bool force = false, CancellationToken ct = default)
