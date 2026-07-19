@@ -8,13 +8,19 @@
 ### Main Window — Dark
 <img src="2-mainwindow-dark.png" />
 
-### Tips & Shortcuts
-<img src="3-tips-dialog.png" />
+### Import App from GitHub
+<img src="3-import-app-from-github.png" />
+
+### Import App
+<img src="4-import-app.png" />
 
 ### App Properties
-<img src="4-app-properties.png" />
+<img src="5-app-properties.png" />
 
 ### VirusTotal Scan
-<img src="5-virustotal-scan.png" />
+<img src="6-virustotal-scan.png" />
+
+### Tips & Shortcuts
+<img src="7-tips-dialog.png" />
 
 </div>
