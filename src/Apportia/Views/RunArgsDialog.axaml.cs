@@ -182,14 +182,4 @@ public partial class RunArgsDialog : Window
     {
         Close();
     }
-
-    // Joins args back into a string; wraps in quotes if the arg contains spaces.
-    public static string CombineArgs(IEnumerable<string> args)
-    {
-        return string.Join(
-            " ",
-            args.Select(a => a.Contains(' ') && !a.StartsWith('"') && !a.StartsWith('\'')
-                            ? $"\"{a}\""
-                            : a));
-    }
 }

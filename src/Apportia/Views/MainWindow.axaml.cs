@@ -1510,20 +1510,17 @@ public partial class MainWindow : Window, IInstallUi
             await dialog.ShowDialog(this);
             if (dialog.Choice == RunArgsDialog.RunChoice.Cancel)
                 return;
-            string? args = null;
+            CommandLine? cmd = null;
             if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
-            {
-                var converted = AppDeployService.ConvertArgsForWine(dialog.ArgsArray);
-                args = RunArgsDialog.CombineArgs(converted);
-            }
+                cmd = CommandLine.FromUser(dialog.ArgsArray);
 
             node.TryBeginLaunchFx();
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
-                await Task.Run(() => RunAsAdmin(node, args));
+                await Task.Run(() => RunAsAdmin(node, cmd));
             else if (node.IsCustom)
-                RunCustomApp(node, args);
+                RunCustomApp(node, cmd);
             else
-                RunApp(node, AppDeployService.AppsDir, args);
+                RunApp(node, AppDeployService.AppsDir, cmd);
         }
         catch (Exception ex)
         {
@@ -1896,7 +1893,7 @@ public partial class MainWindow : Window, IInstallUi
         RunAsAdmin(node);
     }
 
-    private static void RunAsAdmin(AppNode node, string? args = null)
+    private static void RunAsAdmin(AppNode node, CommandLine? cmd = null)
     {
         string appExe;
         if (node.IsCustom)
@@ -1920,7 +1917,7 @@ public partial class MainWindow : Window, IInstallUi
             {
                 UseShellExecute = true,
                 Verb = "runas",
-                Arguments = args ?? string.Empty
+                Arguments = cmd?.Original ?? string.Empty
             });
         }
         catch
@@ -2037,19 +2034,19 @@ public partial class MainWindow : Window, IInstallUi
         return (sender as MenuItem)?.FindAncestorOfType<ContextMenu>()?.DataContext as AppNode;
     }
 
-    private static void RunApp(AppNode node, string appsBaseDir, string? args = null)
+    private static void RunApp(AppNode node, string appsBaseDir, CommandLine? cmd = null)
     {
         var appDir = Path.Combine(appsBaseDir, node.SectionName);
         var (appExe, _) = AppExecutableService.Resolve(appDir, node.SectionName);
         if (appExe != null)
-            AppDeployService.LaunchApp(appExe, args);
+            AppDeployService.LaunchApp(appExe, cmd);
     }
 
-    private static void RunCustomApp(AppNode node, string? args = null)
+    private static void RunCustomApp(AppNode node, CommandLine? cmd = null)
     {
         var appExe = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName, node.DownloadFile);
         if (File.Exists(appExe))
-            AppDeployService.LaunchApp(appExe, args);
+            AppDeployService.LaunchApp(appExe, cmd);
     }
 
     private async Task TryLaunchWithArgsAsync(AppNode node)
@@ -2069,19 +2066,16 @@ public partial class MainWindow : Window, IInstallUi
             await dialog.ShowDialog(this);
             if (dialog.Choice == RunArgsDialog.RunChoice.Cancel)
                 return;
-            string? args = null;
+            CommandLine? cmd = null;
             if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
-            {
-                var converted = AppDeployService.ConvertArgsForWine(dialog.ArgsArray);
-                args = RunArgsDialog.CombineArgs(converted);
-            }
+                cmd = CommandLine.FromUser(dialog.ArgsArray);
 
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
-                await Task.Run(() => RunAsAdmin(node, args));
+                await Task.Run(() => RunAsAdmin(node, cmd));
             else if (node.IsCustom)
-                RunCustomApp(node, args);
+                RunCustomApp(node, cmd);
             else
-                RunApp(node, AppDeployService.AppsDir, args);
+                RunApp(node, AppDeployService.AppsDir, cmd);
         }
         else
         {

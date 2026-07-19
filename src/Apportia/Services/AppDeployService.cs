@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
+using Apportia.Platform;
 using Apportia.Text;
 
 namespace Apportia.Services;
@@ -34,14 +35,6 @@ public sealed class AppDeployService : IDisposable
     public static bool IsWineAvailable()
     {
         return WineService.IsWineReady();
-    }
-
-    /// Converts absolute Linux paths in each arg to Wine Z: drive paths.
-    /// Handles bare paths (/foo/bar) and key=value pairs (--file=/foo/bar).
-    /// Skips args that already carry a drive letter (Z:\, C:\, etc.).
-    public static string[] ConvertArgsForWine(string[] args)
-    {
-        return !OperatingSystem.IsLinux() ? args : args.Select(ConvertArgForWine).ToArray();
     }
 
     public async Task<string> DownloadAsync(
@@ -170,7 +163,7 @@ public sealed class AppDeployService : IDisposable
             StringComparer.OrdinalIgnoreCase);
 
         var installerArgs = $"/DESTINATION=\"{dest}\\\\\" /AUTOCLOSE=true /HIDEINSTALLER=true /SILENT=true /SILENTLANGUAGEMODE=always";
-        var installer = StartProcess(installerPath, installerArgs);
+        var installer = StartProcess(installerPath, CommandLine.Raw(installerArgs));
         ActiveInstaller = installer;
 
         if (installer is not null)
@@ -347,35 +340,12 @@ public sealed class AppDeployService : IDisposable
         }
     }
 
-    public static void LaunchApp(string exePath, string? args = null)
+    public static void LaunchApp(string exePath, CommandLine? cmd = null)
     {
         var appDir = Path.GetDirectoryName(exePath)!;
         var sectionName = Path.GetFileNameWithoutExtension(exePath);
         PrepareAppConfig(appDir, sectionName);
-        StartProcess(exePath, string.IsNullOrWhiteSpace(args) ? null : args);
-    }
-
-    private static string ConvertArgForWine(string arg)
-    {
-        // key=value: only treat as such when the key part contains no slashes
-        var eqIdx = arg.IndexOf('=');
-        if (eqIdx <= 0 || arg[..eqIdx].Contains('/'))
-            return ConvertPathForWine(arg);
-        var key = arg[..eqIdx];
-        var value = arg[(eqIdx + 1)..];
-        return key + "=" + ConvertPathForWine(value);
-    }
-
-    private static string ConvertPathForWine(string path)
-    {
-        // Already has a drive letter (e.g. Z:\, C:\) – leave as-is
-        if (path.Length >= 2 && char.IsLetter(path[0]) && path[1] == ':')
-            return path;
-
-        if (!path.StartsWith('/'))
-            return path; // Not an absolute Linux path
-
-        return "Z:" + path.Replace('/', '\\');
+        StartProcess(exePath, cmd);
     }
 
     private static void PrepareAppConfig(string appDir, string sectionName)
@@ -585,19 +555,33 @@ public sealed class AppDeployService : IDisposable
         return false;
     }
 
-    private static Process? StartProcess(string exePath, string? args = null)
+    private static Process? StartProcess(string exePath, CommandLine? cmd = null)
     {
         var workingDir = Path.GetDirectoryName(exePath) ?? string.Empty;
         ProcessStartInfo psi;
+
         if (OperatingSystem.IsLinux())
         {
-            psi = new ProcessStartInfo(WineService.ResolveWineBinary() ?? "wine")
+            if (LinuxBinary.TryResolveElf(exePath) is { } nativePath)
             {
-                UseShellExecute = false,
-                WorkingDirectory = workingDir,
-                Arguments = args is not null ? $"\"{exePath}\" {args}" : $"\"{exePath}\""
-            };
-            WineService.ApplyEnv(psi);
+                psi = new ProcessStartInfo(nativePath)
+                {
+                    UseShellExecute = false,
+                    WorkingDirectory = workingDir,
+                    Arguments = cmd?.Original ?? string.Empty
+                };
+            }
+            else
+            {
+                var mappedArgs = cmd?.Mapped;
+                psi = new ProcessStartInfo(WineService.ResolveWineBinary() ?? "wine")
+                {
+                    UseShellExecute = false,
+                    WorkingDirectory = workingDir,
+                    Arguments = string.IsNullOrEmpty(mappedArgs) ? $"\"{exePath}\"" : $"\"{exePath}\" {mappedArgs}"
+                };
+                WineService.ApplyEnv(psi);
+            }
         }
         else
         {
@@ -605,7 +589,7 @@ public sealed class AppDeployService : IDisposable
             {
                 UseShellExecute = true,
                 WorkingDirectory = workingDir,
-                Arguments = args ?? string.Empty
+                Arguments = cmd?.Original ?? string.Empty
             };
         }
 
