@@ -145,7 +145,10 @@ public partial class CustomAppWindow : Window
         _rawVersion = string.IsNullOrEmpty(storedDisplayVersion) ? storedVersion : storedDisplayVersion;
         VersionBox.Text = NormalizeVersion(storedVersion);
 
-        if (VersionSourceCombo.SelectedItem is SourceItem versionItem && File.Exists(versionItem.FullPath))
+        var storedInfo = CustomAppService.LoadInfo(node.SectionName);
+        var hasDownloadSource = storedInfo is not null && !string.IsNullOrEmpty(storedInfo.DownloadPath);
+
+        if (!hasDownloadSource && VersionSourceCombo.SelectedItem is SourceItem versionItem && File.Exists(versionItem.FullPath))
         {
             var liveRaw = CustomAppService.ReadExeVersion(versionItem.FullPath);
             var liveNormalized = NormalizeVersion(liveRaw);
@@ -161,11 +164,9 @@ public partial class CustomAppWindow : Window
         }
 
         RefreshIconGallery();
-
-        var storedInfo = CustomAppService.LoadInfo(node.SectionName);
-        if (storedInfo is not null && !string.IsNullOrEmpty(storedInfo.DownloadPath))
+        if (hasDownloadSource)
         {
-            AutoUpdateCheck.IsChecked = storedInfo.UpdateEnabled;
+            AutoUpdateCheck.IsChecked = storedInfo!.UpdateEnabled;
             AutoUpdateCheck.IsVisible = true;
         }
     }
