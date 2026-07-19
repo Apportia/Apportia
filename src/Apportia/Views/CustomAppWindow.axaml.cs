@@ -75,6 +75,8 @@ public partial class CustomAppWindow : Window
         _presetFolderCleanup = presetFolder;
         _presetUpdateDate = string.IsNullOrEmpty(presetUpdateDate) ? null : presetUpdateDate;
         DownloadPath = presetDownloadPath ?? string.Empty;
+        if (!string.IsNullOrEmpty(DownloadPath))
+            WebsiteBox.Text = DownloadPath;
         DownloadFile = presetDownloadFile ?? string.Empty;
         DownloadFileMtime = presetDownloadFileMtime;
         UpdateEnabled = presetUpdateEnabled;
