@@ -56,14 +56,6 @@ jobs:
             --json tagName,createdAt \
             --jq "[.[] | select(.tagName != \"$tag\")] | sort_by(.createdAt) | reverse | .[0].tagName // empty")
 
-          if [[ -n "$prev" ]]; then
-            prev_body=$(gh release view "$prev" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
-            if [[ "$prev_body" != "<details>"* ]]; then
-              gh release edit "$prev" --repo "$GITHUB_REPOSITORY" \
-                --notes "$(printf '<details>\n<summary>Details</summary>\n\n%s\n\n</details>' "$prev_body")"
-            fi
-          fi
-
           notes=""
           if [[ -n "$prev" ]]; then
             notes=$(TAG="$tag" PREV="$prev" REPO="$GITHUB_REPOSITORY" python3 <<'PY'
@@ -99,5 +91,13 @@ jobs:
               gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --notes "$notes" --prerelease "$archive"
             else
               gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --generate-notes --prerelease "$archive"
+            fi
+          fi
+
+          if [[ -n "$prev" ]]; then
+            prev_body=$(gh release view "$prev" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+            if [[ "$prev_body" != "<details>"* ]]; then
+              gh release edit "$prev" --repo "$GITHUB_REPOSITORY" \
+                --notes "$(printf '<details>\n<summary>Details</summary>\n\n%s\n\n</details>' "$prev_body")"
             fi
           fi
