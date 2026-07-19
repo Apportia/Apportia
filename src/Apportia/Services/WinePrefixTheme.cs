@@ -17,13 +17,22 @@ public static class WinePrefixTheme
     private static long _desiredTickMs;
     private static Task? _worker;
 
-    public static Task ApplyAsync(bool isDark, bool force = false, CancellationToken ct = default)
+    // Bypass the debounced worker: runs one apply-cycle end-to-end and returns when done.
+    // Use at app-launch where the theme must be visible on first paint.
+    public static async Task ApplyImmediatelyAsync(bool isDark, CancellationToken ct = default)
     {
         if (!OperatingSystem.IsLinux())
-            return Task.CompletedTask;
-        if (!SettingsService.Load().WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase))
-            return Task.CompletedTask;
+            return;
+        if (!SettingsService.Load().WineApplyTheme)
+            return;
         if (WineService.ResolveWineBinary() is null)
+            return;
+        await ApplyOnceAsync(isDark, force: false, ct);
+    }
+
+    public static Task ApplyAsync(bool isDark, bool force = false, CancellationToken ct = default)
+    {
+        if (!OperatingSystem.IsLinux() || !SettingsService.Load().WineApplyTheme || WineService.ResolveWineBinary() is null)
             return Task.CompletedTask;
 
         lock (DesiredLock)

@@ -54,6 +54,8 @@ public sealed class AppSettings
     public bool LinuxSetupCompleted { get; set; }
     public string WineMode { get; set; } = "System";
     public string WineVersion { get; set; } = "latest";
+    public bool WineInstallFonts { get; set; } = true;
+    public bool WineApplyTheme { get; set; } = true;
     public Dictionary<string, FilterViewSettings> ViewPresets { get; set; } = new();
 }
 

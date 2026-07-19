@@ -11,6 +11,7 @@
             <ResourceDictionary.ThemeDictionaries>
 
                 <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="AppAccentBrush" Color="{DynamicResource SystemAccentColor}" />
                     <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#F5C842" />
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#E4E4EA" />
                     <SolidColorBrush x:Key="AppColHeaderBrush" Color="#DADADF" />
@@ -79,6 +80,7 @@
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AppAccentBrush" Color="{DynamicResource SystemAccentColor}" />
                     <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#7A5C00" />
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#2C2C2C" />
                     <SolidColorBrush x:Key="AppColHeaderBrush" Color="#272727" />

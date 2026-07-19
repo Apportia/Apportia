@@ -16,7 +16,6 @@ public partial class LinuxSetupDialog : Window
     private const long RequiredDiskGibBytes = RequiredDiskGib * 1024L * 1024L * 1024L;
 
     private const string SaveLabel = UiText.Button.Save;
-    private const string InstallFontsLabel = UiText.Button.InstallFonts;
     private const string UpdateLabel = UiText.Button.Update;
 
     private CancellationTokenSource? _downloadCts;
@@ -55,6 +54,9 @@ public partial class LinuxSetupDialog : Window
             BundledModeRadio.IsChecked = true;
         }
 
+        InstallFontsPill.IsChecked = settings.WineInstallFonts;
+        ApplyThemePill.IsChecked = settings.WineApplyTheme;
+
         UpdateVersionPanelVisibility();
         EnsureReleasesLoaded();
     }
@@ -81,13 +83,8 @@ public partial class LinuxSetupDialog : Window
 
     private void RefreshSaveButtonLabel()
     {
-        var configUnchanged = IsInitialConfigUnchanged();
-        var showUpdate = configUnchanged && _updateAvailable;
-        SaveButton.Content = showUpdate
-            ? UpdateLabel
-            : configUnchanged && WineService.ResolveWineBinary() is not null && !FontsInstalled()
-                ? InstallFontsLabel
-                : SaveLabel;
+        var showUpdate = IsInitialConfigUnchanged() && _updateAvailable;
+        SaveButton.Content = showUpdate ? UpdateLabel : SaveLabel;
         SaveButton.Classes.Set("update", showUpdate);
     }
 
@@ -120,17 +117,6 @@ public partial class LinuxSetupDialog : Window
         var installedName = Path.GetFileName(installed.TrimEnd(Path.DirectorySeparatorChar));
         var latestName = WineRunnersClient.StripExtension(latest.ArchiveName);
         _updateAvailable = !installedName.Equals(latestName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool ShouldOfferFontsOnly()
-    {
-        if (!IsInitialConfigUnchanged())
-            return false;
-        if (_updateAvailable)
-            return false;
-        if (WineService.ResolveWineBinary() is null)
-            return false;
-        return !FontsInstalled();
     }
 
     private static bool FontsInstalled()
@@ -209,17 +195,14 @@ public partial class LinuxSetupDialog : Window
 
     private async Task OnSaveAsync()
     {
-        if (ShouldOfferFontsOnly())
-        {
-            await RunFontsDownloadAsync();
-            Close();
-            return;
-        }
-
         var useBundled = BundledModeRadio.IsChecked == true;
+        var installFonts = InstallFontsPill.IsChecked == true;
+        var applyTheme = ApplyThemePill.IsChecked == true;
         var settings = SettingsService.Load();
         var wasBundled = settings.WineMode.Equals("Bundled", StringComparison.OrdinalIgnoreCase);
         settings.WineMode = useBundled ? "Bundled" : "System";
+        settings.WineInstallFonts = installFonts;
+        settings.WineApplyTheme = applyTheme;
 
         if (!useBundled)
         {
@@ -236,74 +219,67 @@ public partial class LinuxSetupDialog : Window
                     TryDeleteDir(WineService.FallbackPrefixDir);
                 }
             }
+        }
+        else
+        {
+            var pickedVersion = VersionCombo.SelectedItem as string ?? LatestKey;
+            var release = WineRunnersClient.PickRelease(_releases, pickedVersion);
+            if (release is null)
+            {
+                ErrorText.Text = UiText.Dialog.LinuxNoReleases;
+                ErrorText.IsVisible = true;
+                RetryButton.IsVisible = true;
+                return;
+            }
 
-            settings.LinuxSetupCompleted = true;
+            if (!HasEnoughDiskSpace(out var freeGib))
+            {
+                ErrorText.Text = string.Format(UiText.Dialog.LinuxDiskSpaceInsufficientFormat, RequiredDiskGib, freeGib, WineService.LinuxDir);
+                ErrorText.IsVisible = true;
+                return;
+            }
+
+            if (!EnsurePrefixLocation())
+                return;
+
+            settings.WineVersion = pickedVersion;
             SettingsService.Save(settings);
-            Close();
-            return;
-        }
 
-        var pickedVersion = VersionCombo.SelectedItem as string ?? LatestKey;
-        var release = WineRunnersClient.PickRelease(_releases, pickedVersion);
-        if (release is null)
-        {
-            ErrorText.Text = UiText.Dialog.LinuxNoReleases;
-            ErrorText.IsVisible = true;
-            RetryButton.IsVisible = true;
-            return;
-        }
+            SaveButton.IsEnabled = false;
+            RetryButton.IsVisible = false;
+            ErrorText.IsVisible = false;
+            ProgressPanel.IsVisible = true;
+            ProgressText.Text = string.Format(UiText.Dialog.LinuxDownloadingArchiveFormat, release.ArchiveName);
+            ProgressBar.Value = 0;
 
-        if (!HasEnoughDiskSpace(out var freeGib))
-        {
-            ErrorText.Text = string.Format(UiText.Dialog.LinuxDiskSpaceInsufficientFormat, RequiredDiskGib, freeGib, WineService.LinuxDir);
-            ErrorText.IsVisible = true;
-            return;
-        }
+            var progress = new Progress<double>(p => ProgressBar.Value = p * 100);
+            _downloadCts = new CancellationTokenSource();
+            var runner = await WineRunnersClient.DownloadAndInstallAsync(release, progress, _downloadCts.Token);
 
-        if (!EnsurePrefixLocation())
-            return;
+            SaveButton.IsEnabled = true;
+            if (runner is null)
+            {
+                ProgressPanel.IsVisible = false;
+                ErrorText.Text = UiText.Dialog.LinuxDownloadFailed;
+                ErrorText.IsVisible = true;
+                RetryButton.IsVisible = true;
+                return;
+            }
 
-        settings.WineVersion = pickedVersion;
-        SettingsService.Save(settings);
-
-        SaveButton.IsEnabled = false;
-        RetryButton.IsVisible = false;
-        ErrorText.IsVisible = false;
-        ProgressPanel.IsVisible = true;
-        ProgressText.Text = string.Format(UiText.Dialog.LinuxDownloadingArchiveFormat, release.ArchiveName);
-        ProgressBar.Value = 0;
-
-        var progress = new Progress<double>(p => ProgressBar.Value = p * 100);
-        _downloadCts = new CancellationTokenSource();
-        var runner = await WineRunnersClient.DownloadAndInstallAsync(release, progress, _downloadCts.Token);
-
-        SaveButton.IsEnabled = true;
-        if (runner is null)
-        {
             ProgressPanel.IsVisible = false;
-            ErrorText.Text = UiText.Dialog.LinuxDownloadFailed;
-            ErrorText.IsVisible = true;
-            RetryButton.IsVisible = true;
-            return;
         }
 
-        ProgressPanel.IsVisible = false;
-        if (!FontsInstalled())
-        {
-            var fontsPrompt = new AppDialog(
-                UiText.Dialog.LinuxFontsPromptTitle,
-                UiText.Dialog.LinuxFontsPromptBody,
-                UiText.Button.WineDownload, UiText.Button.WineSkip);
-            await fontsPrompt.ShowDialog(this);
-            if (fontsPrompt.Result == UiText.Button.WineDownload)
-                await RunFontsDownloadAsync();
-        }
+        if (installFonts && !FontsInstalled())
+            await RunFontsDownloadAsync();
 
         settings.LinuxSetupCompleted = true;
         SettingsService.Save(settings);
 
-        var isDark = Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
-        _ = WinePrefixTheme.ApplyAsync(isDark, true);
+        if (applyTheme)
+        {
+            var isDark = Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
+            _ = WinePrefixTheme.ApplyAsync(isDark, true);
+        }
 
         Close();
     }

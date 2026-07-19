@@ -156,8 +156,6 @@ public static class UiText
         public const string LinuxDownloadingArchiveFormat = "Downloading {0}...";
         public const string LinuxDownloadingFonts = "Downloading Windows fonts...";
         public const string LinuxFetchingReleases = "Fetching Wine releases...";
-        public const string LinuxFontsPromptBody = "Wine is installed. Optionally download the original Windows font pack for better rendering in Windows applications.\n\nYou can skip this and download it later.";
-        public const string LinuxFontsPromptTitle = "Download Windows fonts?";
         public const string LinuxLatestHint = "\"latest\" automatically updates to the newest vanilla build.";
         public const string LinuxNoReleases = "No Wine release available. Check your connection and retry.";
         public const string LinuxPrefixCreateFailedFormat = "Failed to create prefix directory '{0}': {1}";
@@ -172,6 +170,10 @@ public static class UiText
         public const string LinuxSystemModeBundled = "Use bundled Wine in Data/Linux (isolated)";
         public const string LinuxSystemWineMissingWarning = "System Wine was not found. You can try bundled Wine, but if required system libraries are missing the Wine prefix may fail to initialize, no Windows applications will run, or they may start without a working GUI.\n\nIf you run into any of these problems, install Wine via your distribution's package manager to pull in the required dependencies.\n\nThen briefly switch to system Wine, confirm the bundled data deletion, and switch back to bundled so the prefix is rebuilt against the newly available libraries.";
         public const string LinuxVersionHeader = "Bundled Wine version:";
+        public const string LinuxInstallFontsOption = "Improved fonts";
+        public const string LinuxInstallFontsTip = "Install an improved font pack for better rendering in Windows applications.";
+        public const string LinuxApplyThemeOption = "Apportia theme";
+        public const string LinuxApplyThemeTip = "Style Windows apps to match the Apportia theme.";
 
         #endregion
 
@@ -507,7 +509,6 @@ public static class UiText
         public const string ImportLocal = "Local";
         public const string GotIt = "Got it!";
         public const string Install = "Install";
-        public const string InstallFonts = "Install Fonts";
         public const string InstallUpdate = "Install Update";
         public const string Move = "Move";
         public const string Ok = "OK";
@@ -533,9 +534,7 @@ public static class UiText
         public const string VtSavePermanent = "Save Permanently";
         public const string VtSessionOnly = "Session Only";
         public const string WineDelete = "Delete";
-        public const string WineDownload = "Download";
         public const string WineKeep = "Keep";
-        public const string WineSkip = "Skip";
 
         // MainWindow-specific button labels
         public const string CancelInstallation = "Cancel Installation";

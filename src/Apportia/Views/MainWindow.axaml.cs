@@ -2058,7 +2058,13 @@ public partial class MainWindow : Window, IInstallUi
             return;
 
         if (OperatingSystem.IsLinux())
-            await WinePrefixTheme.ApplyAsync(Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
+        {
+            var wineSettings = SettingsService.Load();
+            if (wineSettings.WineInstallFonts)
+                WinePrefixFonts.Apply();
+            await WinePrefixTheme.ApplyImmediatelyAsync(
+                Application.Current?.ActualThemeVariant == ThemeVariant.Dark);
+        }
 
         if (_cliAppArgs.Length > 0)
         {

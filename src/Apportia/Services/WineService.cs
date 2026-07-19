@@ -4,10 +4,9 @@ using Apportia.Text;
 
 namespace Apportia.Services;
 
-/// Central resolver for the active Wine command and prefix.
-/// Two modes:
-/// - System: uses ~/.wine and the "wine" on PATH.
-/// - Bundled: uses Data/Linux/runners/&lt;version&gt;/bin/wine and Data/Linux/prefixes/default.
+// Central resolver for the active Wine command and prefix. In System mode the "wine" on PATH
+// and ~/.wine are used; in Bundled mode Data/Linux/runners/<version>/bin/wine and
+// Data/Linux/prefixes/default.
 public static class WineService
 {
     public const long FallbackMinFreeBytes = 5L * 1024 * 1024 * 1024;
@@ -27,7 +26,12 @@ public static class WineService
         @"/[\w./+\-]*\.so(?:\.\d+)*",
         RegexOptions.Compiled);
 
-    public static string PrefixDir => SupportsWinePrefix(DefaultPrefixDir) ? DefaultPrefixDir : FallbackPrefixDir;
+    public static string PrefixDir =>
+        !IsBundled()
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".wine")
+            : SupportsWinePrefix(DefaultPrefixDir)
+                ? DefaultPrefixDir
+                : FallbackPrefixDir;
 
     public static bool SupportsWinePrefix(string dir)
     {
@@ -137,6 +141,9 @@ public static class WineService
             return;
 
         Directory.CreateDirectory(prefix);
+        // Seed fonts before wineboot so its font-registry pass picks them up.
+        if (SettingsService.Load().WineInstallFonts)
+            WinePrefixFonts.Apply();
         var psi = new ProcessStartInfo(wine)
         {
             UseShellExecute = false,
@@ -173,6 +180,10 @@ public static class WineService
             throw new InvalidOperationException(
                 string.Format(LogText.Wine.PrefixInitTimedOutFormat, prefix));
         }
+
+        // wineserver flushes user.reg/system.reg asynchronously after wineboot exits.
+        for (var i = 0; i < 100 && !IsPrefixValid(prefix); i++)
+            await Task.Delay(100, ct);
 
         if (IsPrefixValid(prefix))
             return;
@@ -224,6 +235,11 @@ public static class WineService
         return result;
     }
 
+    public static bool IsPrefixReady()
+    {
+        return OperatingSystem.IsLinux() && IsPrefixValid(PrefixDir);
+    }
+
     private static bool IsPrefixValid(string prefix)
     {
         return File.Exists(Path.Combine(prefix, "system.reg"))
@@ -257,8 +273,6 @@ public static class WineService
 
     private static string ResolvePrefix()
     {
-        if (!IsBundled())
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".wine");
         var prefix = PrefixDir;
         Directory.CreateDirectory(prefix);
         return prefix;

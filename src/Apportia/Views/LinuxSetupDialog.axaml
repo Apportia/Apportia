@@ -18,6 +18,30 @@
         <Style Selector="Button.update:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource AppUpdateBrush}" />
         </Style>
+        <Style Selector="ToggleButton.pill">
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="14,4" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppSeparatorBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource AppSubTextBrush}" />
+            <Setter Property="Opacity" Value="0.9" />
+        </Style>
+        <Style Selector="ToggleButton.pill:pointerover">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="ToggleButton.pill:checked">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="ToggleButton.pill:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
+        <Style Selector="ToggleButton.pill:checked:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppAccentBrush}" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
     </Window.Styles>
 
     <Panel>
@@ -67,6 +91,17 @@
                            FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource AppTextBrush}"
                            Opacity="0.7" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <ToggleButton x:Name="InstallFontsPill"
+                              Classes="pill"
+                              Content="{x:Static text:UiText+Dialog.LinuxInstallFontsOption}"
+                              ToolTip.Tip="{x:Static text:UiText+Dialog.LinuxInstallFontsTip}" />
+                <ToggleButton x:Name="ApplyThemePill"
+                              Classes="pill"
+                              Content="{x:Static text:UiText+Dialog.LinuxApplyThemeOption}"
+                              ToolTip.Tip="{x:Static text:UiText+Dialog.LinuxApplyThemeTip}" />
             </StackPanel>
 
             <StackPanel x:Name="ProgressPanel" Spacing="4" IsVisible="False">
