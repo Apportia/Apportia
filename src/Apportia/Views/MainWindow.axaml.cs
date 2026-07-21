@@ -1513,6 +1513,8 @@ public partial class MainWindow : Window, IInstallUi
             CommandLine? cmd = null;
             if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
                 cmd = CommandLine.FromUser(dialog.ArgsArray);
+            else if (dialog.Choice == RunArgsDialog.RunChoice.WithoutArgs && dialog.ArgsArray.Length == 0)
+                _cliAppArgs = [];
 
             node.TryBeginLaunchFx();
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
@@ -2066,6 +2068,8 @@ public partial class MainWindow : Window, IInstallUi
             CommandLine? cmd = null;
             if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
                 cmd = CommandLine.FromUser(dialog.ArgsArray);
+            else if (dialog.Choice == RunArgsDialog.RunChoice.WithoutArgs && dialog.ArgsArray.Length == 0)
+                _cliAppArgs = [];
 
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
                 await Task.Run(() => RunAsAdmin(node, cmd));
