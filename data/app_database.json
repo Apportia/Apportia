@@ -9119,6 +9119,24 @@
     "DownloadSize": "126",
     "InstallSize": "333"
   },
+  "PDF-XChangeEditorPortableLegacyWin7": {
+    "Name": "PDF-XChange Editor (Legacy Win7)",
+    "Description": "PDF editor and viewer",
+    "Website": "https://portableapps.com/apps/office/pdf-xchange-editor-portable",
+    "Category": "Office",
+    "SubCategory": "Document Viewers & Tools",
+    "Class": "Legacy",
+    "JoinedDate": "2017-05-22",
+    "DisplayVersion": "10.8.4.409",
+    "PackageVersion": "10.8.4.409",
+    "UpdateDate": "2026-07-31",
+    "DownloadFile": "PDF-XChangeEditorPortableLegacyWin7_10.8.4.409.paf.exe",
+    "Hash": "92f085212cd44812789880eebe7177485251b1efda9fa9f6ba9d44324716114b",
+    "DownloadPath": "http://downloads.portableapps.com/portableapps/PDF-XChangeEditorPortableLegacyWin7",
+    "UserAgent": "Wget/1.21.4",
+    "DownloadSize": "104",
+    "InstallSize": "244"
+  },
   "PDF-XChangeViewerPortable": {
     "Name": "PDF-XChange Viewer",
     "Description": "PDF viewer",
