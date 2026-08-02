@@ -217,10 +217,10 @@ public sealed class GhAsset
     [JsonPropertyName("browser_download_url")]
     public string DownloadUrl { get; set; } = string.Empty;
 
-    [JsonPropertyName("digest")] public string Digest { get; set; } = string.Empty;
+    [JsonPropertyName("digest")] public string? Digest { get; set; }
 
     public string Sha256Hex =>
-        Digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
+        Digest?.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) == true
             ? Digest["sha256:".Length..]
             : string.Empty;
 }
