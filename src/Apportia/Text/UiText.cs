@@ -146,6 +146,9 @@ public static class UiText
         public const string LeftoverFilesTitle = "Leftover Files";
         public const string LeftoverKindFile = "File";
         public const string LeftoverKindFolder = "Folder";
+        public const string UpdateLeftoverBody = "These files were kept because the new archive doesn't contain them.\nUsually configs or user data — pick any you'd like to remove.";
+        public const string UpdateLeftoverRemember = "Remember for this list";
+        public const string UpdateLeftoverTitle = "Files kept from previous install";
 
         #endregion
 
@@ -515,6 +518,8 @@ public static class UiText
         public const string CustomAppImport = "Import";
         public const string CustomAppSave = "Save";
         public const string DeleteAll = "Delete All";
+        public const string DeleteSelected = "Delete Selected";
+        public const string KeepAll = "Keep All";
         public const string Download = "Download";
         public const string Fetch = "Fetch";
         public const string ImportGitHub = "GitHub";

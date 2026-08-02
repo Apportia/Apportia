@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:svg="using:Avalonia.Svg.Skia"
+        xmlns:views="using:Apportia.Views"
+        xmlns:text="using:Apportia.Text"
+        x:Class="Apportia.Views.UpdateLeftoverFilesDialog"
+        Title="{x:Static text:UiText+Dialog.UpdateLeftoverTitle}"
+        SizeToContent="Height"
+        Width="560"
+        MaxHeight="600"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppWindowBrush}">
+
+    <DockPanel>
+
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="{DynamicResource AppSeparatorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,10">
+            <DockPanel>
+                <CheckBox DockPanel.Dock="Left"
+                          x:Name="RememberCheckBox"
+                          VerticalAlignment="Center"
+                          Content="{x:Static text:UiText+Dialog.UpdateLeftoverRemember}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button x:Name="DeleteButton" IsEnabled="False"
+                            Content="{x:Static text:UiText+Button.DeleteSelected}" Click="OnDelete" />
+                    <Button Content="{x:Static text:UiText+Button.KeepAll}" Click="OnClose" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <StackPanel Margin="20,16,20,16" Spacing="12">
+            <TextBlock TextWrapping="Wrap"
+                       Foreground="{DynamicResource AppTextBrush}"
+                       Text="{x:Static text:UiText+Dialog.UpdateLeftoverBody}" />
+
+            <Border BorderBrush="{DynamicResource AppSeparatorBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                <TreeView x:Name="Tree"
+                          MaxHeight="400"
+                          Background="Transparent">
+                    <TreeView.Styles>
+                        <Style Selector="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="True" />
+                        </Style>
+                    </TreeView.Styles>
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate x:DataType="views:LeftoverNode" ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,1,0,1">
+                                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                          MinHeight="0"
+                                          Padding="4,0,0,0"
+                                          VerticalContentAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <svg:Svg Path="{Binding IconPath}" Width="16" Height="16" />
+                                        <TextBlock Text="{Binding Name}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource AppTextBrush}" />
+                                    </StackPanel>
+                                </CheckBox>
+                            </StackPanel>
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </Border>
+        </StackPanel>
+
+    </DockPanel>
+</Window>

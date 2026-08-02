@@ -466,6 +466,19 @@ public static class CustomAppService
         }
     }
 
+    public static void SaveLeftoverMemory(string sectionName, string[] known, string[] toDelete)
+    {
+        lock (DbGate)
+        {
+            var db = LoadDatabaseUnlocked();
+            if (!db.TryGetValue(sectionName, out var info))
+                return;
+            info.LeftoverKnown = known;
+            info.LeftoverDelete = toDelete;
+            SaveDatabaseUnlocked(db);
+        }
+    }
+
     public static (string Version, string VersionSource, string DisplayVersion) LoadVersionInfo(string sectionName)
     {
         var db = LoadDatabase();

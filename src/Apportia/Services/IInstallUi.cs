@@ -2,6 +2,8 @@ using Apportia.ViewModels;
 
 namespace Apportia.Services;
 
+public sealed record LeftoverDialogResult(IReadOnlyList<string> SelectedForDeletion, bool Remember);
+
 public interface IInstallUi
 {
     Task<string?> ShowDialogAsync(AppNode? node, string title, string message, params string[] buttons);
@@ -10,6 +12,12 @@ public interface IInstallUi
     Task<int[]?> ShowJavaRequiredDialogAsync(AppNode node, string[] pluginNames);
     Task<string?> ShowMirrorDialogAsync(AppNode node, string? failedSlug, IReadOnlyList<(string Slug, string Label)> available);
     Task ShowVirusTotalDialogAsync(AppNode node);
+
+    Task<LeftoverDialogResult?> ShowUpdateLeftoverDialogAsync(
+        AppNode node,
+        IReadOnlyList<string> relativePaths,
+        IReadOnlyCollection<string>? preChecked,
+        bool rememberDefault);
 
     void ShowDownloadBar(bool visible);
     void SetDownloadStatus(string sizeText, string speedText);

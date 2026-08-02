@@ -147,6 +147,22 @@ public partial class MainWindow : Window, IInstallUi
         return new VirusTotalDialog(node) { Icon = new WindowIcon(node.Icon) }.ShowDialog(this);
     }
 
+    async Task<LeftoverDialogResult?> IInstallUi.ShowUpdateLeftoverDialogAsync(
+        AppNode node,
+        IReadOnlyList<string> relativePaths,
+        IReadOnlyCollection<string>? preChecked,
+        bool rememberDefault)
+    {
+        var dialog = new UpdateLeftoverFilesDialog(relativePaths, preChecked, rememberDefault)
+        {
+            Icon = new WindowIcon(node.Icon)
+        };
+        await dialog.ShowDialog(this);
+        return dialog.Confirmed
+            ? new LeftoverDialogResult(dialog.SelectedForDeletion, dialog.Remember)
+            : null;
+    }
+
     void IInstallUi.ShowDownloadBar(bool visible)
     {
         ShowDownloadBar(visible);

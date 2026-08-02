@@ -18,6 +18,8 @@ public sealed class CustomAppInfo
     public string DownloadPath { get; set; } = string.Empty;
     public string DownloadFile { get; set; } = string.Empty;
     public bool UpdateEnabled { get; set; } = true;
+    public string[] LeftoverKnown { get; set; } = [];
+    public string[] LeftoverDelete { get; set; } = [];
 }
 
 [JsonSerializable(typeof(CustomAppInfo))]

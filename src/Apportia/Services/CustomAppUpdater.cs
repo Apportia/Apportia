@@ -70,7 +70,63 @@ public static class CustomAppUpdater
                     await Task.Run(() => ZipFile.ExtractToDirectory(tempArchive, stagingDir), ct);
 
                 var appDir = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName);
-                await Task.Run(() => OverlayDirectory(appDir, stagingDir), ct);
+                var leftovers = await Task.Run(() => OverlayDirectory(appDir, stagingDir), ct);
+
+                if (leftovers.Count > 0)
+                {
+                    var cmp = StringComparer.OrdinalIgnoreCase;
+                    var hasMemory = info.LeftoverKnown.Length > 0;
+                    var knownSet = hasMemory ? info.LeftoverKnown.ToHashSet(cmp) : new HashSet<string>(cmp);
+                    var newFiles = hasMemory && leftovers.Any(f => !knownSet.Contains(f));
+                    var skipDialog = hasMemory && !newFiles;
+
+                    IReadOnlyList<string>? toDelete = null;
+                    if (skipDialog)
+                    {
+                        toDelete = info.LeftoverDelete.Intersect(leftovers, cmp).ToArray();
+                    }
+                    else if (ui != null)
+                    {
+                        var preChecked = hasMemory
+                            ? info.LeftoverDelete.Intersect(leftovers, cmp).ToArray()
+                            : null;
+                        var result = await ui.ShowUpdateLeftoverDialogAsync(node, leftovers, preChecked, hasMemory);
+                        if (result != null)
+                        {
+                            toDelete = result.SelectedForDeletion;
+                            var known = result.Remember ? leftovers.ToArray() : [];
+                            var del = result.Remember ? result.SelectedForDeletion.ToArray() : [];
+                            CustomAppService.SaveLeftoverMemory(node.SectionName, known, del);
+                        }
+                    }
+
+                    if (toDelete is { Count: > 0 })
+                    {
+                        var touchedDirs = new HashSet<string>(cmp);
+                        foreach (var rel in toDelete)
+                        {
+                            var full = Path.Combine(appDir, rel);
+                            try
+                            {
+                                if (File.Exists(full))
+                                {
+                                    File.Delete(full);
+                                    var parent = Path.GetDirectoryName(full);
+                                    if (parent != null)
+                                        touchedDirs.Add(parent);
+                                }
+                            }
+                            catch
+                            {
+                                // best-effort — the user asked to delete, but a locked file
+                                // shouldn't fail the whole update
+                            }
+                        }
+
+                        foreach (var dir in touchedDirs)
+                            PruneEmptyDirsUpward(dir, appDir);
+                    }
+                }
             }
             finally
             {
@@ -179,11 +235,43 @@ public static class CustomAppUpdater
         return best;
     }
 
-    // Overlay copy: files from the new archive overwrite existing ones, but pre-existing
-    // files/folders that aren't in the archive (user configs, saves, portable data) are kept.
-    // Cleaner would be to wipe first, but that destroys user state on update/reinstall.
-    private static void OverlayDirectory(string destDir, string newSourceDir)
+    // Walks up from dir toward stopDir (exclusive), removing directories that are empty.
+    // Stops as soon as it hits a non-empty directory or reaches stopDir.
+    private static void PruneEmptyDirsUpward(string dir, string stopDir)
     {
+        var current = Path.TrimEndingDirectorySeparator(dir);
+        var stop = Path.TrimEndingDirectorySeparator(stopDir);
+        while (!string.IsNullOrEmpty(current) &&
+               !string.Equals(current, stop, StringComparison.OrdinalIgnoreCase) &&
+               Directory.Exists(current))
+        {
+            try
+            {
+                if (Directory.EnumerateFileSystemEntries(current).Any())
+                    return;
+                Directory.Delete(current);
+            }
+            catch
+            {
+                return;
+            }
+
+            current = Path.GetDirectoryName(current) ?? string.Empty;
+        }
+    }
+
+    // Overlay copy: files from the new archive overwrite existing ones, but pre-existing
+    // files that aren't in the archive (user configs, saves, portable data) are kept.
+    // Returns the relative paths of files that existed before and were NOT part of the
+    // new archive, so the caller can offer the user selective cleanup.
+    private static List<string> OverlayDirectory(string destDir, string newSourceDir)
+    {
+        var preExisting = Directory.Exists(destDir)
+            ? Directory.EnumerateFiles(destDir, "*", SearchOption.AllDirectories)
+                       .Select(f => Path.GetRelativePath(destDir, f))
+                       .ToHashSet(StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         Directory.CreateDirectory(destDir);
 
         foreach (var dir in Directory.EnumerateDirectories(newSourceDir, "*", SearchOption.AllDirectories))
@@ -198,6 +286,9 @@ public static class CustomAppUpdater
             var target = Path.Combine(destDir, rel);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             File.Copy(file, target, true);
+            preExisting.Remove(rel);
         }
+
+        return preExisting.OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
     }
 }
