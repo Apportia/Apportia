@@ -675,6 +675,14 @@
                                                     </MultiBinding>
                                                 </Separator.IsVisible>
                                             </Separator>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.Reinstall}"
+                                                      IsVisible="{Binding ShowReinstall}"
+                                                      Click="OnMenuReinstall">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/267b.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                             <MenuItem Header="{x:Static text:UiText+Menu.Uninstall}"
                                                       IsVisible="{Binding ShowUninstall}"
                                                       Click="OnMenuUninstall">
@@ -1021,6 +1029,15 @@
                                                                 </MultiBinding>
                                                             </Separator.IsVisible>
                                                         </Separator>
+                                                        <MenuItem Header="{x:Static text:UiText+Menu.Reinstall}"
+                                                                  IsVisible="{Binding ShowReinstall}"
+                                                                  Click="OnMenuReinstall">
+                                                            <MenuItem.Icon>
+                                                                <svg:Svg
+                                                                    Path="avares://Apportia/Assets/Emoji/267b.svg"
+                                                                    Width="16" Height="16" />
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
                                                         <MenuItem Header="{x:Static text:UiText+Menu.Uninstall}"
                                                                   IsVisible="{Binding ShowUninstall}"
                                                                   Click="OnMenuUninstall">

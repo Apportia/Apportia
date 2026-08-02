@@ -16,6 +16,7 @@ public static class UiText
         public const string OpenFolder = "Open Folder";
         public const string Preview = "Preview";
         public const string Properties = "Properties";
+        public const string Reinstall = "Reinstall";
         public const string RemoveFromQueue = "Remove from Queue";
         public const string Run = "Run";
         public const string RunAsAdministrator = "Run as Administrator";
@@ -297,6 +298,8 @@ public static class UiText
         public const string MainNotEnoughSpaceBody = "Not enough disk space to install {0}.\n\nRequired:   {1}\nAvailable:  {2}\n\nFree up disk space and click Retry, or Cancel to abort.";
         public const string MainNotEnoughSpaceTitleFormat = "{0} \u2014 Not Enough Space";
         public const string MainQueuedRemoveFormat = "{0} is currently in the installation queue.\n\nWould you like to remove it?";
+        public const string MainReinstallBodyFormat = "This will download {0} again and overwrite the current installation.";
+        public const string MainReinstallTitleFormat = "Reinstall \u2014 {0}";
         public const string MainSecurityNoticeTitleFormat = "Security Notice \u2014 {0}";
         public const string MainUninstallFailedTitle = "Uninstall Failed";
         public const string MainUninstallJavaExtraFormat = "Remove {0} and all its data?\n\nThis is the last app requiring Java.\n\nThe following Java plugins will also be uninstalled:\n{1}";
@@ -520,6 +523,7 @@ public static class UiText
         public const string Ok = "OK";
         public const string Proceed = "Proceed";
         public const string ProceedAnyway = "Proceed Anyway";
+        public const string Reinstall = "Reinstall";
         public const string RemoveArg = "x";
         public const string Reset = "Reset";
         public const string Retry = "Retry";

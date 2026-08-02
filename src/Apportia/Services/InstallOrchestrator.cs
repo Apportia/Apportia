@@ -9,7 +9,7 @@ public sealed class InstallOrchestrator(
     AppDeployService deployService,
     IInstallUi ui)
 {
-    public async Task InstallAsync(AppNode node, string appsBaseDir, bool launch, bool fromQueue = false)
+    public async Task InstallAsync(AppNode node, string appsBaseDir, bool launch, bool fromQueue = false, bool forceLanguagePrompt = false)
     {
         if (queue.IsRunning && !fromQueue)
             return;
@@ -27,8 +27,9 @@ public sealed class InstallOrchestrator(
         {
             var savedLang = AppLanguageService.Load(node.SectionName);
 
-            var autoSelected = savedLang == "English" ||
-                               savedLang != null && node.HasLanguageVariantKey(savedLang);
+            var autoSelected = !forceLanguagePrompt &&
+                               (savedLang == "English" ||
+                                savedLang != null && node.HasLanguageVariantKey(savedLang));
 
             if (!autoSelected)
             {

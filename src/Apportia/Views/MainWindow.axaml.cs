@@ -1372,6 +1372,27 @@ public partial class MainWindow : Window, IInstallUi
             : _installer.InstallAsync(node, AppDeployService.AppsDir, false);
     }
 
+    private async void OnMenuReinstall(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (NodeFromMenu(sender) is not { } node)
+                return;
+            var choice = await ShowDialog(
+                node,
+                string.Format(UiText.Dialog.MainReinstallTitleFormat, node.Name),
+                string.Format(UiText.Dialog.MainReinstallBodyFormat, node.Name),
+                UiText.Button.Reinstall, UiText.Button.Cancel);
+            if (choice != UiText.Button.Reinstall)
+                return;
+            await _installer.InstallAsync(node, AppDeployService.AppsDir, false, forceLanguagePrompt: true);
+        }
+        catch (Exception ex)
+        {
+            Log.Write(ex.Message);
+        }
+    }
+
     private async Task UpdateCustomAppAsync(AppNode node, bool launchAfter)
     {
         try
@@ -1520,6 +1541,7 @@ public partial class MainWindow : Window, IInstallUi
                     _cliAppArgs = [];
                     break;
             }
+
             node.TryBeginLaunchFx();
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
                 await Task.Run(() => RunAsAdmin(node, cmd));
