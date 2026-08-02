@@ -1414,7 +1414,10 @@ public partial class MainWindow : Window, IInstallUi
                 UiText.Button.Reinstall, UiText.Button.Cancel);
             if (choice != UiText.Button.Reinstall)
                 return;
-            await _installer.InstallAsync(node, AppDeployService.AppsDir, false, forceLanguagePrompt: true);
+            if (node.IsCustom)
+                await UpdateCustomAppAsync(node, false);
+            else
+                await _installer.InstallAsync(node, AppDeployService.AppsDir, false, forceLanguagePrompt: true);
         }
         catch (Exception ex)
         {

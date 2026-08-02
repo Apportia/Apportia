@@ -101,7 +101,7 @@ public static class CustomAppService
                            info.UpdateDate,
                            info.ExeFile,
                            string.Empty,
-                           string.Empty,
+                           info.DownloadPath,
                            string.Empty,
                            string.Empty,
                            string.Empty

@@ -184,8 +184,9 @@ public sealed class AppNode : INotifyPropertyChanged
     public bool ShowInstallActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && !IsInstalled;
     public bool ShowUpdateActions => !Columns.IsInstalling && !ShowRemoveFromQueue && !ShowCancelInstall && NeedsUpdate;
     public bool ShowRunActions => IsInstalled && !ShowCancelInstall && !IsPlugin;
-    public bool ShowReinstall => IsInstalled && !ShowCancelInstall && !IsCustom && !IsPlugin;
-    public bool ShowChangeLanguage => ShowReinstall && HasLanguageVariants;
+    public bool ShowReinstall => IsInstalled && !ShowCancelInstall && !IsPlugin && (!IsCustom || IsGithubCustom);
+    public bool ShowChangeLanguage => IsInstalled && !ShowCancelInstall && !IsCustom && !IsPlugin && HasLanguageVariants;
+    public bool IsGithubCustom => IsCustom && CustomAppUpdateChecker.ExtractRepoPath(DownloadPath) != null;
     public bool ShowVirusTotalActions => !IsPlugin && !ShowCancelInstall && (IsInstalled || !string.IsNullOrEmpty(Hash));
     public bool ShowPreview => !IsLegacy && !IsCustom && !IsPlugin;
     public bool ShowUninstall => IsInstalled && !ShowCancelInstall;
