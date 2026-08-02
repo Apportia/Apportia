@@ -61,13 +61,18 @@ jobs:
                   return text
               parts = [p.strip() for p in text.split(",")]
               last = parts[-1]
-              # Expand US state abbreviations: "Las Vegas, NV" → "Las Vegas, Nevada, United States"
+              # Expand US state abbreviations: "Las Vegas, NV" becomes "Las Vegas, Nevada, United States"
               if len(last) == 2 and last.isupper():
                   sub = pycountry.subdivisions.get(code=f"US-{last}")
                   if sub is not None:
                       country = pycountry.countries.get(alpha_2="US").name
                       return ", ".join(parts[:-1] + [sub.name, country])
-              return text
+              # Collapse city-states like "Singapore, Singapore" into a single label.
+              deduped = []
+              for p in parts:
+                  if not deduped or p.casefold() != deduped[-1].casefold():
+                      deduped.append(p)
+              return ", ".join(deduped)
 
 
           def enrich_from_slug(slug, location):
