@@ -688,7 +688,8 @@ public partial class VirusTotalDialog : Window
         StatusText.Text = message;
         StatusText.Foreground = isError
             ? new SolidColorBrush(Color.Parse("#CC2222"))
-            : Application.Current?.FindResource("AppTextBrush") as IBrush ?? Brushes.Gray;
+            : (TryGetResource("AppTextBrush", ActualThemeVariant, out var res) ? res as IBrush : null)
+              ?? Brushes.Gray;
         StatusBorder.IsVisible = true;
     }
 

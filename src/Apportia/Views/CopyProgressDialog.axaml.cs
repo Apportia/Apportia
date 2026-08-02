@@ -110,7 +110,7 @@ public partial class CopyProgressDialog : Window
             TextTrimming = TextTrimming.CharacterEllipsis
         };
 
-        if (this.TryFindResource("AppSubTextBrush", out var brush) && brush is IBrush b)
+        if (this.TryFindResource("AppSubTextBrush", ActualThemeVariant, out var brush) && brush is IBrush b)
             label.Foreground = b;
 
         if (relativePath != fileName)
