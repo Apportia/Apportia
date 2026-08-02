@@ -675,6 +675,14 @@
                                                     </MultiBinding>
                                                 </Separator.IsVisible>
                                             </Separator>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.ChangeLanguage}"
+                                                      IsVisible="{Binding ShowChangeLanguage}"
+                                                      Click="OnMenuChangeLanguage">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f5fa.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                             <MenuItem Header="{x:Static text:UiText+Menu.Reinstall}"
                                                       IsVisible="{Binding ShowReinstall}"
                                                       Click="OnMenuReinstall">
@@ -1029,6 +1037,15 @@
                                                                 </MultiBinding>
                                                             </Separator.IsVisible>
                                                         </Separator>
+                                                        <MenuItem Header="{x:Static text:UiText+Menu.ChangeLanguage}"
+                                                                  IsVisible="{Binding ShowChangeLanguage}"
+                                                                  Click="OnMenuChangeLanguage">
+                                                            <MenuItem.Icon>
+                                                                <svg:Svg
+                                                                    Path="avares://Apportia/Assets/Emoji/1f5fa.svg"
+                                                                    Width="16" Height="16" />
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
                                                         <MenuItem Header="{x:Static text:UiText+Menu.Reinstall}"
                                                                   IsVisible="{Binding ShowReinstall}"
                                                                   Click="OnMenuReinstall">

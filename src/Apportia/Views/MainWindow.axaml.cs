@@ -1372,6 +1372,35 @@ public partial class MainWindow : Window, IInstallUi
             : _installer.InstallAsync(node, AppDeployService.AppsDir, false);
     }
 
+    private async void OnMenuChangeLanguage(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (NodeFromMenu(sender) is not { } node)
+                return;
+            var savedLang = AppLanguageService.Load(node.SectionName);
+            var selected = await ((IInstallUi)this).ShowLanguageDialogAsync(node, node.GetLanguageKeys()!, savedLang);
+            if (selected is null)
+                return;
+            var current = savedLang ?? UiText.Dialog.LanguageEnglish;
+            if (string.Equals(selected, current, StringComparison.Ordinal))
+            {
+                await ShowDialog(
+                    node,
+                    UiText.Dialog.MainLanguageAlreadySelectedTitle,
+                    string.Format(UiText.Dialog.MainLanguageAlreadySelectedBodyFormat, selected, node.Name),
+                    UiText.Button.Ok);
+                return;
+            }
+
+            await _installer.InstallAsync(node, AppDeployService.AppsDir, false, preselectedLanguage: selected);
+        }
+        catch (Exception ex)
+        {
+            Log.Write(ex.Message);
+        }
+    }
+
     private async void OnMenuReinstall(object? sender, RoutedEventArgs e)
     {
         try

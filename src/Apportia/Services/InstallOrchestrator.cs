@@ -9,7 +9,7 @@ public sealed class InstallOrchestrator(
     AppDeployService deployService,
     IInstallUi ui)
 {
-    public async Task InstallAsync(AppNode node, string appsBaseDir, bool launch, bool fromQueue = false, bool forceLanguagePrompt = false)
+    public async Task InstallAsync(AppNode node, string appsBaseDir, bool launch, bool fromQueue = false, bool forceLanguagePrompt = false, string? preselectedLanguage = null)
     {
         if (queue.IsRunning && !fromQueue)
             return;
@@ -25,22 +25,29 @@ public sealed class InstallOrchestrator(
 
         if (node.HasLanguageVariants)
         {
-            var savedLang = AppLanguageService.Load(node.SectionName);
-
-            var autoSelected = !forceLanguagePrompt &&
-                               (savedLang == "English" ||
-                                savedLang != null && node.HasLanguageVariantKey(savedLang));
-
-            if (!autoSelected)
+            if (preselectedLanguage != null)
             {
-                var selected = await ui.ShowLanguageDialogAsync(node, node.GetLanguageKeys()!, savedLang);
-                if (selected is null)
-                    return;
-                chosenLanguage = selected;
+                chosenLanguage = preselectedLanguage;
             }
             else
             {
-                chosenLanguage = savedLang;
+                var savedLang = AppLanguageService.Load(node.SectionName);
+
+                var autoSelected = !forceLanguagePrompt &&
+                                   (savedLang == "English" ||
+                                    savedLang != null && node.HasLanguageVariantKey(savedLang));
+
+                if (!autoSelected)
+                {
+                    var selected = await ui.ShowLanguageDialogAsync(node, node.GetLanguageKeys()!, savedLang);
+                    if (selected is null)
+                        return;
+                    chosenLanguage = selected;
+                }
+                else
+                {
+                    chosenLanguage = savedLang;
+                }
             }
 
             if (chosenLanguage != "English" && node.TryGetLanguageVariant(chosenLanguage!, out var variantFile, out var variantHash))
