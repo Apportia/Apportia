@@ -4,10 +4,8 @@ namespace Apportia.Services;
 
 public static class CustomAppUpdateChecker
 {
-    /// Iterates custom apps that were imported from GitHub and updates their upstream date.
-    /// Each node's UpdateDate is set to the latest release date discovered upstream; the
-    /// NeedsUpdate flag then fires automatically because CurrentDate stays on the local
-    /// install date. Uses the free atom feed to avoid burning API quota.
+    // Compares the atom feed's <updated> (moves on any release edit, including
+    // binary re-uploads) against the locally stored date.
     public static async Task CheckAsync(IEnumerable<AppNode> customNodes, CancellationToken ct = default)
     {
         foreach (var node in customNodes)
@@ -33,8 +31,8 @@ public static class CustomAppUpdateChecker
         }
     }
 
-    /// Extracts "owner/repo" from a URL like https://github.com/owner/repo(/...).
-    /// Returns null when the URL isn't a github repo path.
+    // Extracts "owner/repo" from a URL like https://github.com/owner/repo(/...).
+    // Returns null when the URL isn't a github repo path.
     public static string? ExtractRepoPath(string url)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))

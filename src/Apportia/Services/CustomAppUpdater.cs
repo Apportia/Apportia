@@ -85,14 +85,17 @@ public static class CustomAppUpdater
                 }
             }
 
-            var publishedLocal = published.LocalDateTime;
+            // Anchor the stored date to atom's <updated> so subsequent CustomAppUpdateChecker
+            // runs compare like-for-like; the JSON published_at wouldn't move with edits.
+            var atom = await GitHubClient.FetchLatestReleaseFromAtomAsync(repo, ct);
+            var storedLocal = atom?.PublishedAt?.LocalDateTime ?? published.LocalDateTime;
             var newVersion = GitHubVersion.Derive(release.TagName, release.PublishedAt);
-            CustomAppService.ApplyGithubUpdate(node.SectionName, asset.Name, publishedLocal, newVersion, release.TagName);
+            CustomAppService.ApplyGithubUpdate(node.SectionName, asset.Name, storedLocal, newVersion, release.TagName);
             node.SetVersion(release.TagName, newVersion);
             node.LocalDisplayVersion = release.TagName;
             node.LocalPackageVersion = newVersion;
-            node.SetUpstreamUpdateDate(publishedLocal.ToString("yyyy-MM-dd"));
-            node.CurrentDate = publishedLocal.ToString("yyyy-MM-dd");
+            node.SetUpstreamUpdateDate(storedLocal.ToString("yyyy-MM-dd"));
+            node.CurrentDate = storedLocal.ToString("yyyy-MM-dd");
             return true;
         }
         finally
