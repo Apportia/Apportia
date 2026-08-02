@@ -250,5 +250,4 @@ public static class VirusTotalService
 [JsonSerializable(typeof(VtUploadResponse))]
 [JsonSerializable(typeof(VtAnalysisResponse))]
 [JsonSerializable(typeof(Dictionary<string, Dictionary<string, string>>))]
-[JsonSourceGenerationOptions(WriteIndented = false)]
 internal partial class VirusTotalJsonContext : JsonSerializerContext;

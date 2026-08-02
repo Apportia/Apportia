@@ -75,9 +75,11 @@ public static class AppLanguageService
 
             dict[sectionName] = language;
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+            var sorted = dict.OrderBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase)
+                             .ToDictionary(kv => kv.Key, kv => kv.Value);
             File.WriteAllText(
                 FilePath,
-                JsonSerializer.Serialize(dict, LanguagesJsonContext.Default.DictionaryStringString));
+                JsonSerializer.Serialize(sorted, LanguagesJsonContext.Default.DictionaryStringString));
         }
         catch
         {

@@ -259,9 +259,11 @@ public static class CurrentAppService
         {
             Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
             var tmp = DatabasePath + ".tmp";
+            var sorted = dict.OrderBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase)
+                             .ToDictionary(kv => kv.Key, kv => kv.Value);
             File.WriteAllText(
                 tmp,
-                JsonSerializer.Serialize(dict, CurrentAppJsonContext.Default.DictionaryStringCurrentAppInfo));
+                JsonSerializer.Serialize(sorted, CurrentAppJsonContext.Default.DictionaryStringCurrentAppInfo));
             File.Move(tmp, DatabasePath, true);
             _cache = dict;
         }

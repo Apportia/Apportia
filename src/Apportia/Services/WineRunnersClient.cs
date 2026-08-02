@@ -300,5 +300,4 @@ public static partial class WineRunnersClient
 
 [JsonSerializable(typeof(WineReleasesCache))]
 [JsonSerializable(typeof(WineRunnerRelease))]
-[JsonSourceGenerationOptions(WriteIndented = true)]
 internal partial class WineReleasesJsonContext : JsonSerializerContext;

@@ -8,5 +8,4 @@ public sealed class DiskUsageCache
 }
 
 [JsonSerializable(typeof(DiskUsageCache))]
-[JsonSourceGenerationOptions(WriteIndented = false)]
 internal partial class DiskUsageCacheJsonContext : JsonSerializerContext;

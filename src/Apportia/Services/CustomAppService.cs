@@ -565,9 +565,11 @@ public static class CustomAppService
     {
         Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
         var tmp = DatabasePath + ".tmp";
+        var sorted = dict.OrderBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase)
+                         .ToDictionary(kv => kv.Key, kv => kv.Value);
         File.WriteAllText(
             tmp,
-            JsonSerializer.Serialize(dict, CustomAppJsonContext.Default.DictionaryStringCustomAppInfo));
+            JsonSerializer.Serialize(sorted, CustomAppJsonContext.Default.DictionaryStringCustomAppInfo));
         if (!VerifyRoundTrip(tmp, dict))
         {
             TryDelete(tmp);

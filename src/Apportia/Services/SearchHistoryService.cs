@@ -51,5 +51,4 @@ public static class SearchHistoryService
 }
 
 [JsonSerializable(typeof(List<string>))]
-[JsonSourceGenerationOptions(WriteIndented = false)]
 internal partial class SearchHistoryJsonContext : JsonSerializerContext;
