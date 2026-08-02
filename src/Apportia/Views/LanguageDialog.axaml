@@ -1,7 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:text="using:Apportia.Text"
+        xmlns:views="using:Apportia.Views"
         x:Class="Apportia.Views.LanguageDialog"
+        x:DataType="views:LanguageDialog"
         Title="{x:Static text:UiText+Dialog.LanguageTitle}"
         Width="320"
         SizeToContent="Height"
@@ -12,13 +14,9 @@
 
     <StackPanel Margin="20" Spacing="12">
 
-        <TextBlock x:Name="AppLabel"
-                   FontSize="13" FontWeight="SemiBold"
-                   Foreground="{DynamicResource AppTextBrush}" />
-
         <TextBlock TextWrapping="Wrap"
                    Foreground="{DynamicResource AppTextBrush}">
-            <Run Text="{x:Static text:UiText+Dialog.LanguagePromptLine1}" />
+            <Run Text="{Binding PromptLine1, RelativeSource={RelativeSource AncestorType=views:LanguageDialog}}" />
             <LineBreak />
             <LineBreak />
             <Run Text="{x:Static text:UiText+Dialog.LanguagePromptLine2}" />

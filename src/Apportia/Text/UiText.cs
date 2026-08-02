@@ -134,7 +134,7 @@ public static class UiText
         #region LanguageDialog
 
         public const string LanguageEnglish = "English";
-        public const string LanguagePromptLine1 = "This app is available in multiple languages.";
+        public const string LanguagePromptLine1Format = "{0} is available in multiple languages.";
         public const string LanguagePromptLine2 = "Select your preferred language:";
         public const string LanguageTitle = "Select Language";
 

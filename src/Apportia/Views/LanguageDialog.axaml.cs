@@ -8,7 +8,6 @@ namespace Apportia.Views;
 
 public partial class LanguageDialog : Window
 {
-    // Each entry: (raw INI key, formatted display name). "English" uses key "English" (base download).
     private readonly List<(string Key, string Display)> _entries = [];
 
     public LanguageDialog()
@@ -18,7 +17,7 @@ public partial class LanguageDialog : Window
 
     public LanguageDialog(string appName, IReadOnlyList<string> languageKeys, string? preselect = null) : this()
     {
-        AppLabel.Text = appName;
+        PromptLine1 = string.Format(UiText.Dialog.LanguagePromptLine1Format, appName);
 
         _entries.Add((UiText.Dialog.LanguageEnglish, UiText.Dialog.LanguageEnglish));
         _entries.AddRange(
@@ -34,6 +33,8 @@ public partial class LanguageDialog : Window
         var idx = _entries.FindIndex(e => e.Display == preselectDisplay);
         LanguageList.SelectedIndex = idx >= 0 ? idx : 0;
     }
+
+    public string PromptLine1 { get; } = string.Empty;
 
     public string? SelectedLanguageKey { get; private set; }
 
