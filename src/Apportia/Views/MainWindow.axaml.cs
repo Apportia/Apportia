@@ -3173,6 +3173,9 @@ public partial class MainWindow : Window, IInstallUi
             CategoryDisplayMode.None => UiText.Status.CategoryDisplayNoGroups,
             _ => UiText.Status.CategoryDisplayTree
         };
+        DescriptionHeader.Margin = vm.CategoryDisplay == CategoryDisplayMode.Full
+            ? new Thickness(20, 0, 0, 0)
+            : new Thickness(4, 0, 0, 0);
     }
 
     private async void OnInstallFilterCycle(object? sender, RoutedEventArgs e)

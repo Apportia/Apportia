@@ -373,11 +373,11 @@
             <Border x:Name="ColumnHeaderBar" Grid.Row="0" Classes="columnHeader" Margin="8,0,20,0"
                     IsVisible="False">
                 <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Left" Width="36" Text="" />
+                    <Border DockPanel.Dock="Left" Width="{Binding Columns.IconSize}" Margin="4,0,4,0" />
 
                     <TextBlock DockPanel.Dock="Left" Width="{Binding Columns.Name}"
                                Text="{Binding Columns.NameHeader}"
-                               Margin="4,0,0,0" Cursor="Hand"
+                               Margin="0,0,8,0" Cursor="Hand"
                                FontSize="{Binding Columns.FontSizeSub}"
                                Tag="Name" Tapped="OnColumnHeaderTapped" />
                     <Thumb Classes="colResizer" DockPanel.Dock="Left"
@@ -439,7 +439,8 @@
                                FontSize="{Binding Columns.FontSizeSub}"
                                Tag="Joined" Tapped="OnColumnHeaderTapped" />
 
-                    <TextBlock Text="{x:Static text:UiText+Column.MainDescription}" Margin="4,0,0,0"
+                    <TextBlock x:Name="DescriptionHeader"
+                               Text="{x:Static text:UiText+Column.MainDescription}" Margin="4,0,0,0"
                                FontSize="{Binding Columns.FontSizeSub}" />
                 </DockPanel>
             </Border>
@@ -749,6 +750,7 @@
                                                        Margin="0,0,8,0"
                                                        FontSize="{Binding Columns.FontSize}"
                                                        ToolTip.Tip="{Binding Name}" />
+                                            <Border DockPanel.Dock="Left" Width="5" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Used}"
                                                        IsVisible="{Binding Columns.ShowUsedColumn}"
