@@ -32,7 +32,10 @@ public partial class ChangelogDialog : Window
 
         VersionText.Text = string.Format(UiText.Dialog.ChangelogVersionFormat, _version);
 
-        var textBrush = this.FindResource("AppTextBrush") as IBrush ?? Brushes.White;
+        var textBrush = (TryGetResource("AppTextBrush", ActualThemeVariant, out var res)
+                            ? res as IBrush
+                            : null)
+                        ?? Brushes.White;
         var content = _changelog != null ? ExtractChangelog(_changelog) : string.Empty;
         ChangelogPanel.Children.Add(MarkdownRenderer.Render(content, textBrush));
     }
