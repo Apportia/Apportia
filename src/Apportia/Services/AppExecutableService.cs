@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace Apportia.Services;
 
 public static class AppExecutableService
@@ -56,8 +54,3 @@ public static class AppExecutableService
         }
     }
 }
-
-// Used only by CurrentAppService.MigrateLegacyLayout.
-[JsonSerializable(typeof(Dictionary<string, string>))]
-[JsonSourceGenerationOptions(WriteIndented = true)]
-internal partial class ExecutablesJsonContext : JsonSerializerContext;

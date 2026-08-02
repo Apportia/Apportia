@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace Apportia.Services;
 
 public sealed record LocalAppVersion(string DisplayVersion, string PackageVersion);
@@ -30,6 +28,3 @@ public static class LocalVersionService
         CurrentAppService.Remove(sectionName);
     }
 }
-
-[JsonSerializable(typeof(Dictionary<string, LocalAppVersion>))]
-internal partial class LocalVersionJsonContext : JsonSerializerContext;

@@ -521,7 +521,6 @@ public static class CustomAppService
         if (_cache is not null)
             return _cache;
         _cache = ReadDatabaseFile();
-        MigrateLegacyLayout(_cache);
         return _cache;
     }
 
@@ -633,45 +632,6 @@ public static class CustomAppService
         catch
         {
             /* best effort */
-        }
-    }
-
-    // TODO: legacy migration – safe to delete this method and its caller in LoadDatabaseUnlocked once
-    // all users have upgraded past the version that introduced custom_app_database.json.
-    private static void MigrateLegacyLayout(Dictionary<string, CustomAppInfo> target)
-    {
-        var legacyDir = Path.Combine(AppContext.BaseDirectory, "Data", "CustomApps");
-        if (!Directory.Exists(legacyDir))
-            return;
-        try
-        {
-            var found = false;
-            foreach (var jsonPath in Directory.GetFiles(legacyDir, "*.json"))
-            {
-                try
-                {
-                    var info = JsonSerializer.Deserialize(
-                        File.ReadAllText(jsonPath),
-                        CustomAppJsonContext.Default.CustomAppInfo);
-                    if (info is null)
-                        continue;
-                    var folderName = Path.GetFileNameWithoutExtension(jsonPath);
-                    target[folderName] = info;
-                    found = true;
-                }
-                catch
-                {
-                    /* skip corrupt legacy entry */
-                }
-            }
-
-            if (found)
-                SaveDatabaseUnlocked(target);
-            Directory.Delete(legacyDir, true);
-        }
-        catch
-        {
-            /* migration failure – leave legacy in place for next run */
         }
     }
 
