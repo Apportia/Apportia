@@ -1511,11 +1511,15 @@ public partial class MainWindow : Window, IInstallUi
             if (dialog.Choice == RunArgsDialog.RunChoice.Cancel)
                 return;
             CommandLine? cmd = null;
-            if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
-                cmd = CommandLine.FromUser(dialog.ArgsArray);
-            else if (dialog.Choice == RunArgsDialog.RunChoice.WithoutArgs && dialog.ArgsArray.Length == 0)
-                _cliAppArgs = [];
-
+            switch (dialog.Choice)
+            {
+                case RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin:
+                    cmd = CommandLine.FromUser(dialog.ArgsArray);
+                    break;
+                case RunArgsDialog.RunChoice.WithoutArgs when dialog.ArgsArray.Length == 0:
+                    _cliAppArgs = [];
+                    break;
+            }
             node.TryBeginLaunchFx();
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
                 await Task.Run(() => RunAsAdmin(node, cmd));
@@ -2068,7 +2072,7 @@ public partial class MainWindow : Window, IInstallUi
             CommandLine? cmd = null;
             if (dialog.Choice is RunArgsDialog.RunChoice.WithArgs or RunArgsDialog.RunChoice.WithArgsAsAdmin)
                 cmd = CommandLine.FromUser(dialog.ArgsArray);
-            else if (dialog.Choice == RunArgsDialog.RunChoice.WithoutArgs && dialog.ArgsArray.Length == 0)
+            else if (dialog is { Choice: RunArgsDialog.RunChoice.WithoutArgs, ArgsArray.Length: 0 })
                 _cliAppArgs = [];
 
             if (dialog.Choice == RunArgsDialog.RunChoice.WithArgsAsAdmin)
@@ -3217,16 +3221,20 @@ public partial class MainWindow : Window, IInstallUi
             return;
 
         var customs = pending.Where(n => n.IsCustom).ToList();
-        if (customs.Count > 0)
-            _ = UpdateCustomAppsSequentiallyAsync(customs);
-
         var regular = pending.Where(n => !n.IsCustom).ToList();
+        _ = RunUpdateAllAsync(customs, regular);
+    }
+
+    // CustomAppUpdater and the installer both drive DownloadBar,
+    // so parallel runs would race on show/hide.
+    private async Task RunUpdateAllAsync(IReadOnlyList<AppNode> customs, IReadOnlyList<AppNode> regular)
+    {
+        if (customs.Count > 0)
+            await UpdateCustomAppsSequentiallyAsync(customs);
         if (regular.Count == 0)
             return;
-
         foreach (var node in regular.Skip(1))
             _installQueue.Enqueue(node, false);
-
         _ = _installer.InstallAsync(regular[0], AppDeployService.AppsDir, false);
     }
 
