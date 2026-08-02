@@ -370,7 +370,7 @@
         <Grid RowDefinitions="Auto,*">
 
             <!-- Fixed column header (detail mode only) -->
-            <Border x:Name="ColumnHeaderBar" Grid.Row="0" Classes="columnHeader" Margin="8,0"
+            <Border x:Name="ColumnHeaderBar" Grid.Row="0" Classes="columnHeader" Margin="8,0,20,0"
                     IsVisible="False">
                 <DockPanel LastChildFill="True">
                     <TextBlock DockPanel.Dock="Left" Width="36" Text="" />
@@ -450,6 +450,7 @@
 
                     <!-- Detail list (virtualized) -->
                     <ListBox x:Name="MainList" ItemsSource="{Binding FlatRows}" Margin="8,0,8,8"
+                             Padding="0,0,12,0"
                              IsVisible="{Binding !Columns.IsGridView}"
                              Background="Transparent"
                              BorderThickness="0"
