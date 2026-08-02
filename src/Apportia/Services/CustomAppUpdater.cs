@@ -70,7 +70,7 @@ public static class CustomAppUpdater
                     await Task.Run(() => ZipFile.ExtractToDirectory(tempArchive, stagingDir), ct);
 
                 var appDir = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName);
-                await Task.Run(() => ReplaceDirectory(appDir, stagingDir), ct);
+                await Task.Run(() => OverlayDirectory(appDir, stagingDir), ct);
             }
             finally
             {
@@ -179,21 +179,12 @@ public static class CustomAppUpdater
         return best;
     }
 
-    /// Replaces the contents of destDir with newSourceDir. destDir keeps its identity so
-    /// icons/watchers stay bound to the same folder.
-    private static void ReplaceDirectory(string destDir, string newSourceDir)
+    // Overlay copy: files from the new archive overwrite existing ones, but pre-existing
+    // files/folders that aren't in the archive (user configs, saves, portable data) are kept.
+    // Cleaner would be to wipe first, but that destroys user state on update/reinstall.
+    private static void OverlayDirectory(string destDir, string newSourceDir)
     {
-        if (Directory.Exists(destDir))
-        {
-            foreach (var sub in Directory.EnumerateDirectories(destDir))
-                Directory.Delete(sub, true);
-            foreach (var file in Directory.EnumerateFiles(destDir))
-                File.Delete(file);
-        }
-        else
-        {
-            Directory.CreateDirectory(destDir);
-        }
+        Directory.CreateDirectory(destDir);
 
         foreach (var dir in Directory.EnumerateDirectories(newSourceDir, "*", SearchOption.AllDirectories))
         {
