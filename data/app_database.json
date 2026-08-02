@@ -9127,15 +9127,15 @@
     "SubCategory": "Document Viewers & Tools",
     "Class": "Legacy",
     "JoinedDate": "2017-05-22",
-    "DisplayVersion": "10.8.4.409",
-    "PackageVersion": "10.8.4.409",
-    "UpdateDate": "2026-07-31",
-    "DownloadFile": "PDF-XChangeEditorPortableLegacyWin7_10.8.4.409.paf.exe",
-    "Hash": "92f085212cd44812789880eebe7177485251b1efda9fa9f6ba9d44324716114b",
+    "DisplayVersion": "10.8.5.410",
+    "PackageVersion": "10.8.5.410",
+    "UpdateDate": "2026-08-01",
+    "DownloadFile": "PDF-XChangeEditorPortableLegacyWin7_10.8.5.410.paf.exe",
+    "Hash": "a087be2856caa023eb179a0c5a77e809c37f1f9a4bb7de3508aed52a327b5c5f",
     "DownloadPath": "http://downloads.portableapps.com/portableapps/PDF-XChangeEditorPortableLegacyWin7",
     "UserAgent": "Wget/1.21.4",
-    "DownloadSize": "104",
-    "InstallSize": "244"
+    "DownloadSize": "111",
+    "InstallSize": "274"
   },
   "PDF-XChangeViewerPortable": {
     "Name": "PDF-XChange Viewer",
