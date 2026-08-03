@@ -4,6 +4,7 @@ using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Services;
 using Apportia.Text;
+using Apportia.Ui;
 using Apportia.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,7 +12,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Apportia.Views;
@@ -403,15 +403,15 @@ public partial class VirusTotalDialog : Window
             var total = stats.Malicious + stats.Suspicious + stats.Undetected + stats.Harmless + stats.Timeout;
             var detected = stats.Malicious + stats.Suspicious;
             DetectionBadge.Text = string.Format(UiText.Dialog.VtDetectionBadgeFormat, detected, total);
-            var badgeColor =
+            var badgeBrushKey =
                 stats.Malicious > 0
-                    ? "#CC2222"
+                    ? "AppDangerBrush"
                     : stats.Suspicious > 0
-                        ? "#CC8800"
+                        ? "AppWarnBrush"
                         : stats.ConfirmedTimeout > 0
-                            ? "#CCCC00"
-                            : "#22AA44";
-            DetectionBadge.Foreground = new SolidColorBrush(Color.Parse(badgeColor));
+                            ? "AppTimeoutBrush"
+                            : "AppSuccessBrush";
+            DetectionBadge.Foreground = Themed.Brush(this, badgeBrushKey);
             DetectionLabel.Text = detected == 0 ? UiText.Dialog.VtDetectionNone : UiText.Dialog.VtDetectionSome;
         }
 
@@ -686,10 +686,7 @@ public partial class VirusTotalDialog : Window
     private void SetStatus(string message, bool isError)
     {
         StatusText.Text = message;
-        StatusText.Foreground = isError
-            ? new SolidColorBrush(Color.Parse("#CC2222"))
-            : (TryGetResource("AppTextBrush", ActualThemeVariant, out var res) ? res as IBrush : null)
-              ?? Brushes.Gray;
+        StatusText.Foreground = Themed.Brush(this, isError ? "AppDangerBrush" : "AppTextBrush");
         StatusBorder.IsVisible = true;
     }
 

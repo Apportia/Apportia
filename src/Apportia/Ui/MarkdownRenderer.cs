@@ -49,7 +49,11 @@ internal static class MarkdownRenderer
             VerticalAlignment = VerticalAlignment.Top
         };
 
-        var body = new TextBlock { TextWrapping = TextWrapping.Wrap, Foreground = brush };
+        var body = new TextBlock
+        {
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = brush
+        };
         foreach (var inline in ParseInlines(block.Text))
             body.Inlines!.Add(inline);
 
@@ -132,11 +136,10 @@ internal static class MarkdownRenderer
                 continue;
             }
 
-            if (current.HasValue)
-            {
-                yield return current.Value;
-                current = null;
-            }
+            if (!current.HasValue)
+                continue;
+            yield return current.Value;
+            current = null;
         }
 
         if (current.HasValue) yield return current.Value;
@@ -150,11 +153,13 @@ internal static class MarkdownRenderer
             var next = Min3NonNeg(text.IndexOf('*', pos), text.IndexOf('`', pos), text.IndexOf('[', pos));
             if (next < 0)
             {
-                if (pos < text.Length) yield return Txt(text[pos..]);
+                if (pos < text.Length)
+                    yield return Txt(text[pos..]);
                 yield break;
             }
 
-            if (next > pos) yield return Txt(text[pos..next]);
+            if (next > pos)
+                yield return Txt(text[pos..next]);
 
             switch (text[next])
             {
@@ -164,7 +169,11 @@ internal static class MarkdownRenderer
                         var end = text.IndexOf("**", next + 2, StringComparison.Ordinal);
                         if (end >= 0)
                         {
-                            yield return new Run { Text = text[(next + 2)..end], FontWeight = FontWeight.Bold };
+                            yield return new Run
+                            {
+                                Text = text[(next + 2)..end],
+                                FontWeight = FontWeight.Bold
+                            };
                             pos = end + 2;
                         }
                         else
@@ -178,7 +187,11 @@ internal static class MarkdownRenderer
                         var end = text.IndexOf('*', next + 1);
                         if (end >= 0)
                         {
-                            yield return new Run { Text = text[(next + 1)..end], FontStyle = FontStyle.Italic };
+                            yield return new Run
+                            {
+                                Text = text[(next + 1)..end],
+                                FontStyle = FontStyle.Italic
+                            };
                             pos = end + 1;
                         }
                         else
@@ -194,7 +207,11 @@ internal static class MarkdownRenderer
                     var end = text.IndexOf('`', next + 1);
                     if (end >= 0)
                     {
-                        yield return new Run { Text = text[(next + 1)..end], FontFamily = new FontFamily("Cascadia Code,Consolas,monospace") };
+                        yield return new Run
+                        {
+                            Text = text[(next + 1)..end],
+                            FontFamily = new FontFamily("Cascadia Code,Consolas,monospace")
+                        };
                         pos = end + 1;
                     }
                     else
@@ -235,9 +252,12 @@ internal static class MarkdownRenderer
     private static int Min3NonNeg(int a, int b, int c)
     {
         var min = int.MaxValue;
-        if (a >= 0) min = Math.Min(min, a);
-        if (b >= 0) min = Math.Min(min, b);
-        if (c >= 0) min = Math.Min(min, c);
+        if (a >= 0)
+            min = Math.Min(min, a);
+        if (b >= 0)
+            min = Math.Min(min, b);
+        if (c >= 0)
+            min = Math.Min(min, c);
         return min == int.MaxValue ? -1 : min;
     }
 

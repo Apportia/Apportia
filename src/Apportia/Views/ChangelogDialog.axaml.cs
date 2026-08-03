@@ -3,7 +3,6 @@ using Apportia.Text;
 using Apportia.Ui;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 
 namespace Apportia.Views;
 
@@ -32,12 +31,8 @@ public partial class ChangelogDialog : Window
 
         VersionText.Text = string.Format(UiText.Dialog.ChangelogVersionFormat, _version);
 
-        var textBrush = (TryGetResource("AppTextBrush", ActualThemeVariant, out var res)
-                            ? res as IBrush
-                            : null)
-                        ?? Brushes.White;
         var content = _changelog != null ? ExtractChangelog(_changelog) : string.Empty;
-        ChangelogPanel.Children.Add(MarkdownRenderer.Render(content, textBrush));
+        ChangelogPanel.Children.Add(MarkdownRenderer.Render(content, Themed.Brush(this, "AppTextBrush")));
     }
 
     private void OnCancel(object? sender, RoutedEventArgs e)

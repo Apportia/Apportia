@@ -1,6 +1,7 @@
 using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Text;
+using Apportia.Ui;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -97,7 +98,7 @@ public partial class CopyProgressDialog : Window
         {
             Width = 8,
             Height = 8,
-            Fill = new SolidColorBrush(Color.Parse("#3DD68C")),
+            Fill = Themed.Brush(this, "AppSuccessBrush"),
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 6, 0)
         };
@@ -107,11 +108,9 @@ public partial class CopyProgressDialog : Window
             Text = string.IsNullOrEmpty(fileName) ? relativePath : fileName,
             FontSize = 12,
             VerticalAlignment = VerticalAlignment.Center,
-            TextTrimming = TextTrimming.CharacterEllipsis
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            Foreground = Themed.Brush(this, "AppSubTextBrush")
         };
-
-        if (this.TryFindResource("AppSubTextBrush", ActualThemeVariant, out var brush) && brush is IBrush b)
-            label.Foreground = b;
 
         if (relativePath != fileName)
             ToolTip.SetTip(label, relativePath);

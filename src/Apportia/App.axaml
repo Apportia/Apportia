@@ -21,10 +21,17 @@
                     <SolidColorBrush x:Key="AppInstalledBrush" Color="#C8EAC8" />
                     <SolidColorBrush x:Key="AppQueuedBrush" Color="#B8D4F0" />
                     <SolidColorBrush x:Key="AppSeparatorBrush" Color="#CCCCD4" />
+                    <SolidColorBrush x:Key="AppSeverityAdvisoryBrush" Color="#00695C" />
+                    <SolidColorBrush x:Key="AppSeverityHighBrush" Color="#C62828" />
+                    <SolidColorBrush x:Key="AppSeverityInfoBrush" Color="#1565C0" />
+                    <SolidColorBrush x:Key="AppSeverityLowBrush" Color="#F57C00" />
+                    <SolidColorBrush x:Key="AppSeverityModerateBrush" Color="#E65100" />
                     <Color x:Key="AppShimmerEdgeColor">#00000000</Color>
                     <Color x:Key="AppShimmerHighlightColor">#33000000</Color>
                     <SolidColorBrush x:Key="AppSubTextBrush" Color="#444458" />
+                    <SolidColorBrush x:Key="AppSuccessBrush" Color="#22AA44" />
                     <SolidColorBrush x:Key="AppTextBrush" Color="#111111" />
+                    <SolidColorBrush x:Key="AppTimeoutBrush" Color="#B58900" />
                     <SolidColorBrush x:Key="AppUpdateBrush" Color="#F5E0A0" />
                     <SolidColorBrush x:Key="AppWarnBrush" Color="#C77A00" />
                     <SolidColorBrush x:Key="AppWindowBrush" Color="#F5F5F7" />
@@ -90,10 +97,17 @@
                     <SolidColorBrush x:Key="AppInstalledBrush" Color="#1A3A1A" />
                     <SolidColorBrush x:Key="AppQueuedBrush" Color="#1A3050" />
                     <SolidColorBrush x:Key="AppSeparatorBrush" Color="#383838" />
+                    <SolidColorBrush x:Key="AppSeverityAdvisoryBrush" Color="#5EEAD4" />
+                    <SolidColorBrush x:Key="AppSeverityHighBrush" Color="#F87171" />
+                    <SolidColorBrush x:Key="AppSeverityInfoBrush" Color="#60A5FA" />
+                    <SolidColorBrush x:Key="AppSeverityLowBrush" Color="#FBBF24" />
+                    <SolidColorBrush x:Key="AppSeverityModerateBrush" Color="#FB923C" />
                     <Color x:Key="AppShimmerEdgeColor">#00FFFFFF</Color>
                     <Color x:Key="AppShimmerHighlightColor">#33FFFFFF</Color>
                     <SolidColorBrush x:Key="AppSubTextBrush" Color="#888888" />
+                    <SolidColorBrush x:Key="AppSuccessBrush" Color="#4ADE80" />
                     <SolidColorBrush x:Key="AppTextBrush" Color="#DCDCDC" />
+                    <SolidColorBrush x:Key="AppTimeoutBrush" Color="#EAB308" />
                     <SolidColorBrush x:Key="AppUpdateBrush" Color="#3A2E00" />
                     <SolidColorBrush x:Key="AppWarnBrush" Color="#E8A040" />
                     <SolidColorBrush x:Key="AppWindowBrush" Color="#1D2122" />

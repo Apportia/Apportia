@@ -161,7 +161,7 @@ public partial class CustomAppWindow : Window
                 VersionBox.Text = liveNormalized;
                 VersionChangedText.Text = string.Format(UiText.Dialog.CustomAppVersionUpdatedFormat, previousText);
                 VersionChangedText.IsVisible = true;
-                ActionButton.Foreground = new SolidColorBrush(Color.Parse("#E0A020"));
+                ActionButton.Foreground = Themed.Brush(this, "AppWarnBrush");
             }
         }
 
@@ -188,7 +188,7 @@ public partial class CustomAppWindow : Window
     public string FolderName { get; private set; } = string.Empty;
     public string SectionName { get; private set; } = string.Empty;
     public string IconSourcePath { get; private set; } = string.Empty;
-    public string DownloadPath { get; private set; } = string.Empty;
+    public string DownloadPath { get; } = string.Empty;
     public string DownloadFile { get; private set; } = string.Empty;
     public DateTime? DownloadFileMtime { get; private set; }
     public bool? UpdateEnabled { get; private set; }

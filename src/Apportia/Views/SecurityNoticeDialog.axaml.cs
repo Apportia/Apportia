@@ -2,6 +2,7 @@ using System.Globalization;
 using Apportia.Platform;
 using Apportia.Services;
 using Apportia.Text;
+using Apportia.Ui;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -18,7 +19,7 @@ public partial class SecurityNoticeDialog : Window
     {
         InitializeComponent();
 
-        SeverityBadge.Background = SeverityColor(notice.Severity);
+        SeverityBadge.Background = Themed.Brush(this, SeverityBrushKey(notice.Severity));
         SeverityText.Text = notice.Severity.ToUpperInvariant();
         CategoryText.Text = notice.Category;
         TitleText.Text = notice.Title;
@@ -64,15 +65,15 @@ public partial class SecurityNoticeDialog : Window
         return Math.Clamp(ft.Width, minWidth, maxWidth);
     }
 
-    private static SolidColorBrush SeverityColor(string severity)
+    private static string SeverityBrushKey(string severity)
     {
         return severity switch
         {
-            "High Risk" => new SolidColorBrush(Color.Parse("#C62828")),
-            "Moderate Risk" => new SolidColorBrush(Color.Parse("#E65100")),
-            "Low Risk" => new SolidColorBrush(Color.Parse("#F57C00")),
-            "Advisory" => new SolidColorBrush(Color.Parse("#00695C")),
-            _ => new SolidColorBrush(Color.Parse("#1565C0"))
+            "High Risk" => "AppSeverityHighBrush",
+            "Moderate Risk" => "AppSeverityModerateBrush",
+            "Low Risk" => "AppSeverityLowBrush",
+            "Advisory" => "AppSeverityAdvisoryBrush",
+            _ => "AppSeverityInfoBrush"
         };
     }
 }
