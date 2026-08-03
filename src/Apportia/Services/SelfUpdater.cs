@@ -26,9 +26,9 @@ public static partial class SelfUpdater
     private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromMinutes(15);
 
     private static readonly string StatePath =
-        Path.Combine(AppContext.BaseDirectory, "Data", "selfupdate.json");
+        Path.Combine(AppContext.BaseDirectory, "Data", "self_update.json");
 
-    // TODO: remove in a future version — migration path from the pre-selfupdate.json marker file
+    // TODO: remove in a future version — migration path from the pre-json marker file
     private static readonly string LegacyMarkerPath =
         Path.Combine(AppContext.BaseDirectory, "Data", "selfupdate_lastcheck");
 
