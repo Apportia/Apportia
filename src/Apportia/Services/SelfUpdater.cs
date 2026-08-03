@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Apportia.Text;
 using SharpCompress.Archives.Zip;
 
@@ -23,8 +25,18 @@ public static partial class SelfUpdater
 
     private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromMinutes(15);
 
-    private static readonly string MarkerPath =
+    private static readonly string StatePath =
+        Path.Combine(AppContext.BaseDirectory, "Data", "selfupdate.json");
+
+    // TODO: remove in a future version — migration path from the pre-selfupdate.json marker file
+    private static readonly string LegacyMarkerPath =
         Path.Combine(AppContext.BaseDirectory, "Data", "selfupdate_lastcheck");
+
+    public static SelfUpdateInfo? LoadPending()
+    {
+        var current = Assembly.GetEntryAssembly()?.GetName().Version;
+        return current == null ? null : ToInfo(LoadState().Pending, current);
+    }
 
     public static async Task<SelfUpdateInfo?> CheckAsync(CancellationToken ct)
     {
@@ -32,32 +44,35 @@ public static partial class SelfUpdater
         if (current == null)
             return null;
 
-        if (File.Exists(MarkerPath) && DateTime.UtcNow - File.GetLastWriteTimeUtc(MarkerPath) < MinRefreshInterval)
-            return null;
+        var state = LoadState();
+        if (state.LastCheckUtc != default && DateTime.UtcNow - state.LastCheckUtc < MinRefreshInterval)
+            return ToInfo(state.Pending, current);
 
         var atom = await GitHubClient.FetchLatestReleaseFromAtomAsync(Repo, ct);
-        TouchMarker();
-        if (atom == null || !Version.TryParse(atom.TagName, out var latest) || latest <= current)
-            return null;
+        state.LastCheckUtc = DateTime.UtcNow;
 
-        var release = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
-        var asset = release?.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
-        return asset == null
-            ? null
-            : new SelfUpdateInfo(latest, asset.DownloadUrl, release?.Body, asset.Sha256Hex, asset.Name);
-
-        static void TouchMarker()
+        if (atom != null && Version.TryParse(atom.TagName, out var latest) && latest > current)
         {
-            try
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(MarkerPath)!);
-                File.WriteAllBytes(MarkerPath, []);
-            }
-            catch
-            {
-                // marker is best-effort; next start will just re-check
-            }
+            var release = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
+            var asset = release?.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+            state.Pending = asset == null
+                ? null
+                : new PendingSnapshot
+                {
+                    Version = latest.ToString(),
+                    DownloadUrl = asset.DownloadUrl,
+                    Changelog = release?.Body,
+                    Sha256 = asset.Sha256Hex,
+                    AssetName = asset.Name
+                };
         }
+        else
+        {
+            state.Pending = null;
+        }
+
+        SaveState(state);
+        return ToInfo(state.Pending, current);
     }
 
     public static async Task ApplyAsync(
@@ -117,6 +132,49 @@ public static partial class SelfUpdater
             ApplyWindows(tempDir, installDir, info.Version);
         else if (OperatingSystem.IsLinux())
             ApplyLinux(tempDir, installDir);
+    }
+
+    private static SelfUpdateInfo? ToInfo(PendingSnapshot? snapshot, Version current)
+    {
+        if (snapshot == null
+            || string.IsNullOrEmpty(snapshot.Version)
+            || !Version.TryParse(snapshot.Version, out var v)
+            || v <= current)
+            return null;
+        return new SelfUpdateInfo(v, snapshot.DownloadUrl, snapshot.Changelog, snapshot.Sha256, snapshot.AssetName);
+    }
+
+    private static SelfUpdateState LoadState()
+    {
+        try
+        {
+            if (!File.Exists(StatePath))
+                return new SelfUpdateState();
+            var json = File.ReadAllText(StatePath);
+            return JsonSerializer.Deserialize(json, SelfUpdateJsonContext.Default.SelfUpdateState) ?? new SelfUpdateState();
+        }
+        catch
+        {
+            // corrupt or unreadable state — start fresh so the next check re-populates it
+            return new SelfUpdateState();
+        }
+    }
+
+    private static void SaveState(SelfUpdateState state)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(StatePath)!);
+            File.WriteAllText(StatePath, JsonSerializer.Serialize(state, SelfUpdateJsonContext.Default.SelfUpdateState));
+
+            // TODO: remove in a future version — cleanup of the pre-selfupdate.json marker file
+            if (File.Exists(LegacyMarkerPath))
+                File.Delete(LegacyMarkerPath);
+        }
+        catch
+        {
+            // state persistence is best-effort; a missed write just means the next start re-checks
+        }
     }
 
     private static async Task DownloadAsync(string url, string dest, IProgress<int>? progress, CancellationToken ct)
@@ -199,3 +257,26 @@ public static partial class SelfUpdater
                 """;
     }
 }
+
+internal sealed class SelfUpdateState
+{
+    public DateTime LastCheckUtc { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PendingSnapshot? Pending { get; set; }
+}
+
+internal sealed class PendingSnapshot
+{
+    public string Version { get; set; } = string.Empty;
+    public string DownloadUrl { get; set; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Changelog { get; set; }
+
+    public string Sha256 { get; set; } = string.Empty;
+    public string AssetName { get; set; } = string.Empty;
+}
+
+[JsonSerializable(typeof(SelfUpdateState))]
+internal partial class SelfUpdateJsonContext : JsonSerializerContext;

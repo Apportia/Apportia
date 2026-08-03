@@ -2681,6 +2681,7 @@ public partial class MainWindow : Window, IInstallUi
         UpdateInstallFilterButton();
         UpdateViewModeButton();
         UpdateFontSizeButton();
+        RefreshUpdateButton();
         _ = CheckForUpdateAsync();
         DataContextChanged += (_, _) =>
         {

@@ -2,7 +2,7 @@ namespace Apportia.Services;
 
 public sealed class SelfUpdateCoordinator(CancellationToken shutdownToken)
 {
-    public SelfUpdateInfo? Pending { get; private set; }
+    public SelfUpdateInfo? Pending { get; private set; } = SelfUpdater.LoadPending();
 
     public async Task<SelfUpdateInfo?> CheckAsync()
     {
