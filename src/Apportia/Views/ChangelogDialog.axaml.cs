@@ -32,7 +32,7 @@ public partial class ChangelogDialog : Window
         VersionText.Text = string.Format(UiText.Dialog.ChangelogVersionFormat, _version);
 
         var content = _changelog != null ? ExtractChangelog(_changelog) : string.Empty;
-        ChangelogPanel.Children.Add(MarkdownRenderer.Render(content, Themed.Brush(this, "AppTextBrush")));
+        ChangelogPanel.Children.Add(MarkdownRenderer.Render(content, this));
     }
 
     private void OnCancel(object? sender, RoutedEventArgs e)

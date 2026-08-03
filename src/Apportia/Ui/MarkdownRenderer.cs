@@ -8,14 +8,17 @@ namespace Apportia.Ui;
 
 internal static class MarkdownRenderer
 {
-    public static Panel Render(string markdown, IBrush textBrush)
+    public static Panel Render(string markdown, Control host)
     {
+        var textBrush = Themed.Brush(host, "AppTextBrush");
+        var codeBackground = Themed.Shift(host, "AppWindowBrush", 0.1);
+        var codeForeground = Themed.Contrast(host);
         var panel = new StackPanel { Spacing = 3 };
         foreach (var block in ParseBlocks(markdown))
         {
             panel.Children.Add(block.Kind == BlockKind.Heading
                                    ? RenderHeading(block.Text, textBrush)
-                                   : RenderBullet(block, textBrush));
+                                   : RenderBullet(block, textBrush, codeBackground, codeForeground));
         }
 
         return panel;
@@ -33,7 +36,7 @@ internal static class MarkdownRenderer
         };
     }
 
-    private static Grid RenderBullet(Block block, IBrush brush)
+    private static Grid RenderBullet(Block block, IBrush brush, IBrush codeBackground, IBrush codeForeground)
     {
         var grid = new Grid
         {
@@ -54,7 +57,7 @@ internal static class MarkdownRenderer
             TextWrapping = TextWrapping.Wrap,
             Foreground = brush
         };
-        foreach (var inline in ParseInlines(block.Text))
+        foreach (var inline in ParseInlines(block.Text, codeBackground, codeForeground))
             body.Inlines!.Add(inline);
 
         Grid.SetColumn(marker, 0);
@@ -145,7 +148,7 @@ internal static class MarkdownRenderer
         if (current.HasValue) yield return current.Value;
     }
 
-    private static IEnumerable<Inline> ParseInlines(string text)
+    private static IEnumerable<Inline> ParseInlines(string text, IBrush codeBackground, IBrush codeForeground)
     {
         var pos = 0;
         while (pos < text.Length)
@@ -209,8 +212,10 @@ internal static class MarkdownRenderer
                     {
                         yield return new Run
                         {
-                            Text = text[(next + 1)..end],
-                            FontFamily = new FontFamily("Cascadia Code,Consolas,monospace")
+                            Text = $" {text[(next + 1)..end]} ",
+                            FontFamily = new FontFamily("Cascadia Code,Consolas,monospace"),
+                            Background = codeBackground,
+                            Foreground = codeForeground
                         };
                         pos = end + 1;
                     }
