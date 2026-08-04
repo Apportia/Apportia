@@ -258,6 +258,21 @@ public static class CustomAppService
         return name;
     }
 
+    // Mirrors Apps/PortableApps.com/ into CustomApps/PortableApps.com/ so paf.exe silent
+    // installs targeting CustomAppsDir find the platform stub they need (see FakePortableAppsPlatform).
+    public static void EnsurePlatformStub()
+    {
+        var target = Path.Combine(CustomAppsDir, "PortableApps.com");
+        if (Directory.Exists(target))
+            return;
+        var source = Path.Combine(AppDeployService.AppsDir, "PortableApps.com");
+        if (!Directory.Exists(source))
+            return;
+        Directory.CreateDirectory(target);
+        foreach (var file in Directory.GetFiles(source))
+            File.Copy(file, Path.Combine(target, Path.GetFileName(file)), true);
+    }
+
     public static bool IsDirectChildOfCustomApps(string sourceFolder)
     {
         try

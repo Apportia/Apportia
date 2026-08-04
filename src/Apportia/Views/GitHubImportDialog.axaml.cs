@@ -103,8 +103,9 @@ public partial class GitHubImportDialog : Window
             _assets = _assets.Where(a => IsSupportedAsset(a.Name, sevenZipAvailable)).ToList();
 
             AssetCombo.ItemsSource = _assets.Select(a => a.Name).ToList();
+            var firstPaf = _assets.FindIndex(a => a.Name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase));
             var firstZip = _assets.FindIndex(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
-            AssetCombo.SelectedIndex = firstZip >= 0 ? firstZip : _assets.Count > 0 ? 0 : -1;
+            AssetCombo.SelectedIndex = firstPaf >= 0 ? firstPaf : firstZip >= 0 ? firstZip : _assets.Count > 0 ? 0 : -1;
 
             ReleasePanel.IsVisible = true;
             DownloadButton.IsVisible = _assets.Count > 0;
@@ -127,9 +128,10 @@ public partial class GitHubImportDialog : Window
                 return;
 
             var asset = _assets[AssetCombo.SelectedIndex];
-            var isSevenZip = asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
-            var isZip = asset.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
-            if (!isZip && !isSevenZip)
+            var isPaf = asset.Name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase);
+            var isSevenZip = !isPaf && asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
+            var isZip = !isPaf && asset.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
+            if (!isZip && !isSevenZip && !isPaf)
             {
                 ShowError(UiText.Dialog.GitHubImportUnsupportedAsset);
                 return;
@@ -143,7 +145,7 @@ public partial class GitHubImportDialog : Window
             }
 
             var repo = RepoBox.Text?.Trim() ?? string.Empty;
-            var extension = isSevenZip ? ".7z" : ".zip";
+            var extension = isPaf ? ".paf.exe" : isSevenZip ? ".7z" : ".zip";
             var tempZip = Path.Combine(Path.GetTempPath(), $"apportia_gh_{Guid.NewGuid():N}{extension}");
 
             try
@@ -178,36 +180,94 @@ public partial class GitHubImportDialog : Window
                     }
                 }
 
-                ShowStatus(UiText.Dialog.GitHubImportExtracting);
-
-                var folderName = CustomAppService.ReserveUniqueFolderName(repo);
-                var destDir = Path.Combine(CustomAppService.CustomAppsDir, folderName);
-                try
+                string folderName;
+                string destDir;
+                if (isPaf)
                 {
-                    if (isSevenZip)
-                        await AppDeployService.ExtractAsync(sevenZipPath!, tempZip, destDir);
-                    else
-                        await Task.Run(() => ZipFile.ExtractToDirectory(tempZip, destDir));
-                }
-                catch (Exception ex)
-                {
-                    if (Directory.Exists(destDir))
+                    ShowStatus(UiText.Dialog.GitHubImportInstalling);
+                    var baseName = repo.Contains("Portable", StringComparison.OrdinalIgnoreCase) ? repo : repo + "Portable";
+                    folderName = CustomAppService.ReserveUniqueFolderName(baseName);
+                    destDir = Path.Combine(CustomAppService.CustomAppsDir, folderName);
+                    CustomAppService.EnsurePlatformStub();
+                    try
                     {
-                        try
+                        await AppDeployService.ExecuteAsync(tempZip, folderName, CustomAppService.CustomAppsDir, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Directory.Exists(destDir))
                         {
-                            Directory.Delete(destDir, true);
+                            try
+                            {
+                                Directory.Delete(destDir, true);
+                            }
+                            catch
+                            {
+                                // best-effort cleanup
+                            }
                         }
-                        catch
-                        {
-                            // best-effort cleanup
-                        }
+
+                        ShowError($"{UiText.Dialog.GitHubImportInstallFailed}\n\n{ex.Message}");
+                        DownloadButton.IsEnabled = true;
+                        FetchButton.IsEnabled = true;
+                        HideStatus();
+                        return;
                     }
 
-                    ShowError($"{UiText.Dialog.GitHubImportExtractionFailed}\n\n{ex.Message}");
-                    DownloadButton.IsEnabled = true;
-                    FetchButton.IsEnabled = true;
-                    HideStatus();
-                    return;
+                    if (!Directory.Exists(destDir))
+                    {
+                        // paf installers may produce a folder whose casing differs from what we reserved
+                        // (e.g. wine + case-sensitive linux fs). Adopt the on-disk casing rather than renaming.
+                        var match =
+                            Directory.EnumerateDirectories(CustomAppService.CustomAppsDir)
+                                     .FirstOrDefault(d => string.Equals(Path.GetFileName(d), folderName, StringComparison.OrdinalIgnoreCase));
+
+                        if (match != null)
+                            destDir = match;
+                    }
+
+                    if (!Directory.Exists(destDir))
+                    {
+                        ShowError(UiText.Dialog.GitHubImportInstallFailed);
+                        DownloadButton.IsEnabled = true;
+                        FetchButton.IsEnabled = true;
+                        HideStatus();
+                        return;
+                    }
+                }
+                else
+                {
+                    ShowStatus(UiText.Dialog.GitHubImportExtracting);
+
+                    folderName = CustomAppService.ReserveUniqueFolderName(repo);
+                    destDir = Path.Combine(CustomAppService.CustomAppsDir, folderName);
+                    try
+                    {
+                        if (isSevenZip)
+                            await AppDeployService.ExtractAsync(sevenZipPath!, tempZip, destDir);
+                        else
+                            await Task.Run(() => ZipFile.ExtractToDirectory(tempZip, destDir));
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Directory.Exists(destDir))
+                        {
+                            try
+                            {
+                                Directory.Delete(destDir, true);
+                            }
+                            catch
+                            {
+                                // best-effort cleanup
+                            }
+                        }
+
+                        ShowError($"{UiText.Dialog.GitHubImportExtractionFailed}\n\n{ex.Message}");
+                        DownloadButton.IsEnabled = true;
+                        FetchButton.IsEnabled = true;
+                        HideStatus();
+                        return;
+                    }
                 }
 
                 ExtractedFolder = destDir;
@@ -331,6 +391,8 @@ public partial class GitHubImportDialog : Window
     private static bool IsSupportedAsset(string name, bool sevenZipAvailable)
     {
         if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase))
             return true;
         return sevenZipAvailable && name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
     }

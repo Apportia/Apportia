@@ -31,8 +31,10 @@ public static class CustomAppUpdater
         if (asset == null)
             return false;
 
-        var isSevenZip = asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
-        var tempArchive = Path.Combine(Path.GetTempPath(), $"apportia_ghup_{Guid.NewGuid():N}{(isSevenZip ? ".7z" : ".zip")}");
+        var isPaf = asset.Name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase);
+        var isSevenZip = !isPaf && asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
+        var extension = isPaf ? ".paf.exe" : isSevenZip ? ".7z" : ".zip";
+        var tempArchive = Path.Combine(Path.GetTempPath(), $"apportia_ghup_{Guid.NewGuid():N}{extension}");
 
         node.IsBeingInstalled = true;
         ui?.SetInstalling(true);
@@ -60,84 +62,92 @@ public static class CustomAppUpdater
             ui?.SetDownloadProgress(0, true);
             ui?.SetDownloadStatus(string.Format(UiText.Dialog.InstallExtractingFormat, node.Name), string.Empty);
 
-            var stagingDir = Path.Combine(Path.GetTempPath(), $"apportia_ghup_{Guid.NewGuid():N}");
-            Directory.CreateDirectory(stagingDir);
-            try
+            if (isPaf)
             {
-                if (isSevenZip)
-                    await AppDeployService.ExtractAsync(sevenZipPath!, tempArchive, stagingDir, ct);
-                else
-                    await Task.Run(() => ZipFile.ExtractToDirectory(tempArchive, stagingDir), ct);
-
-                var appDir = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName);
-                var leftovers = await Task.Run(() => OverlayDirectory(appDir, stagingDir), ct);
-
-                if (leftovers.Count > 0)
-                {
-                    var cmp = StringComparer.OrdinalIgnoreCase;
-                    var hasMemory = info.LeftoverKnown.Length > 0;
-                    var knownSet = hasMemory ? info.LeftoverKnown.ToHashSet(cmp) : new HashSet<string>(cmp);
-                    var newFiles = hasMemory && leftovers.Any(f => !knownSet.Contains(f));
-                    var skipDialog = hasMemory && !newFiles;
-
-                    IReadOnlyList<string>? toDelete = null;
-                    if (skipDialog)
-                    {
-                        toDelete = info.LeftoverDelete.Intersect(leftovers, cmp).ToArray();
-                    }
-                    else if (ui != null)
-                    {
-                        var preChecked = hasMemory
-                            ? info.LeftoverDelete.Intersect(leftovers, cmp).ToArray()
-                            : null;
-                        var result = await ui.ShowUpdateLeftoverDialogAsync(node, leftovers, preChecked, hasMemory);
-                        if (result != null)
-                        {
-                            toDelete = result.SelectedForDeletion;
-                            var known = result.Remember ? leftovers.ToArray() : [];
-                            var del = result.Remember ? result.SelectedForDeletion.ToArray() : [];
-                            CustomAppService.SaveLeftoverMemory(node.SectionName, known, del);
-                        }
-                    }
-
-                    if (toDelete is { Count: > 0 })
-                    {
-                        var touchedDirs = new HashSet<string>(cmp);
-                        foreach (var rel in toDelete)
-                        {
-                            var full = Path.Combine(appDir, rel);
-                            try
-                            {
-                                if (File.Exists(full))
-                                {
-                                    File.Delete(full);
-                                    var parent = Path.GetDirectoryName(full);
-                                    if (parent != null)
-                                        touchedDirs.Add(parent);
-                                }
-                            }
-                            catch
-                            {
-                                // best-effort — the user asked to delete, but a locked file
-                                // shouldn't fail the whole update
-                            }
-                        }
-
-                        foreach (var dir in touchedDirs)
-                            PruneEmptyDirsUpward(dir, appDir);
-                    }
-                }
+                CustomAppService.EnsurePlatformStub();
+                await AppDeployService.ExecuteAsync(tempArchive, node.SectionName, CustomAppService.CustomAppsDir, false, ct);
             }
-            finally
+            else
             {
+                var stagingDir = Path.Combine(Path.GetTempPath(), $"apportia_ghup_{Guid.NewGuid():N}");
+                Directory.CreateDirectory(stagingDir);
                 try
                 {
-                    if (Directory.Exists(stagingDir))
-                        Directory.Delete(stagingDir, true);
+                    if (isSevenZip)
+                        await AppDeployService.ExtractAsync(sevenZipPath!, tempArchive, stagingDir, ct);
+                    else
+                        await Task.Run(() => ZipFile.ExtractToDirectory(tempArchive, stagingDir), ct);
+
+                    var appDir = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName);
+                    var leftovers = await Task.Run(() => OverlayDirectory(appDir, stagingDir), ct);
+
+                    if (leftovers.Count > 0)
+                    {
+                        var cmp = StringComparer.OrdinalIgnoreCase;
+                        var hasMemory = info.LeftoverKnown.Length > 0;
+                        var knownSet = hasMemory ? info.LeftoverKnown.ToHashSet(cmp) : new HashSet<string>(cmp);
+                        var newFiles = hasMemory && leftovers.Any(f => !knownSet.Contains(f));
+                        var skipDialog = hasMemory && !newFiles;
+
+                        IReadOnlyList<string>? toDelete = null;
+                        if (skipDialog)
+                        {
+                            toDelete = info.LeftoverDelete.Intersect(leftovers, cmp).ToArray();
+                        }
+                        else if (ui != null)
+                        {
+                            var preChecked = hasMemory
+                                ? info.LeftoverDelete.Intersect(leftovers, cmp).ToArray()
+                                : null;
+                            var result = await ui.ShowUpdateLeftoverDialogAsync(node, leftovers, preChecked, hasMemory);
+                            if (result != null)
+                            {
+                                toDelete = result.SelectedForDeletion;
+                                var known = result.Remember ? leftovers.ToArray() : [];
+                                var del = result.Remember ? result.SelectedForDeletion.ToArray() : [];
+                                CustomAppService.SaveLeftoverMemory(node.SectionName, known, del);
+                            }
+                        }
+
+                        if (toDelete is { Count: > 0 })
+                        {
+                            var touchedDirs = new HashSet<string>(cmp);
+                            foreach (var rel in toDelete)
+                            {
+                                var full = Path.Combine(appDir, rel);
+                                try
+                                {
+                                    if (File.Exists(full))
+                                    {
+                                        File.Delete(full);
+                                        var parent = Path.GetDirectoryName(full);
+                                        if (parent != null)
+                                            touchedDirs.Add(parent);
+                                    }
+                                }
+                                catch
+                                {
+                                    // best-effort — the user asked to delete, but a locked file
+                                    // shouldn't fail the whole update
+                                }
+                            }
+
+                            foreach (var dir in touchedDirs)
+                                PruneEmptyDirsUpward(dir, appDir);
+                        }
+                    }
                 }
-                catch
+                finally
                 {
-                    // temp cleanup best-effort
+                    try
+                    {
+                        if (Directory.Exists(stagingDir))
+                            Directory.Delete(stagingDir, true);
+                    }
+                    catch
+                    {
+                        // temp cleanup best-effort
+                    }
                 }
             }
 
@@ -208,6 +218,8 @@ public static class CustomAppUpdater
     private static bool IsSupportedExt(string name, bool sevenZipAvailable)
     {
         if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase))
             return true;
         return sevenZipAvailable && name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
     }
