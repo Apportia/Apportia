@@ -11,6 +11,8 @@
             <ResourceDictionary.ThemeDictionaries>
 
                 <ResourceDictionary x:Key="Light">
+                    <Color x:Key="AppShimmerEdgeColor">#00000000</Color>
+                    <Color x:Key="AppShimmerHighlightColor">#33000000</Color>
                     <SolidColorBrush x:Key="AppAccentBrush" Color="{DynamicResource SystemAccentColor}" />
                     <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#F5C842" />
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#E4E4EA" />
@@ -26,8 +28,6 @@
                     <SolidColorBrush x:Key="AppSeverityInfoBrush" Color="#1565C0" />
                     <SolidColorBrush x:Key="AppSeverityLowBrush" Color="#F57C00" />
                     <SolidColorBrush x:Key="AppSeverityModerateBrush" Color="#E65100" />
-                    <Color x:Key="AppShimmerEdgeColor">#00000000</Color>
-                    <Color x:Key="AppShimmerHighlightColor">#33000000</Color>
                     <SolidColorBrush x:Key="AppSubTextBrush" Color="#444458" />
                     <SolidColorBrush x:Key="AppSuccessBrush" Color="#22AA44" />
                     <SolidColorBrush x:Key="AppTextBrush" Color="#111111" />
@@ -84,9 +84,12 @@
                     <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#111111" />
                     <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#111111" />
                     <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#444458" />
+                    <x:String x:Key="TerminateSkullCss">* { fill: #555555; opacity: 0.3; }</x:String>
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
+                    <Color x:Key="AppShimmerEdgeColor">#00FFFFFF</Color>
+                    <Color x:Key="AppShimmerHighlightColor">#33FFFFFF</Color>
                     <SolidColorBrush x:Key="AppAccentBrush" Color="{DynamicResource SystemAccentColor}" />
                     <SolidColorBrush x:Key="AppActiveInstallBrush" Color="#7A5C00" />
                     <SolidColorBrush x:Key="AppCategoryBrush" Color="#2C2C2C" />
@@ -102,8 +105,6 @@
                     <SolidColorBrush x:Key="AppSeverityInfoBrush" Color="#60A5FA" />
                     <SolidColorBrush x:Key="AppSeverityLowBrush" Color="#FBBF24" />
                     <SolidColorBrush x:Key="AppSeverityModerateBrush" Color="#FB923C" />
-                    <Color x:Key="AppShimmerEdgeColor">#00FFFFFF</Color>
-                    <Color x:Key="AppShimmerHighlightColor">#33FFFFFF</Color>
                     <SolidColorBrush x:Key="AppSubTextBrush" Color="#888888" />
                     <SolidColorBrush x:Key="AppSuccessBrush" Color="#4ADE80" />
                     <SolidColorBrush x:Key="AppTextBrush" Color="#DCDCDC" />
@@ -160,6 +161,7 @@
                     <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#DCDCDC" />
                     <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#DCDCDC" />
                     <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#888888" />
+                    <x:String x:Key="TerminateSkullCss">* { opacity: 0.3; }</x:String>
                 </ResourceDictionary>
 
             </ResourceDictionary.ThemeDictionaries>

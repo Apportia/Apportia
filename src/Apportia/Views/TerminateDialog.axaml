@@ -20,7 +20,7 @@
                  VerticalAlignment="Bottom"
                  Margin="10,0,0,10"
                  IsHitTestVisible="False"
-                 Css="* { opacity: 0.3; }" />
+                 Css="{DynamicResource TerminateSkullCss}" />
 
         <DockPanel Margin="20">
 
