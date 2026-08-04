@@ -22,27 +22,59 @@
 
 ## Preview
 <p align="center"><a href="media/"><img src="media/preview.png"></a></p>
+<p align="center"><em><a href="media/">See more screenshots in the <b>media</b> folder</a></em></p>
 
 ---
 
 ## Features
 
-- Runs natively on Linux and Windows; portable apps are executed via Wine on Linux
-- Browse and search the full [PortableApps.com](https://portableapps.com) catalogue — support for additional app sources planned
-- Filter by category and subcategory; sort by name, version, release date, last update, disk usage, and more
-- Apps install and update silently in the background — no wizards, no popups
-- Passive update detection without interruptions
-- Custom app import — select a local folder containing a portable app and fully integrate it: files are copied into the managed custom apps directory and the entry is registered like any catalogue app
-- App data backup and restore — optionally back up and restore app data across uninstall and reinstall
-- Actual disk usage per installed app — see exactly how much space each portable app occupies on your drive, sortable alongside all other columns
-- CLI argument support — pass arguments to any app at launch via an interactive parameter editor
-- File and folder picker integration for building argument lists
-- Automatic Linux path conversion for Wine (e.g. `/home/user/file.txt` becomes `Z:\home\user\file.txt`)
-- Configurable UI — switch between detailed list and compact tile view, adjust icon size, font size, and more; save and restore view configurations as presets
-- Keyboard shortcuts — press `Ctrl+F` to jump to search instantly; hold `Ctrl` while clicking or confirming an app to install or launch without any dialogs, or to silently queue it for download
-- App details dialog — inspect full metadata for any catalogue entry via context menu
-- App preview images — view a screenshot of any app directly from the context menu
-- Full [VirusTotal](https://www.virustotal.com/) integration — scan apps by hash or upload files directly; results are shown inline without leaving the app; a scan is automatically suggested when a downloaded file fails integrity verification
+- **Cross-platform**
+    - Runs natively on Linux and Windows
+    - Portable Windows apps execute transparently via Wine on Linux
+    - Automatic Linux-to-Wine path conversion
+        - *(e.g. `/home/user/file.txt` becomes `Z:\home\user\file.txt`)*
+- **App sources**
+    - Full [PortableApps.com](https://portableapps.com/) catalogue, browsable and searchable — more sources planned
+    - Import apps directly from a GitHub repository, with releases tracked for automatic updates
+    - Custom app import from a local folder — integrated like any catalogue app
+    - Language variants — switch language packs on multi-language apps in a few clicks
+    - Download mirror selection with automatic fallback if the primary mirror fails
+- **Install and update**
+    - One click to install or update; PAF setup routines run automatically in the background
+        - Hold `Ctrl` while clicking to skip confirmation dialogs or silently queue an install
+    - Available updates are shown discreetly and applied on demand — never enforced
+    - Reinstall or uninstall any managed app in one click, including GitHub-imported custom apps
+    - Apportia updates itself the same way
+        - *(with hash verification and a changelog preview before applying)*
+- **Safety**
+    - Curated security advisories warn about apps with known issues — bundled adware, abandoned projects, or unpatched vulnerabilities — before you install
+        - *(A duty [PortableApps.com](https://portableapps.com/) neglects, so **Apportia** steps in)*
+    - Full [VirusTotal](https://www.virustotal.com/) integration — hash lookup or file upload, results inline
+        - *(Requires a free VirusTotal API key)*
+    - [VirusTotal](https://www.virustotal.com/) scan is auto-suggested when a download fails integrity verification
+- **Data**
+    - Backup and restore app data across uninstall and reinstall
+    - Real disk usage per installed app — always visible and sortable like any other column
+- **Interface**
+    - Light and dark theme, following the system or manually selected
+    - List or tile view with adjustable font size
+        - Icon size adjustable from 12 to 256 px, fetched on demand
+    - Filter and sort by name, version, release date, disk usage and more
+        - Category filter as a full tree with subcategories, flat main categories, or ungrouped
+    - Saveable view presets to switch layouts on the fly
+    - Full metadata inline via the app details dialog
+    - Preview screenshots for every catalogue app — see how it actually looks in use before installing
+    - Keyboard shortcuts throughout — e.g. `Ctrl+F` to jump to search
+- **Wine (Linux)**
+    - Choose between system Wine and a bundled, isolated, portable Wine in `./Data/Linux`
+    - Many Wine and Wine Staging versions downloadable and switchable in-app
+    - `WINEPREFIX` from the environment is respected when set
+    - Font improvements for cleaner text rendering in Windows applications
+    - Wine theme that mirrors your current Linux theme, so Windows applications blend in and feel like native Linux software
+- **Advanced**
+    - Pass files or arbitrary arguments to **Apportia** on launch, forwarded to the selected app
+        - *(any portable app can act as a system-wide file handler)*
+    - Per-app CLI argument editor with built-in file and folder pickers
 
 ---
 
