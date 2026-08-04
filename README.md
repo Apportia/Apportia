@@ -32,9 +32,9 @@
     - Runs natively on Linux and Windows
     - Portable Windows apps execute transparently via Wine on Linux
     - Automatic Linux-to-Wine path conversion
-        - *(e.g. `/home/user/file.txt` becomes `Z:\home\user\file.txt`)*
+        - *e.g. `/home/user/file.txt` becomes `Z:\home\user\file.txt`*
 - **App sources**
-    - Full [PortableApps.com](https://portableapps.com/) catalogue, browsable and searchable — more sources planned
+    - Full **PortableApps.com** catalogue, browsable and searchable — more sources planned
     - Import apps directly from a GitHub repository, with releases tracked for automatic updates
     - Custom app import from a local folder — integrated like any catalogue app
     - Language variants — switch language packs on multi-language apps in a few clicks
@@ -45,13 +45,13 @@
     - Available updates are shown discreetly and applied on demand — never enforced
     - Reinstall or uninstall any managed app in one click, including GitHub-imported custom apps
     - Apportia updates itself the same way
-        - *(with hash verification and a changelog preview before applying)*
+        - *with hash verification and a changelog preview before applying*
 - **Safety**
     - Curated security advisories warn about apps with known issues — bundled adware, abandoned projects, or unpatched vulnerabilities — before you install
-        - *(A duty [PortableApps.com](https://portableapps.com/) neglects, so **Apportia** steps in)*
-    - Full [VirusTotal](https://www.virustotal.com/) integration — hash lookup or file upload, results inline
-        - *(Requires a free VirusTotal API key)*
-    - [VirusTotal](https://www.virustotal.com/) scan is auto-suggested when a download fails integrity verification
+        - *a duty **PortableApps.com** neglects, so **Apportia** steps in*
+    - Full **VirusTotal.com** integration — hash lookup or file upload, results inline
+        - *requires a free [VirusTotal.com API key](https://docs.virustotal.com/docs/please-give-me-an-api-key)*
+    - **VirusTotal.com** scan is auto-suggested when a download fails integrity verification
 - **Data**
     - Backup and restore app data across uninstall and reinstall
     - Real disk usage per installed app — always visible and sortable like any other column
@@ -73,7 +73,7 @@
     - Wine theme that mirrors your current Linux theme, so Windows applications blend in and feel like native Linux software
 - **Advanced**
     - Pass files or arbitrary arguments to **Apportia** on launch, forwarded to the selected app
-        - *(any portable app can act as a system-wide file handler)*
+        - *any portable app can act as a system-wide file handler*
     - Per-app CLI argument editor with built-in file and folder pickers
 
 ---
