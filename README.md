@@ -47,7 +47,8 @@
     - Apportia updates itself the same way
         - *with hash verification and a changelog preview before applying*
 - **Safety**
-    - Curated security advisories warn about apps with known issues — bundled adware, abandoned projects, or unpatched vulnerabilities — before you install
+    - Curated security advisories flag risky apps before install
+        - *e.g. bundled adware, abandoned projects, or unpatched vulnerabilities*
         - *a duty **PortableApps.com** neglects, so **Apportia** steps in*
     - Full **VirusTotal.com** integration — hash lookup or file upload, results inline
         - *requires a free [VirusTotal.com API key](https://docs.virustotal.com/docs/please-give-me-an-api-key)*
