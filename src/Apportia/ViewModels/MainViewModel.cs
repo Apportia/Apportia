@@ -110,6 +110,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         _ = ScanDiskUsageAsync(diskCache);
 
+        AppUsageService.Changed += OnAppUsageChanged;
+
         RebuildRows();
     }
 
@@ -187,6 +189,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             _installFilter = value;
             Columns.HighlightInstalled = value == InstallFilter.All;
             Columns.ShowUsedColumn = value == InstallFilter.Installed;
+            Columns.ShowLastRunColumn = value == InstallFilter.Installed;
             UpdateShowMetaColumns();
             Notify();
             RequestRebuild();
@@ -226,6 +229,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public bool IsBuildingRows { get; private set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnAppUsageChanged(object? sender, string sectionName)
+    {
+        if (Columns.SortColumn != "LastRun")
+            return;
+        Dispatcher.UIThread.Post(RequestRebuild);
+    }
 
     public void SetGridActive(bool active)
     {
@@ -994,6 +1004,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             "Joined" => nodes.OrderBy(n => ParseDate(n.JoinedDate)),
             "Updated" => nodes.OrderBy(n => ParseDate(n.UpdateDate)),
             "Used" => nodes.OrderBy(n => n.UsedBytes),
+            "LastRun" => nodes.OrderBy(n => n.LastRunUtc ?? DateTime.MinValue),
             _ => nodes.OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase)
         };
         return Columns.SortDescending ? sorted.Reverse() : sorted;

@@ -120,6 +120,18 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         set => Set(ref field, Clamp(value, 60, 180));
     } = 75;
 
+    public bool ShowLastRunColumn
+    {
+        get;
+        set => Set(ref field, value);
+    }
+
+    public double LastRun
+    {
+        get;
+        set => Set(ref field, Clamp(value, 70, 160));
+    } = 95;
+
     public bool IsInstalling
     {
         get;
@@ -139,6 +151,7 @@ public sealed class ColumnWidths : INotifyPropertyChanged
     public string JoinedHeader => Header("Joined", UiText.Column.MainJoined);
     public string UpdatedHeader => Header("Updated", UiText.Column.MainUpdated);
     public string UsedHeader => Header("Used", UiText.Column.MainUsed);
+    public string LastRunHeader => Header("LastRun", UiText.Column.MainLastRun);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -164,7 +177,7 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         {
             nameof(NameHeader), nameof(DownloadHeader),
             nameof(InstallHeader), nameof(JoinedHeader), nameof(UpdatedHeader),
-            nameof(UsedHeader)
+            nameof(UsedHeader), nameof(LastRunHeader)
         })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(h));
     }

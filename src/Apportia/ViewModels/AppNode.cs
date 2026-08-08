@@ -12,6 +12,8 @@ public sealed class AppNode : INotifyPropertyChanged
     private Bitmap _icon;
     private IReadOnlyDictionary<string, (string File, string Hash)>? _languageVariants;
 
+    private string? _lastRunDisplayCache;
+
     public AppNode(
         AppEntry entry,
         Bitmap icon,
@@ -73,6 +75,8 @@ public sealed class AppNode : INotifyPropertyChanged
 
         IsRunning = RunningAppsService.IsRunning(SectionName);
         RunningAppsService.Changed += OnRunningChanged;
+        AppUsageService.Changed += OnUsageChanged;
+        RelativeTimeTicker.Tick += OnRelativeTimeTick;
     }
 
     public bool IsRunning
@@ -242,6 +246,8 @@ public sealed class AppNode : INotifyPropertyChanged
     public string UpdateDate { get; private set; }
     public string JoinedDateDisplay => RelativeDate.FormatShort(JoinedDate);
     public string UpdateDateDisplay => RelativeDate.FormatShort(UpdateDate);
+    public DateTime? LastRunUtc => AppUsageService.GetLastRun(SectionName);
+    public string LastRunDisplay => RelativeDate.FormatShortOrNever(LastRunUtc?.ToLocalTime());
 
     public string CurrentDate
     {
@@ -364,6 +370,28 @@ public sealed class AppNode : INotifyPropertyChanged
         if (!string.Equals(sectionName, SectionName, StringComparison.OrdinalIgnoreCase))
             return;
         Dispatcher.UIThread.Post(() => IsRunning = RunningAppsService.IsRunning(SectionName));
+    }
+
+    private void OnUsageChanged(object? sender, string sectionName)
+    {
+        if (!string.Equals(sectionName, SectionName, StringComparison.OrdinalIgnoreCase))
+            return;
+        Dispatcher.UIThread.Post(() =>
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastRunUtc)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastRunDisplay)));
+        });
+    }
+
+    private void OnRelativeTimeTick(object? sender, EventArgs e)
+    {
+        if (LastRunUtc is null)
+            return;
+        var current = LastRunDisplay;
+        if (_lastRunDisplayCache == current)
+            return;
+        _lastRunDisplayCache = current;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastRunDisplay)));
     }
 
     public bool TryBeginLaunchFx()

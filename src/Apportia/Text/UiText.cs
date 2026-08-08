@@ -417,6 +417,7 @@ public static class UiText
         public const string MainJoined = "Joined";
         public const string MainUpdated = "Updated";
         public const string MainUsed = "Used";
+        public const string MainLastRun = "Last Run";
 
         // MainWindow sort menu
         public const string MainSortName = "Name";
@@ -425,6 +426,7 @@ public static class UiText
         public const string MainSortJoined = "Joined Date";
         public const string MainSortUpdated = "Updated Date";
         public const string MainSortUsed = "Used Space";
+        public const string MainSortRun = "Last Run Date";
 
         // TerminateDialog columns
         public const string TerminateCommand = "Command";
@@ -513,11 +515,23 @@ public static class UiText
         public const string VtFile = "File";
 
         // Relative-date labels
+        public const string RelSecondAgo = "1 second ago";
+        public const string RelSecondsAgoFormat = "{0} seconds ago";
+        public const string RelSecondAgoShort = "1 sec ago";
+        public const string RelSecondsAgoShortFormat = "{0} secs ago";
+        public const string RelMinuteAgo = "1 minute ago";
+        public const string RelMinutesAgoFormat = "{0} minutes ago";
+        public const string RelMinuteAgoShort = "1 min ago";
+        public const string RelMinutesAgoShortFormat = "{0} mins ago";
+        public const string RelHourAgo = "1 hour ago";
+        public const string RelHoursAgoFormat = "{0} hours ago";
+        public const string RelDayAgo = "1 day ago";
         public const string RelDaysAgoFormat = "{0}, {1} days ago";
         public const string RelDaysAgoShortFormat = "{0} days ago";
         public const string RelToday = "Today";
         public const string RelWeekAgo = "1 week ago";
         public const string RelYesterday = "Yesterday";
+        public const string RelNever = "Never";
     }
 
     public static class Button

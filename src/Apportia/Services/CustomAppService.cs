@@ -516,6 +516,7 @@ public static class CustomAppService
             var iconPath = Path.Combine(CustomAppImagesDir, sectionName + ".png");
             if (File.Exists(iconPath))
                 File.Delete(iconPath);
+            AppUsageService.Remove(sectionName);
         }
         catch
         {

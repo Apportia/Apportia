@@ -224,6 +224,9 @@
                                           IsVisible="{Binding Columns.ShowJoinedColumn}" />
                                 <MenuItem Header="{x:Static text:UiText+Column.MainSortUpdated}"
                                           Tag="Updated" Click="OnSortMenuItemClick" />
+                                <MenuItem Header="{x:Static text:UiText+Column.MainSortRun}"
+                                          Tag="LastRun" Click="OnSortMenuItemClick"
+                                          IsVisible="{Binding Columns.ShowLastRunColumn}" />
                                 <MenuItem Header="{x:Static text:UiText+Column.MainSortUsed}"
                                           Tag="Used" Click="OnSortMenuItemClick"
                                           IsVisible="{Binding Columns.ShowUsedColumn}" />
@@ -422,6 +425,16 @@
                                TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
                                FontSize="{Binding Columns.FontSizeSub}"
                                Tag="Used" Tapped="OnColumnHeaderTapped" />
+
+                    <Thumb Classes="colResizer" DockPanel.Dock="Right"
+                           IsVisible="{Binding Columns.ShowLastRunColumn}"
+                           Tag="LastRun" DragDelta="OnColumnResize" />
+                    <TextBlock DockPanel.Dock="Right" Width="{Binding Columns.LastRun}"
+                               IsVisible="{Binding Columns.ShowLastRunColumn}"
+                               Text="{Binding Columns.LastRunHeader}"
+                               TextAlignment="Right" Margin="0,0,4,0" Cursor="Hand"
+                               FontSize="{Binding Columns.FontSizeSub}"
+                               Tag="LastRun" Tapped="OnColumnHeaderTapped" />
 
                     <Thumb Classes="colResizer" DockPanel.Dock="Right"
                            IsVisible="{Binding Columns.ShowMetaColumns}"
@@ -785,6 +798,12 @@
                                                        Width="{Binding Columns.Used}"
                                                        IsVisible="{Binding Columns.ShowUsedColumn}"
                                                        Text="{Binding UsedSize}"
+                                                       TextAlignment="Right" Margin="0,0,4,0"
+                                                       FontSize="{Binding Columns.FontSize}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Width="{Binding Columns.LastRun}"
+                                                       IsVisible="{Binding Columns.ShowLastRunColumn}"
+                                                       Text="{Binding LastRunDisplay}"
                                                        TextAlignment="Right" Margin="0,0,4,0"
                                                        FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock DockPanel.Dock="Right"

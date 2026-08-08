@@ -1995,6 +1995,7 @@ public partial class MainWindow : Window, IInstallUi
                 Verb = "runas",
                 Arguments = cmd?.Original ?? string.Empty
             });
+            AppUsageService.RecordLaunch(node.SectionName);
         }
         catch
         {
@@ -2114,15 +2115,19 @@ public partial class MainWindow : Window, IInstallUi
     {
         var appDir = Path.Combine(appsBaseDir, node.SectionName);
         var (appExe, _) = AppExecutableService.Resolve(appDir, node.SectionName);
-        if (appExe != null)
-            AppDeployService.LaunchApp(appExe, cmd);
+        if (appExe == null)
+            return;
+        AppDeployService.LaunchApp(appExe, cmd);
+        AppUsageService.RecordLaunch(node.SectionName);
     }
 
     private static void RunCustomApp(AppNode node, CommandLine? cmd = null)
     {
         var appExe = Path.Combine(CustomAppService.CustomAppsDir, node.SectionName, node.DownloadFile);
-        if (File.Exists(appExe))
-            AppDeployService.LaunchApp(appExe, cmd);
+        if (!File.Exists(appExe))
+            return;
+        AppDeployService.LaunchApp(appExe, cmd);
+        AppUsageService.RecordLaunch(node.SectionName);
     }
 
     private async Task TryLaunchWithArgsAsync(AppNode node)
@@ -3437,6 +3442,7 @@ public partial class MainWindow : Window, IInstallUi
             "Joined" => UiText.Column.MainSortJoined,
             "Updated" => UiText.Column.MainSortUpdated,
             "Used" => UiText.Column.MainSortUsed,
+            "LastRun" => UiText.Column.MainSortRun,
             _ => UiText.Column.MainSortName
         };
         SortButton.Content = $"{label} {arrow}";
@@ -3566,6 +3572,7 @@ public partial class MainWindow : Window, IInstallUi
             case "Joined": vm.Columns.Joined -= delta; break;
             case "Updated": vm.Columns.Updated -= delta; break;
             case "Used": vm.Columns.Used -= delta; break;
+            case "LastRun": vm.Columns.LastRun -= delta; break;
         }
     }
 

@@ -73,6 +73,8 @@ public static class CurrentAppService
             if (db.Remove(sectionName))
                 SaveDatabaseUnlocked(db);
         }
+
+        AppUsageService.Remove(sectionName);
     }
 
     public static void Register(string sectionName)
@@ -270,19 +272,6 @@ public static class CurrentAppService
         catch (Exception ex)
         {
             Log.Write(string.Format(LogText.CurrentApp.SaveDatabaseFailedFormat, ex.Message));
-        }
-    }
-
-    private static void TryDelete(string path)
-    {
-        try
-        {
-            if (File.Exists(path))
-                File.Delete(path);
-        }
-        catch
-        {
-            /* best effort */
         }
     }
 
