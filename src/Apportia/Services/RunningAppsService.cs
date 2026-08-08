@@ -233,15 +233,17 @@ public static class RunningAppsService
 
     private static string GetProcessExeName(string cmdline, string comm)
     {
-        foreach (var token in cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+        var tokens = cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var token in tokens)
         {
-            if (!token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            if (!token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
+                !token.EndsWith(".jar", StringComparison.OrdinalIgnoreCase))
                 continue;
             var sep = token.LastIndexOfAny(['/', '\\']);
             return sep < 0 ? token : token[(sep + 1)..];
         }
 
-        var argv0 = cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        var argv0 = tokens.FirstOrDefault();
         if (string.IsNullOrEmpty(argv0))
             return comm;
         var s = argv0.LastIndexOfAny(['/', '\\']);
@@ -335,7 +337,8 @@ public static class RunningAppsService
     {
         foreach (var token in cmdline.Split('\0', StringSplitOptions.RemoveEmptyEntries))
         {
-            if (!token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            if (!token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
+                !token.EndsWith(".jar", StringComparison.OrdinalIgnoreCase))
                 continue;
             var sep = token.LastIndexOfAny(['/', '\\']);
             return sep < 0 ? token : token[(sep + 1)..];

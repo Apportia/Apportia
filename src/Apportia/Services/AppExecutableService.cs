@@ -34,10 +34,20 @@ public static class AppExecutableService
             return (defaultPath, []);
         }
 
+        var defaultJarName = sectionName + ".jar";
+        var defaultJarPath = Path.Combine(appDir, defaultJarName);
+        if (File.Exists(defaultJarPath))
+        {
+            Save(sectionName, defaultJarName, defaultName);
+            return (defaultJarPath, []);
+        }
+
         if (!Directory.Exists(appDir))
             return (null, []);
 
-        var candidates = Directory.GetFiles(appDir, "*.exe", SearchOption.TopDirectoryOnly);
+        var candidates = Directory.GetFiles(appDir, "*.exe", SearchOption.TopDirectoryOnly)
+                                  .Concat(Directory.GetFiles(appDir, "*.jar", SearchOption.TopDirectoryOnly))
+                                  .ToArray();
 
         switch (candidates.Length)
         {

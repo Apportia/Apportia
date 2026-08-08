@@ -17,7 +17,7 @@ namespace Apportia.Views;
 public partial class CustomAppWindow : Window
 {
     private static readonly HashSet<string> RelevantExtensions = new(StringComparer.OrdinalIgnoreCase)
-        { ".exe", ".dll", ".bat", ".cmd", ".vbs", ".ico", ".png" };
+        { ".exe", ".dll", ".bat", ".cmd", ".vbs", ".jar", ".ico", ".png" };
 
     private readonly string _appDir = string.Empty;
     private readonly string _initialDescription = string.Empty;
@@ -427,16 +427,17 @@ public partial class CustomAppWindow : Window
 
     private static List<string> GetLaunchableFiles(string rootDir, Dictionary<string, List<string>> files)
     {
-        return new[] { ".exe", ".bat", ".cmd", ".vbs" }
+        return new[] { ".exe", ".jar", ".bat", ".cmd", ".vbs" }
                .SelectMany(ext => files.TryGetValue(ext, out var l) ? l : [])
                .Select(f => Path.GetRelativePath(rootDir, f))
                .OrderBy(f => Path.GetDirectoryName(f) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                .ThenBy(f => Path.GetExtension(f).ToLowerInvariant() switch
                {
                    ".exe" => 0,
-                   ".bat" => 1,
-                   ".cmd" => 2,
-                   _ => 3
+                   ".jar" => 1,
+                   ".bat" => 2,
+                   ".cmd" => 3,
+                   _ => 4
                })
                .ThenBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase)
                .ToList();

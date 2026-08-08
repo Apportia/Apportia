@@ -454,6 +454,83 @@ public sealed class AppDeployService : IDisposable
         return paths.FirstOrDefault(File.Exists);
     }
 
+    private static string? FindJava(string appsBaseDir)
+    {
+        var exeName = OperatingSystem.IsLinux() ? "java" : "javaw.exe";
+
+        // Any portable java runtimes under CommonFiles/<Name>/bin/javaw.exe
+        var commonFiles = Path.Combine(appsBaseDir, "CommonFiles");
+        if (Directory.Exists(commonFiles))
+        {
+            var portable = Directory.EnumerateDirectories(commonFiles)
+                                    .Select(d => Path.Combine(d, "bin", "javaw.exe"))
+                                    .Where(File.Exists)
+                                    .OrderByDescending(p => p.Contains("64", StringComparison.OrdinalIgnoreCase))
+                                    .ThenBy(p => p.Contains("JDK", StringComparison.OrdinalIgnoreCase))
+                                    .FirstOrDefault();
+            if (portable != null)
+                return portable;
+        }
+
+        var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
+        if (!string.IsNullOrEmpty(javaHome))
+        {
+            var candidate = Path.Combine(javaHome, "bin", exeName);
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        if (OperatingSystem.IsLinux())
+        {
+            string[] direct = ["/usr/bin/java", "/usr/local/bin/java", "/bin/java"];
+            var native = direct.FirstOrDefault(File.Exists);
+            if (native != null)
+                return native;
+
+            string[] jvmRoots = ["/usr/lib/jvm", "/usr/lib64/jvm", "/opt"];
+            return FirstJavaUnder(jvmRoots, exeName);
+        }
+
+        var pfNat = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        var pfWow = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        string[] windowsRoots =
+        [
+            Path.Combine(pfNat, "Java"),
+            Path.Combine(pfWow, "Java"),
+            Path.Combine(pfNat, "Eclipse Adoptium"),
+            Path.Combine(pfNat, "Eclipse Foundation"),
+            Path.Combine(pfNat, "Zulu"),
+            Path.Combine(pfNat, "Microsoft"),
+            Path.Combine(pfNat, "OpenJDK"),
+            Path.Combine(pfNat, "BellSoft"),
+            Path.Combine(pfNat, "Amazon Corretto")
+        ];
+        return FirstJavaUnder(windowsRoots, exeName);
+
+        static string? FirstJavaUnder(IEnumerable<string> roots, string exeName)
+        {
+            foreach (var root in roots.Where(Directory.Exists))
+            {
+                string? hit;
+                try
+                {
+                    hit = Directory.EnumerateFiles(root, exeName, SearchOption.AllDirectories)
+                                   .FirstOrDefault(p => Path.GetFileName(Path.GetDirectoryName(p)) == "bin");
+                }
+                catch
+                {
+                    // permission denied on some system dirs; skip and continue
+                    continue;
+                }
+
+                if (hit != null)
+                    return hit;
+            }
+
+            return null;
+        }
+    }
+
     public static async Task ExtractAsync(
         string sevenZipPath,
         string archivePath,
@@ -559,6 +636,43 @@ public sealed class AppDeployService : IDisposable
     {
         var workingDir = Path.GetDirectoryName(exePath) ?? string.Empty;
         ProcessStartInfo psi;
+
+        if (exePath.EndsWith(".jar", StringComparison.OrdinalIgnoreCase))
+        {
+            var java = FindJava(AppsDir);
+            if (java == null)
+                return null;
+            var userArgs = cmd?.Original ?? string.Empty;
+            var runsUnderWine = OperatingSystem.IsLinux() && java.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+
+            // Under wine, java.exe needs a Windows-style path for -jar; a raw linux path is opaque to it.
+            var jarPath = runsUnderWine ? "Z:" + exePath.Replace('/', '\\') : exePath;
+            var jarArgs = $"-Xmx1024m -Djna.nosys=true -jar \"{jarPath}\"";
+            if (!string.IsNullOrEmpty(userArgs))
+                jarArgs += " " + userArgs;
+
+            if (runsUnderWine)
+            {
+                psi = new ProcessStartInfo(WineService.ResolveWineBinary() ?? "wine")
+                {
+                    UseShellExecute = false,
+                    WorkingDirectory = workingDir,
+                    Arguments = $"\"{java}\" {jarArgs}"
+                };
+                WineService.ApplyEnv(psi);
+            }
+            else
+            {
+                psi = new ProcessStartInfo(java)
+                {
+                    UseShellExecute = false,
+                    WorkingDirectory = workingDir,
+                    Arguments = jarArgs
+                };
+            }
+
+            return Process.Start(psi);
+        }
 
         if (OperatingSystem.IsLinux())
         {
