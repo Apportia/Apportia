@@ -741,7 +741,7 @@ public partial class MainWindow : Window, IInstallUi
             }
         };
 
-        vm.Columns.SetSort(settings.SortColumn, settings.SortDescending);
+        vm.Columns.SetSort(_defaultView.SortColumn, _defaultView.SortDescending);
         vm.Columns.IconSize = _defaultView.IconSize;
         vm.Columns.FontSize = _defaultView.FontSize;
         vm.CategoryDisplay = _defaultView.CategoryDisplay;
@@ -3583,8 +3583,6 @@ public partial class MainWindow : Window, IInstallUi
         var theme = Application.Current?.RequestedThemeVariant;
         var settings = SettingsService.Load();
         settings.ViewPresets.Remove("Default");
-        settings.SortColumn = vm.Columns.SortColumn;
-        settings.SortDescending = vm.Columns.SortDescending;
         settings.ColumnName = vm.Columns.Name;
         settings.ColumnVersion = vm.Columns.Version;
         settings.ColumnDownload = vm.Columns.Download;
@@ -3637,7 +3635,9 @@ public partial class MainWindow : Window, IInstallUi
                 IconSize = vm.Columns.IconSize,
                 IsGridView = vm.Columns.IsGridView,
                 WindowWidth = Width,
-                WindowHeight = Height
+                WindowHeight = Height,
+                SortColumn = vm.Columns.SortColumn,
+                SortDescending = vm.Columns.SortDescending
             };
             foreach (var filter in dialog.SelectedFilters)
                 settings.ViewPresets[filter.ToString()] = preset;
@@ -3663,6 +3663,7 @@ public partial class MainWindow : Window, IInstallUi
             vm.Columns.IconSize = preset.IconSize;
             vm.Columns.IsGridView = preset.IsGridView;
             vm.CategoryScope = preset.CategoryScope;
+            vm.Columns.SetSort(preset.SortColumn, preset.SortDescending);
         }
         finally
         {

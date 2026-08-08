@@ -37,13 +37,13 @@ public sealed class FilterViewSettings
     public bool IsGridView { get; set; }
     public double WindowWidth { get; set; } = 1024;
     public double WindowHeight { get; set; } = 720;
+    public string SortColumn { get; set; } = "Name";
+    public bool SortDescending { get; set; }
 }
 
 [JsonConverter(typeof(AppSettingsConverter))]
 public sealed class AppSettings
 {
-    public string SortColumn { get; set; } = "Name";
-    public bool SortDescending { get; set; }
     public double ColumnName { get; set; } = 200;
     public double ColumnVersion { get; set; } = 90;
     public double ColumnDownload { get; set; } = 85;
@@ -85,6 +85,8 @@ public sealed class FilterViewSettingsConverter : JsonConverter<FilterViewSettin
                 case nameof(FilterViewSettings.IsGridView): v.IsGridView = reader.GetBoolean(); break;
                 case nameof(FilterViewSettings.WindowWidth): v.WindowWidth = reader.GetDouble(); break;
                 case nameof(FilterViewSettings.WindowHeight): v.WindowHeight = reader.GetDouble(); break;
+                case nameof(FilterViewSettings.SortColumn): v.SortColumn = reader.GetString() ?? "Name"; break;
+                case nameof(FilterViewSettings.SortDescending): v.SortDescending = reader.GetBoolean(); break;
                 default: reader.Skip(); break;
             }
         }
@@ -109,6 +111,10 @@ public sealed class FilterViewSettingsConverter : JsonConverter<FilterViewSettin
             writer.WriteNumber(nameof(v.WindowWidth), v.WindowWidth);
         if (Math.Abs(v.WindowHeight - 720) > 1)
             writer.WriteNumber(nameof(v.WindowHeight), v.WindowHeight);
+        if (v.SortColumn != "Name")
+            writer.WriteString(nameof(v.SortColumn), v.SortColumn);
+        if (v.SortDescending)
+            writer.WriteBoolean(nameof(v.SortDescending), true);
         writer.WriteEndObject();
     }
 }
@@ -130,8 +136,6 @@ public sealed class AppSettingsConverter : JsonConverter<AppSettings>
             reader.Read();
             switch (name)
             {
-                case nameof(AppSettings.SortColumn): s.SortColumn = reader.GetString() ?? "Name"; break;
-                case nameof(AppSettings.SortDescending): s.SortDescending = reader.GetBoolean(); break;
                 case nameof(AppSettings.ColumnName): s.ColumnName = reader.GetDouble(); break;
                 case nameof(AppSettings.ColumnVersion): s.ColumnVersion = reader.GetDouble(); break;
                 case nameof(AppSettings.ColumnDownload): s.ColumnDownload = reader.GetDouble(); break;
@@ -161,10 +165,6 @@ public sealed class AppSettingsConverter : JsonConverter<AppSettings>
     public override void Write(Utf8JsonWriter writer, AppSettings s, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
-        if (s.SortColumn != "Name")
-            writer.WriteString(nameof(s.SortColumn), s.SortColumn);
-        if (s.SortDescending)
-            writer.WriteBoolean(nameof(s.SortDescending), true);
         if (Math.Abs(s.ColumnName - 200) > 1)
             writer.WriteNumber(nameof(s.ColumnName), s.ColumnName);
         if (Math.Abs(s.ColumnVersion - 90) > 1)
