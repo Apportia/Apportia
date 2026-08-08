@@ -2681,6 +2681,7 @@ public partial class MainWindow : Window, IInstallUi
         UpdateInstallFilterButton();
         UpdateViewModeButton();
         UpdateFontSizeButton();
+        UpdateSortButton();
         RefreshUpdateButton();
         _ = CheckForUpdateAsync();
         DataContextChanged += (_, _) =>
@@ -2691,6 +2692,7 @@ public partial class MainWindow : Window, IInstallUi
             UpdateInstallFilterButton();
             UpdateViewModeButton();
             UpdateFontSizeButton();
+            UpdateSortButton();
             RefreshUpdateButton();
         };
         Closing += OnWindowClosing;
@@ -3410,6 +3412,34 @@ public partial class MainWindow : Window, IInstallUi
         if (DataContext is not MainViewModel vm)
             return;
         vm.SortBy(column);
+        UpdateSortButton();
+    }
+
+    private void OnSortMenuItemClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { Tag: string column })
+            return;
+        if (DataContext is not MainViewModel vm)
+            return;
+        vm.SortBy(column);
+        UpdateSortButton();
+    }
+
+    private void UpdateSortButton()
+    {
+        if (DataContext is not MainViewModel vm)
+            return;
+        var arrow = vm.Columns.SortDescending ? "\u25BC" : "\u25B2";
+        var label = vm.Columns.SortColumn switch
+        {
+            "Download" => UiText.Column.MainSortDownload,
+            "Install" => UiText.Column.MainSortInstall,
+            "Joined" => UiText.Column.MainSortJoined,
+            "Updated" => UiText.Column.MainSortUpdated,
+            "Used" => UiText.Column.MainSortUsed,
+            _ => UiText.Column.MainSortName
+        };
+        SortButton.Content = $"{label} {arrow}";
     }
 
     private void OnSearchDropDownClosed(object? sender, EventArgs e)
@@ -3638,6 +3668,7 @@ public partial class MainWindow : Window, IInstallUi
         UpdateFontSizeButton();
         UpdateCategoryScopeButton();
         UpdateCategoryDisplayButton();
+        UpdateSortButton();
         (IconSizeButton.Parent as Control)?.InvalidateMeasure();
         _ = ReloadIconsForSizeAsync(vm);
 

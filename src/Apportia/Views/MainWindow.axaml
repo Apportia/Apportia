@@ -200,6 +200,36 @@
                             ToolTip.Tip="{x:Static text:UiText+Tip.ViewMode}"
                             Click="OnViewModeToggle"
                             PointerReleased="OnViewModePointerReleased" />
+                    <Button x:Name="SortButton"
+                            IsVisible="{Binding Columns.IsGridView}"
+                            VerticalAlignment="Center"
+                            Padding="6,3"
+                            FontSize="11"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Opacity="0.6"
+                            ToolTip.Tip="{x:Static text:UiText+Tip.SortBy}">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuItem Header="{x:Static text:UiText+Column.MainSortName}"
+                                          Tag="Name" Click="OnSortMenuItemClick" />
+                                <MenuItem Header="{x:Static text:UiText+Column.MainSortDownload}"
+                                          Tag="Download" Click="OnSortMenuItemClick"
+                                          IsVisible="{Binding Columns.ShowMetaColumns}" />
+                                <MenuItem Header="{x:Static text:UiText+Column.MainSortInstall}"
+                                          Tag="Install" Click="OnSortMenuItemClick"
+                                          IsVisible="{Binding Columns.ShowMetaColumns}" />
+                                <MenuItem Header="{x:Static text:UiText+Column.MainSortJoined}"
+                                          Tag="Joined" Click="OnSortMenuItemClick"
+                                          IsVisible="{Binding Columns.ShowJoinedColumn}" />
+                                <MenuItem Header="{x:Static text:UiText+Column.MainSortUpdated}"
+                                          Tag="Updated" Click="OnSortMenuItemClick" />
+                                <MenuItem Header="{x:Static text:UiText+Column.MainSortUsed}"
+                                          Tag="Used" Click="OnSortMenuItemClick"
+                                          IsVisible="{Binding Columns.ShowUsedColumn}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
                     <Button x:Name="FontSizeButton"
                             VerticalAlignment="Center"
                             Padding="6,3"

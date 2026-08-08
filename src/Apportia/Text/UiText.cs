@@ -391,6 +391,7 @@ public static class UiText
         public const string ImportCustomApp = "Import Custom App";
         public const string InstallFilter = "Install Filter";
         public const string SaveViewPreset = "Save View Preset";
+        public const string SortBy = "Sort By";
         public const string TerminateAllApps = "Terminate Running Apps";
         public const string Tips = "Tips";
         public const string ToggleTheme = "Toggle Theme";
@@ -409,6 +410,21 @@ public static class UiText
 
         // MainWindow columns
         public const string MainDescription = "Description";
+        public const string MainName = "Name";
+        public const string MainVersion = "Version";
+        public const string MainDownload = "Download";
+        public const string MainInstall = "Install";
+        public const string MainJoined = "Joined";
+        public const string MainUpdated = "Updated";
+        public const string MainUsed = "Used";
+
+        // MainWindow sort menu
+        public const string MainSortName = "Name";
+        public const string MainSortDownload = "Download Size";
+        public const string MainSortInstall = "Install Size";
+        public const string MainSortJoined = "Joined Date";
+        public const string MainSortUpdated = "Updated Date";
+        public const string MainSortUsed = "Used Space";
 
         // TerminateDialog columns
         public const string TerminateCommand = "Command";

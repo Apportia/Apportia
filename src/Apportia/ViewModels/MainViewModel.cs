@@ -691,7 +691,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void UpdateShowMetaColumns()
     {
-        Columns.ShowMetaColumns = _installFilter != InstallFilter.Installed || Columns.ShowCurrentColumn;
+        var notInstalledTab = _installFilter != InstallFilter.Installed;
+        Columns.ShowMetaColumns = notInstalledTab;
+        Columns.ShowJoinedColumn = notInstalledTab;
     }
 
     private void RebuildAppNames()
@@ -987,7 +989,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var sorted = Columns.SortColumn switch
         {
             "Name" => nodes.OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase),
-            "Version" => nodes.OrderBy(n => n.PackageVersion, StringComparer.OrdinalIgnoreCase),
             "Download" => nodes.OrderBy(n => n.DownloadSizeMb),
             "Install" => nodes.OrderBy(n => n.InstallSizeMb),
             "Joined" => nodes.OrderBy(n => ParseDate(n.JoinedDate)),

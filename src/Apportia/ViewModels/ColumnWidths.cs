@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Apportia.Text;
 
 namespace Apportia.ViewModels;
 
@@ -131,13 +132,13 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         set => Set(ref field, value);
     } = true;
 
-    public string NameHeader => Header("Name");
-    public string VersionHeader => Header("Version");
-    public string DownloadHeader => Header("Download");
-    public string InstallHeader => Header("Install");
-    public string JoinedHeader => Header("Joined");
-    public string UpdatedHeader => Header("Updated");
-    public string UsedHeader => Header("Used");
+    public string NameHeader => Header("Name", UiText.Column.MainName);
+    public string VersionHeader => UiText.Column.MainVersion;
+    public string DownloadHeader => Header("Download", UiText.Column.MainDownload);
+    public string InstallHeader => Header("Install", UiText.Column.MainInstall);
+    public string JoinedHeader => Header("Joined", UiText.Column.MainJoined);
+    public string UpdatedHeader => Header("Updated", UiText.Column.MainUpdated);
+    public string UsedHeader => Header("Used", UiText.Column.MainUsed);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -161,18 +162,18 @@ public sealed class ColumnWidths : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SortDescending)));
         foreach (var h in new[]
         {
-            nameof(NameHeader), nameof(VersionHeader), nameof(DownloadHeader),
+            nameof(NameHeader), nameof(DownloadHeader),
             nameof(InstallHeader), nameof(JoinedHeader), nameof(UpdatedHeader),
             nameof(UsedHeader)
         })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(h));
     }
 
-    private string Header(string col)
+    private string Header(string col, string label)
     {
         if (SortColumn != col)
-            return col;
-        return col + (SortDescending ? " \u25BC" : " \u25B2");
+            return label;
+        return label + (SortDescending ? " \u25BC" : " \u25B2");
     }
 
     private static double Clamp(double value, double min, double max)
