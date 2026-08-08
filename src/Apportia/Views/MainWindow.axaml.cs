@@ -570,6 +570,11 @@ public partial class MainWindow : Window, IInstallUi
         var targetPreset = SettingsService.Load().ViewPresets.GetValueOrDefault(target.ToString())
                            ?? _defaultView;
         ApplyToolbarLabelsFromPreset(targetPreset, target);
+        vm.Columns.HighlightInstalled = target == InstallFilter.All;
+        vm.Columns.ShowUsedColumn = target == InstallFilter.Installed;
+        vm.Columns.ShowLastRunColumn = target == InstallFilter.Installed;
+        vm.Columns.ShowMetaColumns = target != InstallFilter.Installed;
+        vm.Columns.ShowJoinedColumn = target != InstallFilter.Installed;
         ShowLoadingOverlay(targetPreset);
         await Task.Yield();
 
