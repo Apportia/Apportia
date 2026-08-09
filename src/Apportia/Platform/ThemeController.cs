@@ -16,31 +16,68 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
 {
     private static readonly string[] OverriddenKeys =
     [
-        "AppCategoryBrush", "AppColHeaderBrush", "AppControlBorderBrush", "AppHoverBrush",
-        "AppSeparatorBrush", "AppSubTextBrush", "AppTextBrush", "AppWindowBrush",
-        "AutoCompleteBoxSuggestionsListBackground", "AutoCompleteBoxSuggestionsListBorderBrush",
-        "ButtonBackground", "ButtonBackgroundPointerOver", "ButtonBackgroundPressed",
-        "ButtonBorderBrush", "ButtonBorderBrushPointerOver", "ButtonBorderBrushPressed",
-        "ButtonForeground", "ButtonForegroundPointerOver", "ButtonForegroundPressed",
-        "ComboBoxBackground", "ComboBoxBackgroundPointerOver", "ComboBoxBackgroundPressed",
-        "ComboBoxBorderBrush", "ComboBoxBorderBrushPointerOver", "ComboBoxBorderBrushPressed",
-        "ComboBoxDropDownBackground", "ComboBoxDropDownBorderBrush", "ComboBoxForeground",
-        "ComboBoxItemBackgroundPointerOver", "ComboBoxItemBackgroundPressed",
-        "ComboBoxItemForeground", "ComboBoxItemForegroundPointerOver",
-        "MenuFlyoutItemBackgroundPointerOver", "MenuFlyoutItemForeground",
-        "MenuFlyoutItemForegroundPointerOver", "MenuFlyoutPresenterBackground",
+        "AppCategoryBrush",
+        "AppColHeaderBrush",
+        "AppControlBorderBrush",
+        "AppHoverBrush",
+        "AppSeparatorBrush",
+        "AppSubTextBrush",
+        "AppTextBrush",
+        "AppWindowBrush",
+        "AutoCompleteBoxSuggestionsListBackground",
+        "AutoCompleteBoxSuggestionsListBorderBrush",
+        "ButtonBackground",
+        "ButtonBackgroundPointerOver",
+        "ButtonBackgroundPressed",
+        "ButtonBorderBrush",
+        "ButtonBorderBrushPointerOver",
+        "ButtonBorderBrushPressed",
+        "ButtonForeground",
+        "ButtonForegroundPointerOver",
+        "ButtonForegroundPressed",
+        "ComboBoxBackground",
+        "ComboBoxBackgroundPointerOver",
+        "ComboBoxBackgroundPressed",
+        "ComboBoxBorderBrush",
+        "ComboBoxBorderBrushPointerOver",
+        "ComboBoxBorderBrushPressed",
+        "ComboBoxDropDownBackground",
+        "ComboBoxDropDownBorderBrush",
+        "ComboBoxForeground",
+        "ComboBoxItemBackgroundPointerOver",
+        "ComboBoxItemBackgroundPressed",
+        "ComboBoxItemForeground",
+        "ComboBoxItemForegroundPointerOver",
+        "FlyoutBorderThemeBrush",
+        "FlyoutPresenterBackground",
+        "MenuFlyoutItemBackgroundPointerOver",
+        "MenuFlyoutItemForeground",
+        "MenuFlyoutItemForegroundPointerOver",
+        "MenuFlyoutPresenterBackground",
         "MenuFlyoutPresenterBorderBrush",
-        "ScrollBarButtonArrowForeground", "ScrollBarButtonArrowForegroundPointerOver",
-        "ScrollBarButtonBackgroundPointerOver", "ScrollBarPanningThumbBackground",
-        "ScrollBarThumbBackgroundColor", "ScrollBarThumbFillPointerOver",
-        "ScrollBarThumbFillPressed", "ScrollBarTrackFillPointerOver",
-        "SystemControlHighlightAltBaseHighBrush", "SystemControlHighlightListLowBrush",
+        "ScrollBarButtonArrowForeground",
+        "ScrollBarButtonArrowForegroundPointerOver",
+        "ScrollBarButtonBackgroundPointerOver",
+        "ScrollBarPanningThumbBackground",
+        "ScrollBarThumbBackgroundColor",
+        "ScrollBarThumbFillPointerOver",
+        "ScrollBarThumbFillPressed",
+        "ScrollBarTrackFillPointerOver",
+        "SystemControlHighlightAltBaseHighBrush",
+        "SystemControlHighlightListLowBrush",
         "SystemControlHighlightListMediumBrush",
-        "TextControlBackground", "TextControlBackgroundFocused", "TextControlBackgroundPointerOver",
-        "TextControlBorderBrush", "TextControlBorderBrushPointerOver",
-        "TextControlForeground", "TextControlForegroundFocused", "TextControlForegroundPointerOver",
+        "TextControlBackground",
+        "TextControlBackgroundFocused",
+        "TextControlBackgroundPointerOver",
+        "TextControlBorderBrush",
+        "TextControlBorderBrushPointerOver",
+        "TextControlForeground",
+        "TextControlForegroundFocused",
+        "TextControlForegroundPointerOver",
         "TextControlPlaceholderForeground",
-        "ToolTipBackground", "ToolTipBorderBrush", "ToolTipForeground"
+        "ToolTipBackground",
+        "ToolTipBorderBrush",
+        "ToolTipForeground"
     ];
 
     private readonly Dictionary<ThemeVariant, Dictionary<string, Color>> _builtInColors = new();
@@ -180,6 +217,8 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         SetBrush(rd, themeKey, "ComboBoxItemBackgroundPressed", colors.Hover);
         SetBrush(rd, themeKey, "ComboBoxItemForeground", colors.Text);
         SetBrush(rd, themeKey, "ComboBoxItemForegroundPointerOver", colors.Text);
+        SetBrush(rd, themeKey, "FlyoutPresenterBackground", colors.Window);
+        SetBrush(rd, themeKey, "FlyoutBorderThemeBrush", colors.ControlBorder);
         SetBrush(rd, themeKey, "MenuFlyoutItemBackgroundPointerOver", colors.Hover);
         SetBrush(rd, themeKey, "MenuFlyoutItemForeground", colors.Text);
         SetBrush(rd, themeKey, "MenuFlyoutItemForegroundPointerOver", colors.SelectionText);
@@ -212,10 +251,14 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
 
     private void RestoreBuiltInPalette(ResourceDictionary rd, ThemeVariant themeKey)
     {
-        if (!_builtInColors.TryGetValue(themeKey, out var snapshot))
-            return;
-        foreach (var (key, color) in snapshot)
-            SetBrush(rd, themeKey, key, color);
+        _builtInColors.TryGetValue(themeKey, out var snapshot);
+        foreach (var key in OverriddenKeys)
+        {
+            if (snapshot != null && snapshot.TryGetValue(key, out var color))
+                SetBrush(rd, themeKey, key, color);
+            else
+                rd.Remove(key);
+        }
     }
 
     private static void SetBrush(ResourceDictionary rd, ThemeVariant themeKey, string key, Color color)
