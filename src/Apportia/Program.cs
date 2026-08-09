@@ -1,4 +1,6 @@
 using System.IO.Pipes;
+using System.Security.Cryptography;
+using System.Text;
 using Apportia.Platform;
 using Avalonia;
 
@@ -6,20 +8,24 @@ namespace Apportia;
 
 internal static class Program
 {
-    internal static readonly string PipeName = "Apportia." + Environment.UserName;
+    internal static readonly string PipeName = "Apportia." + ComputeInstanceId();
 
     [STAThread]
     public static void Main(string[] args)
     {
-        var lockPath = Path.Combine(Path.GetTempPath(), $"Apportia.{Environment.UserName}.lock");
-        FileStream? lockFile;
+        var dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
+        Directory.CreateDirectory(dataDir);
+        var lockPath = Path.Combine(dataDir, ".lock");
+        FileStream lockFile;
         try
         {
-            lockFile = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            lockFile = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsWindows())
+                lockFile.Lock(0, 1);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            /* another instance already holds the lock, or the lock file belongs to a different user */
+            /* another instance from this install directory already holds the lock */
             if (args.Length > 0)
                 TrySendArgs(args);
             return;
@@ -50,6 +56,15 @@ internal static class Program
         {
             /* best-effort: main instance may not be ready yet */
         }
+    }
+
+    private static string ComputeInstanceId()
+    {
+        var path = AppContext.BaseDirectory;
+        if (OperatingSystem.IsWindows())
+            path = path.ToLowerInvariant();
+        var hash = SHA1.HashData(Encoding.UTF8.GetBytes(path));
+        return Convert.ToHexString(hash, 0, 8);
     }
 
     private static AppBuilder BuildAvaloniaApp()
