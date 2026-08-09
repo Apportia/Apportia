@@ -189,6 +189,8 @@ public static class UiText
         public const string LinuxInstallFontsTip = "Install an improved font pack for better rendering in Windows applications.";
         public const string LinuxApplyThemeOption = "Apportia theme";
         public const string LinuxApplyThemeTip = "Style Windows apps to match the Apportia theme.";
+        public const string LinuxThemeInfoTitle = "About the native theme on Linux";
+        public const string LinuxThemeInfoBody = "Linux gives you a lot of freedom in choosing themes. Which colors Apportia picks up in the Native mode depends entirely on what your system has configured as the current Light and Dark theme.\n\nIf something looks off, check those settings in your desktop environment first.";
 
         #endregion
 

@@ -55,6 +55,7 @@ public sealed class AppSettings
     public string ThemeSource { get; set; } = "Native";
     public bool HasShownTips { get; set; }
     public bool LinuxSetupCompleted { get; set; }
+    public bool LinuxThemeInfoShown { get; set; }
     public string WineMode { get; set; } = "System";
     public string WineVersion { get; set; } = "latest";
     public bool WineInstallFonts { get; set; } = true;
@@ -148,6 +149,7 @@ public sealed class AppSettingsConverter : JsonConverter<AppSettings>
                 case nameof(AppSettings.ThemeSource): s.ThemeSource = reader.GetString() ?? "Native"; break;
                 case nameof(AppSettings.HasShownTips): s.HasShownTips = reader.GetBoolean(); break;
                 case nameof(AppSettings.LinuxSetupCompleted): s.LinuxSetupCompleted = reader.GetBoolean(); break;
+                case nameof(AppSettings.LinuxThemeInfoShown): s.LinuxThemeInfoShown = reader.GetBoolean(); break;
                 case nameof(AppSettings.WineMode): s.WineMode = reader.GetString() ?? "System"; break;
                 case nameof(AppSettings.WineVersion): s.WineVersion = reader.GetString() ?? "latest"; break;
                 case nameof(AppSettings.WineInstallFonts): s.WineInstallFonts = reader.GetBoolean(); break;
@@ -189,6 +191,8 @@ public sealed class AppSettingsConverter : JsonConverter<AppSettings>
             writer.WriteBoolean(nameof(s.HasShownTips), true);
         if (s.LinuxSetupCompleted)
             writer.WriteBoolean(nameof(s.LinuxSetupCompleted), true);
+        if (s.LinuxThemeInfoShown)
+            writer.WriteBoolean(nameof(s.LinuxThemeInfoShown), true);
         if (s.WineMode != "System")
             writer.WriteString(nameof(s.WineMode), s.WineMode);
         if (s.WineVersion != "latest")

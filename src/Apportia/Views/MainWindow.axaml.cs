@@ -2864,15 +2864,44 @@ public partial class MainWindow : Window, IInstallUi
         }
     }
 
-    private void OnThemePointerReleased(object? sender, PointerReleasedEventArgs e)
+    private async void OnThemePointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (e.InitialPressMouseButton == MouseButton.Right)
+        try
+        {
+            if (e.InitialPressMouseButton != MouseButton.Right)
+                return;
+            await ShowLinuxThemeInfoOnceAsync();
             _themeController.Toggle();
+        }
+        catch (Exception ex)
+        {
+            Log.Write(ex.Message);
+        }
     }
 
-    private void OnThemeToggle(object? sender, RoutedEventArgs e)
+    private async void OnThemeToggle(object? sender, RoutedEventArgs e)
     {
-        _themeController.Toggle();
+        try
+        {
+            await ShowLinuxThemeInfoOnceAsync();
+            _themeController.Toggle();
+        }
+        catch (Exception ex)
+        {
+            Log.Write(ex.Message);
+        }
+    }
+
+    private async Task ShowLinuxThemeInfoOnceAsync()
+    {
+        if (!OperatingSystem.IsLinux() || _themeController.Source != ThemeSource.Native)
+            return;
+        var settings = SettingsService.Load();
+        if (settings.LinuxThemeInfoShown)
+            return;
+        settings.LinuxThemeInfoShown = true;
+        SettingsService.Save(settings);
+        await ShowDialog(UiText.Dialog.LinuxThemeInfoTitle, UiText.Dialog.LinuxThemeInfoBody, UiText.Button.Ok);
     }
 
     private void OnThemeSourceNativeSelected(object? sender, RoutedEventArgs e)
