@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Services;
@@ -1083,6 +1084,84 @@ public partial class MainWindow : Window, IInstallUi
     private void OnAppRowPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         _ctrlHeld = (e.KeyModifiers & KeyModifiers.Control) != 0;
+    }
+
+    private void OnTrimmedTextEntered(object? sender, PointerEventArgs e)
+    {
+        if (sender is not TextBlock tb || string.IsNullOrEmpty(tb.Text))
+        {
+            if (sender is Control c)
+                ToolTip.SetTip(c, null);
+            return;
+        }
+
+        var typeface = new Typeface(tb.FontFamily, tb.FontStyle, tb.FontWeight);
+        var ft = new FormattedText(
+            tb.Text,
+            CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            typeface,
+            tb.FontSize,
+            Brushes.Black);
+        ToolTip.SetTip(tb, ft.Width > tb.Bounds.Width + 0.5 ? tb.Text : null);
+    }
+
+    private void OnListAppRowEntered(object? sender, PointerEventArgs e)
+    {
+        if (sender is not Border { DataContext: AppNode node } border)
+            return;
+        if (!node.NeedsUpdate)
+        {
+            ToolTip.SetTip(border, null);
+            return;
+        }
+
+        ToolTip.SetTip(border, BuildUpdateTooltip(node));
+    }
+
+    private static StackPanel BuildUpdateTooltip(AppNode node)
+    {
+        var root = new StackPanel { MaxWidth = 440, Spacing = 2 };
+        root.Children.Add(new TextBlock
+        {
+            Text = node.Name,
+            FontWeight = FontWeight.SemiBold,
+            TextWrapping = TextWrapping.Wrap
+        });
+        if (!string.IsNullOrEmpty(node.Description))
+            root.Children.Add(new TextBlock
+            {
+                Text = node.Description,
+                Opacity = 0.75,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 4)
+            });
+        root.Children.Add(BuildTooltipRow(UiText.Column.MainSortUpdated, node.UpdateDateDisplay));
+        root.Children.Add(BuildVersionRow(node));
+        root.Children.Add(BuildTooltipRow(UiText.Column.MainSortDownload, node.DownloadSize));
+        return root;
+    }
+
+    private static StackPanel BuildTooltipRow(string label, string value)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        row.Children.Add(new TextBlock { Text = label, Opacity = 0.6, Width = 110 });
+        row.Children.Add(new TextBlock { Text = value });
+        return row;
+    }
+
+    private static StackPanel BuildVersionRow(AppNode node)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        row.Children.Add(new TextBlock { Text = UiText.Column.MainVersion, Opacity = 0.6, Width = 110 });
+        row.Children.Add(new TextBlock { Text = node.LocalPackageVersion, Opacity = 0.6 });
+        row.Children.Add(new TextBlock { Text = "→", Opacity = 0.6, Margin = new Thickness(6, 0) });
+        row.Children.Add(new TextBlock
+        {
+            Text = node.PackageVersion,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))
+        });
+        return row;
     }
 
     private async void OnAppRowTapped(object? sender, TappedEventArgs e)

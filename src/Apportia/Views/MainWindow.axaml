@@ -588,6 +588,7 @@
                                         Classes.launchFxRow="{Binding IsLaunchFx}"
                                         Classes.indentedRow="{Binding IsIndented}"
                                         Classes.searchFxRow="{Binding IsSearchFx}"
+                                        PointerEntered="OnListAppRowEntered"
                                         PointerPressed="OnAppRowPointerPressed"
                                         Tapped="OnAppRowTapped">
                                     <Border.ContextMenu>
@@ -792,7 +793,7 @@
                                                        Text="{Binding Name}"
                                                        Margin="0,0,8,0"
                                                        FontSize="{Binding Columns.FontSize}"
-                                                       ToolTip.Tip="{Binding Name}" />
+                                                       PointerEntered="OnTrimmedTextEntered" />
                                             <Border DockPanel.Dock="Left" Width="5" />
                                             <TextBlock DockPanel.Dock="Right"
                                                        Width="{Binding Columns.Used}"
@@ -836,7 +837,7 @@
                                                        FontSize="{Binding Columns.FontSize}" />
                                             <TextBlock Text="{Binding Description}" Margin="4,0,0,0"
                                                        FontSize="{Binding Columns.FontSize}"
-                                                       ToolTip.Tip="{Binding Description}" />
+                                                       PointerEntered="OnTrimmedTextEntered" />
                                         </DockPanel>
                                         <Rectangle Width="3" HorizontalAlignment="Left" VerticalAlignment="Stretch"
                                                    Fill="#4CAF50" IsVisible="{Binding IsRunning}" />
@@ -940,6 +941,8 @@
                                                     Classes.searchFxRow="{Binding IsSearchFx}"
                                                     Width="{Binding Columns.TileWidth}"
                                                     Padding="4,6"
+                                                    ToolTip.Placement="Bottom"
+                                                    ToolTip.VerticalOffset="4"
                                                     PointerPressed="OnAppRowPointerPressed"
                                                     Tapped="OnAppRowTapped">
                                                 <Border.ContextMenu>
@@ -1174,6 +1177,77 @@
                                                                VerticalAlignment="Bottom"
                                                                Fill="#4CAF50" IsVisible="{Binding IsRunning}" />
                                                 </Grid>
+                                                <ToolTip.Tip>
+                                                    <StackPanel MaxWidth="440" Spacing="2">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding Description}" Opacity="0.75"
+                                                                   TextWrapping="Wrap" Margin="0,0,0,4"
+                                                                   IsVisible="{Binding Description, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsVisible="{Binding Columns.ShowJoinedColumn}">
+                                                            <TextBlock
+                                                                Text="{x:Static text:UiText+Column.MainSortJoined}"
+                                                                Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding JoinedDateDisplay}" />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock
+                                                                Text="{x:Static text:UiText+Column.MainSortUpdated}"
+                                                                Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding UpdateDateDisplay}" />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsVisible="{Binding !NeedsUpdate}">
+                                                            <TextBlock Text="{x:Static text:UiText+Column.MainVersion}"
+                                                                       Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding ShownVersion}" />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsVisible="{Binding NeedsUpdate}">
+                                                            <TextBlock Text="{x:Static text:UiText+Column.MainVersion}"
+                                                                       Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding LocalPackageVersion}"
+                                                                       Opacity="0.6" />
+                                                            <TextBlock Text="→" Opacity="0.6" Margin="6,0" />
+                                                            <TextBlock Text="{Binding PackageVersion}"
+                                                                       Foreground="#4CAF50" />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <StackPanel.IsVisible>
+                                                                <MultiBinding
+                                                                    Converter="{x:Static conv:BoolConverters.Or}">
+                                                                    <Binding Path="Columns.ShowMetaColumns" />
+                                                                    <Binding Path="NeedsUpdate" />
+                                                                </MultiBinding>
+                                                            </StackPanel.IsVisible>
+                                                            <TextBlock
+                                                                Text="{x:Static text:UiText+Column.MainSortDownload}"
+                                                                Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding DownloadSize}" />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsVisible="{Binding Columns.ShowMetaColumns}">
+                                                            <TextBlock
+                                                                Text="{x:Static text:UiText+Column.MainSortInstall}"
+                                                                Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding InstallSize}" />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsVisible="{Binding Columns.ShowLastRunColumn}">
+                                                            <TextBlock Text="{x:Static text:UiText+Column.MainSortRun}"
+                                                                       Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding LastRunDisplay}" />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    IsVisible="{Binding Columns.ShowUsedColumn}">
+                                                            <TextBlock
+                                                                Text="{x:Static text:UiText+Column.MainSortUsed}"
+                                                                Opacity="0.6" Width="110" />
+                                                            <TextBlock Text="{Binding UsedSize}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </ToolTip.Tip>
                                             </Border>
                                         </DataTemplate>
 
