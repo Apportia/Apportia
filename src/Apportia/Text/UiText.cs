@@ -24,6 +24,8 @@ public static class UiText
         public const string RunWithParameters = "Run with Parameters...";
         public const string Settings = "Settings";
         public const string Terminate = "Terminate";
+        public const string ThemeSourceNative = "Native";
+        public const string ThemeSourceWindows = "Windows";
         public const string Uninstall = "Uninstall";
         public const string Update = "Update";
         public const string UpdateAndRun = "Update & Run";
@@ -395,6 +397,7 @@ public static class UiText
         public const string TerminateAllApps = "Terminate Running Apps";
         public const string Tips = "Tips";
         public const string ToggleTheme = "Toggle Theme";
+        public const string ThemeSource = "Theme Source";
         public const string UpdateApportia = "Update Apportia";
         public const string UpdateAllApps = "Update all apps with pending updates";
         public const string ViewMode = "View Mode";

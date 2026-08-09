@@ -346,18 +346,46 @@
                             Click="OnImportApp">
                         <svg:Svg Path="avares://Apportia/Assets/Emoji/1f4e5.svg" Width="18" Height="18" />
                     </Button>
-                    <Button x:Name="ThemeToggleButton"
-                            VerticalAlignment="Center"
-                            Height="28"
-                            Padding="6,3"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            ToolTip.Tip="{x:Static text:UiText+Tip.ToggleTheme}"
-                            Click="OnThemeToggle"
-                            PointerReleased="OnThemePointerReleased">
-                        <svg:Svg x:Name="ThemeToggleIcon" Path="avares://Apportia/Assets/Emoji/1f31e.svg" Width="18"
-                                 Height="18" />
-                    </Button>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="ThemeToggleButton"
+                                VerticalAlignment="Center"
+                                Height="28"
+                                Padding="6,3"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                ToolTip.Tip="{x:Static text:UiText+Tip.ToggleTheme}"
+                                Click="OnThemeToggle"
+                                PointerReleased="OnThemePointerReleased">
+                            <svg:Svg x:Name="ThemeToggleIcon" Path="avares://Apportia/Assets/Emoji/1f31e.svg"
+                                     Width="18" Height="18" />
+                        </Button>
+                        <Button x:Name="ThemeSourceButton"
+                                VerticalAlignment="Center"
+                                Height="28"
+                                Padding="2,3"
+                                Margin="-4,0,0,0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                IsVisible="False"
+                                ToolTip.Tip="{x:Static text:UiText+Tip.ThemeSource}">
+                            <Button.Flyout>
+                                <Flyout Placement="Bottom">
+                                    <StackPanel Spacing="4">
+                                        <RadioButton x:Name="ThemeSourceNativeRadio"
+                                                     Content="{x:Static text:UiText+Menu.ThemeSourceNative}"
+                                                     GroupName="ThemeSource"
+                                                     IsChecked="True"
+                                                     IsCheckedChanged="OnThemeSourceNativeSelected" />
+                                        <RadioButton x:Name="ThemeSourceWindowsRadio"
+                                                     Content="{x:Static text:UiText+Menu.ThemeSourceWindows}"
+                                                     GroupName="ThemeSource"
+                                                     IsCheckedChanged="OnThemeSourceWindowsSelected" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                            <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+                        </Button>
+                    </StackPanel>
                     <Button x:Name="TipsButton"
                             VerticalAlignment="Center"
                             Height="28"

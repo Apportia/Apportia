@@ -6,15 +6,55 @@ using Avalonia.Styling;
 
 namespace Apportia.Platform;
 
+public enum ThemeSource
+{
+    Native,
+    Windows
+}
+
 public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIcon)
 {
+    private static readonly string[] OverriddenKeys =
+    [
+        "AppCategoryBrush", "AppColHeaderBrush", "AppControlBorderBrush", "AppHoverBrush",
+        "AppSeparatorBrush", "AppSubTextBrush", "AppTextBrush", "AppWindowBrush",
+        "AutoCompleteBoxSuggestionsListBackground", "AutoCompleteBoxSuggestionsListBorderBrush",
+        "ButtonBackground", "ButtonBackgroundPointerOver", "ButtonBackgroundPressed",
+        "ButtonBorderBrush", "ButtonBorderBrushPointerOver", "ButtonBorderBrushPressed",
+        "ButtonForeground", "ButtonForegroundPointerOver", "ButtonForegroundPressed",
+        "ComboBoxBackground", "ComboBoxBackgroundPointerOver", "ComboBoxBackgroundPressed",
+        "ComboBoxBorderBrush", "ComboBoxBorderBrushPointerOver", "ComboBoxBorderBrushPressed",
+        "ComboBoxDropDownBackground", "ComboBoxDropDownBorderBrush", "ComboBoxForeground",
+        "ComboBoxItemBackgroundPointerOver", "ComboBoxItemBackgroundPressed",
+        "ComboBoxItemForeground", "ComboBoxItemForegroundPointerOver",
+        "MenuFlyoutItemBackgroundPointerOver", "MenuFlyoutItemForeground",
+        "MenuFlyoutItemForegroundPointerOver", "MenuFlyoutPresenterBackground",
+        "MenuFlyoutPresenterBorderBrush",
+        "ScrollBarButtonArrowForeground", "ScrollBarButtonArrowForegroundPointerOver",
+        "ScrollBarButtonBackgroundPointerOver", "ScrollBarPanningThumbBackground",
+        "ScrollBarThumbBackgroundColor", "ScrollBarThumbFillPointerOver",
+        "ScrollBarThumbFillPressed", "ScrollBarTrackFillPointerOver",
+        "SystemControlHighlightAltBaseHighBrush", "SystemControlHighlightListLowBrush",
+        "SystemControlHighlightListMediumBrush",
+        "TextControlBackground", "TextControlBackgroundFocused", "TextControlBackgroundPointerOver",
+        "TextControlBorderBrush", "TextControlBorderBrushPointerOver",
+        "TextControlForeground", "TextControlForegroundFocused", "TextControlForegroundPointerOver",
+        "TextControlPlaceholderForeground",
+        "ToolTipBackground", "ToolTipBorderBrush", "ToolTipForeground"
+    ];
+
+    private readonly Dictionary<ThemeVariant, Dictionary<string, Color>> _builtInColors = new();
     private bool _systemIsDark;
 
-    public void Init()
+    public ThemeSource Source { get; private set; } = ThemeSource.Native;
+
+    public void Init(ThemeSource source)
     {
+        Source = source;
+        CacheBuiltInColors();
         RefreshIcon();
         _systemIsDark = Application.Current!.ActualThemeVariant == ThemeVariant.Dark;
-        ApplyNativeWindowColor(_systemIsDark);
+        ApplyPalette(_systemIsDark);
         Application.Current.ActualThemeVariantChanged += (_, _) =>
         {
             if (Application.Current.RequestedThemeVariant == null)
@@ -45,6 +85,14 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         _ = WinePrefixTheme.ApplyAsync(Application.Current.ActualThemeVariant == ThemeVariant.Dark, true);
     }
 
+    public void SetSource(ThemeSource source)
+    {
+        if (Source == source)
+            return;
+        Source = source;
+        ApplyPalette(Application.Current!.ActualThemeVariant == ThemeVariant.Dark);
+    }
+
     public void ApplyDarkTitlebar(bool dark)
     {
         Win32Window.ApplyDarkTitlebar(window, dark);
@@ -57,21 +105,47 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         var svgName = requested == ThemeVariant.Light ? "1f31e" : requested == ThemeVariant.Dark ? "1f31a" : "1f317";
         themeIcon.Path = $"avares://Apportia/Assets/Emoji/{svgName}.svg";
         ApplyDarkTitlebar(isDark);
-        ApplyNativeWindowColor(isDark);
+        ApplyPalette(isDark);
     }
 
-    private static void ApplyNativeWindowColor(bool isDark)
+    private void CacheBuiltInColors()
     {
-        if (!OperatingSystem.IsLinux())
+        var resources = Application.Current?.Resources;
+        if (resources == null)
             return;
 
-        var colors = LinuxTheme.GetColors(isDark);
-        if (colors == null)
-            return;
+        foreach (var themeKey in new[] { ThemeVariant.Light, ThemeVariant.Dark })
+        {
+            if (!resources.ThemeDictionaries.TryGetValue(themeKey, out var dict) || dict is not ResourceDictionary rd)
+                continue;
+            var snapshot = new Dictionary<string, Color>(OverriddenKeys.Length);
+            foreach (var key in OverriddenKeys)
+            {
+                if (rd.TryGetResource(key, themeKey, out var existing) && existing is SolidColorBrush brush)
+                    snapshot[key] = brush.Color;
+            }
 
+            _builtInColors[themeKey] = snapshot;
+        }
+    }
+
+    private void ApplyPalette(bool isDark)
+    {
         var themeKey = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
         var resources = Application.Current?.Resources;
         if (resources == null || !resources.ThemeDictionaries.TryGetValue(themeKey, out var dict) || dict is not ResourceDictionary rd)
+            return;
+
+        if (Source == ThemeSource.Native && OperatingSystem.IsLinux())
+            ApplyNativePalette(rd, themeKey, isDark);
+        else
+            RestoreBuiltInPalette(rd, themeKey);
+    }
+
+    private static void ApplyNativePalette(ResourceDictionary rd, ThemeVariant themeKey, bool isDark)
+    {
+        var colors = LinuxTheme.GetColors(isDark);
+        if (colors == null)
             return;
 
         SetBrush(rd, themeKey, "AppCategoryBrush", colors.Category);
@@ -134,6 +208,14 @@ public sealed class ThemeController(Window window, Avalonia.Svg.Skia.Svg themeIc
         SetBrush(rd, themeKey, "ToolTipBackground", colors.Category);
         SetBrush(rd, themeKey, "ToolTipBorderBrush", colors.ControlBorder);
         SetBrush(rd, themeKey, "ToolTipForeground", colors.Text);
+    }
+
+    private void RestoreBuiltInPalette(ResourceDictionary rd, ThemeVariant themeKey)
+    {
+        if (!_builtInColors.TryGetValue(themeKey, out var snapshot))
+            return;
+        foreach (var (key, color) in snapshot)
+            SetBrush(rd, themeKey, key, color);
     }
 
     private static void SetBrush(ResourceDictionary rd, ThemeVariant themeKey, string key, Color color)

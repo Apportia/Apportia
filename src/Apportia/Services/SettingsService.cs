@@ -52,6 +52,7 @@ public sealed class AppSettings
     public double ColumnUpdated { get; set; } = 90;
     public double ColumnUsed { get; set; } = 75;
     public string Theme { get; set; } = "Default";
+    public string ThemeSource { get; set; } = "Native";
     public bool HasShownTips { get; set; }
     public bool LinuxSetupCompleted { get; set; }
     public string WineMode { get; set; } = "System";
@@ -144,6 +145,7 @@ public sealed class AppSettingsConverter : JsonConverter<AppSettings>
                 case nameof(AppSettings.ColumnUpdated): s.ColumnUpdated = reader.GetDouble(); break;
                 case nameof(AppSettings.ColumnUsed): s.ColumnUsed = reader.GetDouble(); break;
                 case nameof(AppSettings.Theme): s.Theme = reader.GetString() ?? "Default"; break;
+                case nameof(AppSettings.ThemeSource): s.ThemeSource = reader.GetString() ?? "Native"; break;
                 case nameof(AppSettings.HasShownTips): s.HasShownTips = reader.GetBoolean(); break;
                 case nameof(AppSettings.LinuxSetupCompleted): s.LinuxSetupCompleted = reader.GetBoolean(); break;
                 case nameof(AppSettings.WineMode): s.WineMode = reader.GetString() ?? "System"; break;
@@ -181,6 +183,8 @@ public sealed class AppSettingsConverter : JsonConverter<AppSettings>
             writer.WriteNumber(nameof(s.ColumnUsed), s.ColumnUsed);
         if (s.Theme != "Default")
             writer.WriteString(nameof(s.Theme), s.Theme);
+        if (s.ThemeSource != "Native")
+            writer.WriteString(nameof(s.ThemeSource), s.ThemeSource);
         if (s.HasShownTips)
             writer.WriteBoolean(nameof(s.HasShownTips), true);
         if (s.LinuxSetupCompleted)

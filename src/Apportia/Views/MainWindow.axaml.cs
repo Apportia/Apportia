@@ -2762,7 +2762,11 @@ public partial class MainWindow : Window, IInstallUi
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _themeController.Init();
+        var initialSource = SettingsService.Load().ThemeSource == "Windows"
+            ? ThemeSource.Windows
+            : ThemeSource.Native;
+        _themeController.Init(initialSource);
+        UpdateThemeSourceMenu();
         _selfUpdate = new SelfUpdateCoordinator(_cts.Token);
         UpdateIconSizeButton();
         UpdateCategoryScopeButton();
@@ -2869,6 +2873,27 @@ public partial class MainWindow : Window, IInstallUi
     private void OnThemeToggle(object? sender, RoutedEventArgs e)
     {
         _themeController.Toggle();
+    }
+
+    private void OnThemeSourceNativeSelected(object? sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton { IsChecked: true })
+            _themeController.SetSource(ThemeSource.Native);
+    }
+
+    private void OnThemeSourceWindowsSelected(object? sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton { IsChecked: true })
+            _themeController.SetSource(ThemeSource.Windows);
+    }
+
+    private void UpdateThemeSourceMenu()
+    {
+        ThemeSourceButton.IsVisible = OperatingSystem.IsLinux();
+        if (_themeController.Source == ThemeSource.Windows)
+            ThemeSourceWindowsRadio.IsChecked = true;
+        else
+            ThemeSourceNativeRadio.IsChecked = true;
     }
 
     protected override void OnOpened(EventArgs e)
@@ -3675,6 +3700,7 @@ public partial class MainWindow : Window, IInstallUi
         settings.ColumnUpdated = vm.Columns.Updated;
         settings.ColumnUsed = vm.Columns.Used;
         settings.Theme = theme == ThemeVariant.Light ? "Light" : theme == ThemeVariant.Dark ? "Dark" : "Default";
+        settings.ThemeSource = _themeController.Source == ThemeSource.Windows ? "Windows" : "Native";
         SettingsService.Save(settings);
         SearchHistoryService.Save(_searchHistory);
     }
