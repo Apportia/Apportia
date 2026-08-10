@@ -2106,6 +2106,20 @@ public partial class MainWindow : Window, IInstallUi
         }
     }
 
+    private void OnMenuVisitDownloadPath(object? sender, RoutedEventArgs e)
+    {
+        if (NodeFromMenu(sender) is not { } node || string.IsNullOrEmpty(node.DownloadPath))
+            return;
+        try
+        {
+            Process.Start(new ProcessStartInfo(node.DownloadPath) { UseShellExecute = true });
+        }
+        catch
+        {
+            /* default browser may not be configured */
+        }
+    }
+
     private void OnMenuVisitWebsite(object? sender, RoutedEventArgs e)
     {
         if (NodeFromMenu(sender) is not { } node || string.IsNullOrEmpty(node.Website))

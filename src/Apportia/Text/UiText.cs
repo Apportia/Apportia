@@ -30,6 +30,7 @@ public static class UiText
         public const string Update = "Update";
         public const string UpdateAndRun = "Update & Run";
         public const string VirusTotal = "VirusTotal...";
+        public const string VisitDownloadPath = "Visit Origin";
         public const string VisitWebsite = "Visit Website";
     }
 

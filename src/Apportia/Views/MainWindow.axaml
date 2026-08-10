@@ -797,6 +797,14 @@
                                                              Width="16" Height="16" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
+                                            <MenuItem Header="{x:Static text:UiText+Menu.VisitDownloadPath}"
+                                                      IsVisible="{Binding HasDownloadPath}"
+                                                      Click="OnMenuVisitDownloadPath">
+                                                <MenuItem.Icon>
+                                                    <svg:Svg Path="avares://Apportia/Assets/Emoji/1f300.svg"
+                                                             Width="16" Height="16" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                             <MenuItem Header="{x:Static text:UiText+Menu.VisitWebsite}"
                                                       IsVisible="{Binding HasUrl}"
                                                       Click="OnMenuVisitWebsite">
@@ -1171,6 +1179,16 @@
                                                             <MenuItem.Icon>
                                                                 <svg:Svg
                                                                     Path="avares://Apportia/Assets/Emoji/1f9a0.svg"
+                                                                    Width="16" Height="16" />
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <MenuItem
+                                                            Header="{x:Static text:UiText+Menu.VisitDownloadPath}"
+                                                            IsVisible="{Binding HasDownloadPath}"
+                                                            Click="OnMenuVisitDownloadPath">
+                                                            <MenuItem.Icon>
+                                                                <svg:Svg
+                                                                    Path="avares://Apportia/Assets/Emoji/1f300.svg"
                                                                     Width="16" Height="16" />
                                                             </MenuItem.Icon>
                                                         </MenuItem>

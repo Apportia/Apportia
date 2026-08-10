@@ -171,6 +171,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public bool RequiresJava { get; }
     public bool IsHighlighted => IsInstalled && Columns.HighlightInstalled;
     public bool HasUrl => !string.IsNullOrEmpty(Website);
+    public bool HasDownloadPath => !string.IsNullOrEmpty(DownloadPath);
     public bool IsCustom { get; }
     public bool IsIndented { get; set; }
 
