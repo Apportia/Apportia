@@ -1,0 +1,455 @@
+The SVG icons in ./data/AppImages/Vector/ were sourced from multiple
+upstream icon projects. Each icon retains the license of its original
+source. Icons have been minified (whitespace/metadata stripped) and
+rescaled to 64x64; no artwork itself has been modified.
+
+Application/brand names and logos are trademarks of their respective
+owners. Their inclusion does not imply endorsement.
+
+==========================================================================
+SOURCES AND LICENSES
+==========================================================================
+
+--- Papirus Icon Theme (326 icons) ---------------------------------------
+Homepage: https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
+License:  GNU General Public License v3.0 (GPL-3.0)
+
+--- Numix Icon Theme Circle (17 icons) -----------------------------------
+Homepage: https://github.com/numixproject/numix-icon-theme-circle
+License:  GNU General Public License v3.0 (GPL-3.0)
+
+--- homarr-labs/dashboard-icons (6 icons) --------------------------------
+Homepage: https://github.com/homarr-labs/dashboard-icons
+License:  MIT License
+          Copyright (c) Homarr Labs and contributors
+
+--- Kora Icon Theme (5 icons) --------------------------------------------
+Homepage: https://github.com/bikass/kora
+License:  GNU General Public License v3.0 (GPL-3.0)
+
+--- Tela Icon Theme (4 icons) --------------------------------------------
+Homepage: https://github.com/vinceliuice/Tela-icon-theme
+License:  GNU General Public License v3.0 (GPL-3.0)
+
+--- selfh.st/icons (2 icons) ---------------------------------------------
+Homepage: https://github.com/selfhst/icons
+License:  see upstream LICENSE (per-icon terms may apply)
+
+--- Flat Remix Icon Theme (1 icon) ---------------------------------------
+Homepage: https://github.com/daniruiz/flat-remix
+License:  Creative Commons Attribution-ShareAlike 4.0 (CC-BY-SA-4.0)
+
+--- gilbarbara/logos (1 icon) --------------------------------------------
+Homepage: https://github.com/gilbarbara/logos
+License:  MIT License (brand marks remain property of their respective owners)
+          Copyright (c) Gil Barbara and contributors
+
+--- vectorseek.com (1 icon) ----------------------------------------------
+Homepage: https://vectorseek.com
+License:  Free for non-commercial use (per vectorseek.com terms of use)
+
+--------------------------------------------------------------------------
+MIT License (applies to homarr-labs/dashboard-icons and gilbarbara/logos):
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+==========================================================================
+PER-FILE ATTRIBUTION
+==========================================================================
+
+### Papirus Icon Theme
+  2048Portable.svg  <-  2048-qt.svg
+  AIMPPortable.svg  <-  aimp.svg
+  AbiWordPortable.svg  <-  abiword.svg
+  AbiWordPortableTest.svg  <-  abiword.svg
+  AegisubPortable.svg  <-  aegisub.svg
+  ArthaPortable.svg  <-  artha.svg
+  AssaultCubePortable.svg  <-  assaultcube.svg
+  AudaciousPortable.svg  <-  audacious.svg
+  AudaciousPortableLegacy32bit.svg  <-  audacious.svg
+  AudaciousPortableLegacyWinXP.svg  <-  audacious.svg
+  AudacityPortable.svg  <-  audacity.svg
+  AudacityPortableLegacyWinVista.svg  <-  audacity.svg
+  AudacityPortableLegacyWinXP.svg  <-  audacity.svg
+  AvidemuxPortable.svg  <-  avidemux.svg
+  AvidemuxPortableLegacyWinXP.svg  <-  avidemux.svg
+  BOINCPortable.svg  <-  boinc.svg
+  BOINCPortableLegacyx86.svg  <-  boinc.svg
+  BitcoinPortable.svg  <-  bitcoin.svg
+  BleachBitPortable.svg  <-  bleachbit.svg
+  BleachBitPortableLegacyWin7.svg  <-  bleachbit.svg
+  BleachBitPortableLegacyWinXP.svg  <-  bleachbit.svg
+  BlenderPortable.svg  <-  Blender.svg
+  BlenderPortableLegacy64.svg  <-  Blender.svg
+  BlenderPortableLegacyx86.svg  <-  Blender.svg
+  CelestiaPortable.svg  <-  celestia.svg
+  CherrytreePortable.svg  <-  cherrytree.svg
+  CherrytreePortableLegacyWin7.svg  <-  cherrytree.svg
+  CherrytreePortableLegacyx86.svg  <-  cherrytree.svg
+  ChromiumBSUPortable.svg  <-  chromium-bsu.svg
+  ChromiumPortable.svg  <-  chromium.svg
+  ConvertAllPortable.svg  <-  convertall-icon.svg
+  ConvertAllPortableLegacy32bit.svg  <-  convertall-icon.svg
+  ConvertAllPortableLegacyWin7.svg  <-  convertall-icon.svg
+  ConvertAllPortableLegacyWinVista.svg  <-  convertall-icon.svg
+  ConvertAllPortableLegacyWinXP.svg  <-  convertall-icon.svg
+  CopyQPortable.svg  <-  copyq.svg
+  CopyQPortableLegacyWin7.svg  <-  copyq.svg
+  CudaTextPortable.svg  <-  cudatext-512.svg
+  CuteMarkEdPortable.svg  <-  cutemarked.svg
+  DOSBoxPortable.svg  <-  dosbox.svg
+  DVDStylerPortable.svg  <-  dvdstyler.svg
+  DiaPortable.svg  <-  dia.svg
+  DrawioPortable.svg  <-  draw.io.svg
+  DrawioPortableLegacyWin7.svg  <-  draw.io.svg
+  EkigaPortable.svg  <-  ekiga.svg
+  EvincePortable.svg  <-  evince.svg
+  FalkonPortable.svg  <-  falkon.svg
+  FerdiumPortable.svg  <-  ferdium.svg
+  FileZillaPortable.svg  <-  filezilla.svg
+  FileZillaPortableLegacyWinVista.svg  <-  filezilla.svg
+  FileZillaPortableLegacyWinXP.svg  <-  filezilla.svg
+  FirefoxPortable.svg  <-  firefox.svg
+  FirefoxPortableDeveloper.svg  <-  firefox-developer-edition.svg
+  FirefoxPortableESR.svg  <-  firefox-esr.svg
+  FirefoxPortableLegacy102.svg  <-  firefox.svg
+  FirefoxPortableLegacy115.svg  <-  firefox.svg
+  FirefoxPortableLegacy45.svg  <-  firefox.svg
+  FirefoxPortableLegacy52.svg  <-  firefox.svg
+  FirefoxPortableLegacy68.svg  <-  firefox.svg
+  FirefoxPortableLegacy78.svg  <-  firefox.svg
+  FirefoxPortableLegacy91.svg  <-  firefox.svg
+  FirefoxPortableNightly.svg  <-  firefox-nightly.svg
+  FirefoxPortableNightly64.svg  <-  firefox.svg
+  FirefoxPortableTest.svg  <-  firefox-beta.svg
+  FocusWriterPortable.svg  <-  focuswriter.svg
+  FocusWriterPortableLegacy32bit.svg  <-  focuswriter.svg
+  FontForgePortable.svg  <-  fontforge.svg
+  FontForgePortableLegacyWin7.svg  <-  fontforge.svg
+  FoxitReaderPortable.svg  <-  FoxitReader.svg
+  FreeCADPortable.svg  <-  freecad.svg
+  FreeCADPortableLegacyWin7.svg  <-  freecad.svg
+  FreeCADPortableLegacyWin81.svg  <-  freecad.svg
+  FreeCADPortableLegacyx86.svg  <-  freecad.svg
+  FreeCADPortableTest.svg  <-  freecad.svg
+  FreeDownloadManagerPortable.svg  <-  freedownloadmanager.svg
+  FreeFileSyncPortable.svg  <-  freefilesync.svg
+  FreecivPortable.svg  <-  freeciv-client.svg
+  FreecivPortableLegacy32bit.svg  <-  freeciv-client.svg
+  FreecivPortableLegacyWinXP.svg  <-  freeciv-client.svg
+  GIMPPortable.svg  <-  gimp.svg
+  GIMPPortableLegacy32bit.svg  <-  gimp.svg
+  GIMPPortableLegacyWin7.svg  <-  gimp.svg
+  GIMPPortableLegacyWinXP.svg  <-  gimp.svg
+  GeanyPortable.svg  <-  geany.svg
+  GeanyPortableLegacyx86.svg  <-  geany.svg
+  GnuCashPortable.svg  <-  gnucash.svg
+  GnuCashPortableLegacyWin7.svg  <-  gnucash.svg
+  GnuCashPortableLegacyWinXP.svg  <-  gnucash.svg
+  GnumericPortable.svg  <-  gnumeric.svg
+  GoldenDictPortable.svg  <-  goldendict.svg
+  GollyPortable.svg  <-  golly.svg
+  GoogleChromePortable.svg  <-  google-chrome.svg
+  GoogleChromePortable64.svg  <-  google-chrome.svg
+  GoogleChromePortableBeta.svg  <-  google-chrome-beta.svg
+  GoogleChromePortableDev.svg  <-  com.google.ChromeDev.svg
+  GoogleChromePortableLegacyWin7.svg  <-  google-chrome.svg
+  GoogleChromePortableLegacyWin764.svg  <-  google-chrome.svg
+  GoogleChromePortableLegacyWinXP.svg  <-  google-chrome.svg
+  GrampsPortable.svg  <-  gramps.svg
+  GrampsPortableLegacy3.svg  <-  gramps.svg
+  GrampsPortableLegacyWin7.svg  <-  gramps.svg
+  GrampsPortableLegacyWin8.svg  <-  gramps.svg
+  GrampsPortableLegacyx86.svg  <-  gramps.svg
+  HWiNFOPortable.svg  <-  hwinfo.svg
+  HedgewarsPortable.svg  <-  hedgewars.svg
+  HedgewarsPortableLegacyWinXP.svg  <-  hedgewars.svg
+  HexChatPortable.svg  <-  hexchat.svg
+  HexChatPortableLegacyWinVista.svg  <-  hexchat.svg
+  HexChatPortableLegacyWinXP.svg  <-  hexchat.svg
+  HomeBankPortable.svg  <-  homebank.svg
+  InkscapePortable.svg  <-  inkscape.svg
+  InkscapePortableLegacy32bit.svg  <-  inkscape.svg
+  InkscapePortableLegacyWinXP.svg  <-  inkscape.svg
+  InstantbirdPortable.svg  <-  instantbird.svg
+  IronPortable.svg  <-  iron_product_logo.svg
+  IronPortableLegacyWin7.svg  <-  iron_product_logo.svg
+  Java.svg  <-  java.svg
+  Java64.svg  <-  java.svg
+  JoplinPortable.svg  <-  joplin.svg
+  KVIrcPortable.svg  <-  kvirc.svg
+  KVIrcPortableLegacy32bit.svg  <-  kvirc.svg
+  KchmViewerPortable.svg  <-  kchmviewer.svg
+  KchmViewerPortableLegacyWinXP.svg  <-  kchmviewer.svg
+  KeePassPortable.svg  <-  keepass.svg
+  KeePassProPortable.svg  <-  keepass.svg
+  KeePassXCPortable.svg  <-  keepassxc.svg
+  KiCadPortable.svg  <-  kicad.svg
+  KiCadPortableLegacyWin7.svg  <-  kicad.svg
+  KiCadPortableLegacyWin8.svg  <-  kicad.svg
+  KiTTYPortable.svg  <-  kitty.svg
+  KoboDeluxePortable.svg  <-  KoboDeluxe.svg
+  KritaPortable.svg  <-  krita.svg
+  KritaPortableLegacyWin7x64.svg  <-  krita.svg
+  KritaPortableLegacyx86.svg  <-  krita.svg
+  LBreakout2Portable.svg  <-  lbreakout2.svg
+  LMMSPortable.svg  <-  lmms.svg
+  LazPaintPortable.svg  <-  lazpaint.svg
+  LibreCADPortable.svg  <-  librecad.svg
+  LibreCADPortableLegacyWinXP.svg  <-  librecad.svg
+  LibreOfficePortable.svg  <-  libreoffice.svg
+  LibreOfficePortableLegacy54.svg  <-  libreoffice.svg
+  LibreOfficePortableLegacy75.svg  <-  libreoffice.svg
+  LibreOfficePortableLegacyWin7.svg  <-  libreoffice.svg
+  LibreWolfPortable.svg  <-  librewolf.svg
+  LinksPortable.svg  <-  links.svg
+  LitecoinPortable.svg  <-  litecoin-qt.svg
+  LosslessCutPortable.svg  <-  losslesscut.svg
+  LosslessCutPortableLegacyWin7.svg  <-  losslesscut.svg
+  LynxPortable.svg  <-  lynx.svg
+  LynxPortableLegacyWinXP.svg  <-  lynx.svg
+  MKVToolNixPortable.svg  <-  mkvtoolnix-gui.svg
+  MKVToolNixPortableLegacyWin7.svg  <-  mkvtoolnix-gui.svg
+  MarblePortable.svg  <-  marble.svg
+  MarblePortableLegacyWinXP.svg  <-  marble.svg
+  MediaInfoPortable.svg  <-  mediainfo.svg
+  MediaInfoPortableLegacyWinXP.svg  <-  mediainfo.svg
+  MilkyTrackerPortable.svg  <-  milkytracker.svg
+  MixxxPortable.svg  <-  mixxx.svg
+  MixxxPortableLegacy32bit.svg  <-  mixxx.svg
+  MixxxPortableLegacyWin7.svg  <-  mixxx.svg
+  MnemosynePortable.svg  <-  mnemosyne.svg
+  MnemosynePortableLegacy32bit.svg  <-  mnemosyne.svg
+  MnemosynePortableLegacyWinXP.svg  <-  mnemosyne.svg
+  MoneroPortable.svg  <-  monero.svg
+  MoneyManagerExPortable.svg  <-  money-manager-ex.svg
+  MoneyManagerExPortableLegacyWinVista.svg  <-  money-manager-ex.svg
+  MoneyManagerExPortableLegacyWinXP.svg  <-  money-manager-ex.svg
+  Mp3spltPortable.svg  <-  mp3splt-gtk.svg
+  MumblePortable.svg  <-  mumble.svg
+  MumblePortableLegacy32bit.svg  <-  mumble.svg
+  MuseScorePortable.svg  <-  Musescore.svg
+  MuseScorePortableLegacy3.svg  <-  Musescore.svg
+  MyPaintPortable.svg  <-  mypaint.svg
+  NetHackPortable.svg  <-  nethack.svg
+  NeverballPortable.svg  <-  neverball.svg
+  NotepadPlusPlusPortable.svg  <-  notepad.svg
+  NotepadPlusPlusPortableLegacyWinVista.svg  <-  notepad.svg
+  NotepadPlusPlusPortableLegacyWinXP.svg  <-  notepad.svg
+  NotesPortable.svg  <-  notes.svg
+  OBSPortable.svg  <-  obs.svg
+  OBSPortableLegacy32bit.svg  <-  obs.svg
+  OBSPortableLegacyWin7.svg  <-  obs.svg
+  OpenJDK.svg  <-  openjdk-8.svg
+  OpenJDK64.svg  <-  openjdk-8.svg
+  OpenShotPortable.svg  <-  openshot.svg
+  OpenTTDPortable.svg  <-  openttd.svg
+  OpenTTDPortableLegacyWinVista.svg  <-  openttd.svg
+  OpenTTDPortableLegacyWinXP.svg  <-  openttd.svg
+  OperaGXPortable.svg  <-  opera.svg
+  OperaPortable.svg  <-  opera.svg
+  OperaPortableLegacy12.svg  <-  opera.svg
+  OperaPortableLegacyWin7.svg  <-  opera.svg
+  OtterBrowserPortable.svg  <-  otter-browser.svg
+  PDFArrangerPortable.svg  <-  pdfarranger.svg
+  PDFArrangerPortableLegacyWin7.svg  <-  pdfarranger.svg
+  PeaZipPortable.svg  <-  peazip.svg
+  Pencil2DPortable.svg  <-  pencil2d.svg
+  PhotoFilmStripPortable.svg  <-  photofilmstrip.svg
+  PicardPortable.svg  <-  picard.svg
+  PicardPortableLegacy32bit.svg  <-  picard.svg
+  PidginPortable.svg  <-  pidgin.svg
+  PingusPortable.svg  <-  pingus.svg
+  PintaPortable.svg  <-  pinta.svg
+  PintaPortableLegacyWin7.svg  <-  pinta.svg
+  PixeloramaPortable.svg  <-  pixelorama.svg
+  PokerTHPortable.svg  <-  pokerth.svg
+  PokerTHPortableLegacyWinXP.svg  <-  pokerth.svg
+  PuTTYPortable.svg  <-  putty.svg
+  QOwnNotesPortable.svg  <-  QOwnNotes.svg
+  QOwnNotesPortableLegacy32Bit.svg  <-  QOwnNotes.svg
+  QOwnNotesPortableLegacyWin7.svg  <-  QOwnNotes.svg
+  QalculatePortable.svg  <-  qalculate.svg
+  QalculatePortableLegacyWin7.svg  <-  qalculate.svg
+  QmmpPortable.svg  <-  qmmp.svg
+  QuiteRSSPortable.svg  <-  quiterss.svg
+  QupZillaPortable.svg  <-  qupzilla.svg
+  RSSGuardPortable.svg  <-  rssguard.svg
+  RawTherapeePortable.svg  <-  rawtherapee.svg
+  RawTherapeePortableLegacy32bit.svg  <-  rawtherapee.svg
+  RedNotebookPortable.svg  <-  rednotebook.svg
+  RedNotebookPortableLegacyx86.svg  <-  rednotebook.svg
+  RetroSharePortable.svg  <-  retroshare.svg
+  RocksnDiamondsPortable.svg  <-  rocksndiamonds.svg
+  SMPlayerPortable.svg  <-  smplayer.svg
+  SauerbratenPortable.svg  <-  sauerbraten.svg
+  ScribusPortable.svg  <-  scribus.svg
+  ScribusPortableLegacyWinXP.svg  <-  scribus.svg
+  ScribusPortableTest.svg  <-  scribus.svg
+  SeaMonkeyPortable.svg  <-  seamonkey.svg
+  SeaMonkeyPortableLegacy32bit.svg  <-  seamonkey.svg
+  SeaMonkeyPortableLegacyWinXP.svg  <-  seamonkey.svg
+  ShotcutPortable.svg  <-  shotcut.svg
+  ShotcutPortableLegacyWin7.svg  <-  shotcut.svg
+  ShotcutPortableLegacyWinXP.svg  <-  shotcut.svg
+  ShotcutPortableLegacyx86.svg  <-  shotcut.svg
+  SigilPortable.svg  <-  sigil.svg
+  SigilPortableLegacy32bit.svg  <-  sigil.svg
+  SigilPortableLegacyWinXP.svg  <-  sigil.svg
+  SolfegePortable.svg  <-  solfege.svg
+  SpeedCrunchPortable.svg  <-  speedcrunch.svg
+  SqlitemanPortable.svg  <-  sqliteman.svg
+  StellaPortable.svg  <-  stella.svg
+  StellaPortableLegacy32bit.svg  <-  stella.svg
+  StellariumPortable.svg  <-  stellarium.svg
+  StellariumPortableLegacy32bit.svg  <-  stellarium.svg
+  StellariumPortableLegacyWinVista.svg  <-  stellarium.svg
+  StellariumPortableLegacyWinXP.svg  <-  stellarium.svg
+  SuperTuxKartPortable.svg  <-  supertuxkart.svg
+  SuperTuxPortable.svg  <-  supertux.svg
+  SuperTuxPortableLegacyWin7.svg  <-  supertux.svg
+  SuperTuxPortableLegacyWinXP.svg  <-  supertux.svg
+  SylpheedPortable.svg  <-  sylpheed.svg
+  TeamViewerPortable.svg  <-  TeamViewer.svg
+  TelegramDesktopPortable.svg  <-  telegram-desktop.svg
+  TelegramDesktopPortableLegacyWinXP.svg  <-  telegram-desktop.svg
+  TheManaWorldPortable.svg  <-  manaplus.svg
+  ThunderbirdPortable.svg  <-  thunderbird.svg
+  ThunderbirdPortableLegacy102.svg  <-  thunderbird.svg
+  ThunderbirdPortableLegacy115.svg  <-  thunderbird.svg
+  ThunderbirdPortableLegacy52.svg  <-  thunderbird.svg
+  ThunderbirdPortableLegacy68.svg  <-  thunderbird.svg
+  ThunderbirdPortableLegacy91.svg  <-  thunderbird.svg
+  ThunderbirdPortableTest.svg  <-  thunderbird-beta.svg
+  Tipp10Portable.svg  <-  tipp10.svg
+  TransmissionPortable.svg  <-  transmission.svg
+  TweetDeckPortable.svg  <-  tweetdeck.svg
+  VLCPortable.svg  <-  vlc.svg
+  VentoyPortable.svg  <-  ventoy.svg
+  VeraCryptPortable.svg  <-  veracrypt.svg
+  VeraCryptPortableLegacyTC.svg  <-  veracrypt.svg
+  VeraCryptPortableLegacyWin7.svg  <-  veracrypt.svg
+  WarMUXPortable.svg  <-  warmux.svg
+  Warzone2100Portable.svg  <-  warzone2100.svg
+  Warzone2100PortableLegacyWinVista.svg  <-  warzone2100.svg
+  Warzone2100PortableLegacyWinXP.svg  <-  warzone2100.svg
+  WesnothPortable.svg  <-  wesnoth.svg
+  WesnothPortableLegacyWin7.svg  <-  wesnoth.svg
+  WesnothPortableLegacyWinXP.svg  <-  wesnoth.svg
+  WesnothPortableLegacyx86.svg  <-  wesnoth.svg
+  WhalebirdPortable.svg  <-  whalebird.svg
+  WorkravePortable.svg  <-  workrave.svg
+  X-MotoPortable.svg  <-  xmoto.svg
+  XAMPP.svg  <-  xampp.svg
+  XnConvertPortable.svg  <-  xnconvert.svg
+  XnConvertPortableLegacy32bit.svg  <-  xnconvert.svg
+  XnViewMPPortable.svg  <-  xnviewmp.svg
+  XnViewMPPortableLegacy32bit.svg  <-  xnviewmp.svg
+  XnViewPortable.svg  <-  xnview.svg
+  XonoticPortable.svg  <-  xonotic.svg
+  ZazPortable.svg  <-  zaz.svg
+  ZettlrPortable.svg  <-  Zettlr.svg
+  ZimPortable.svg  <-  zim.svg
+  ZintPortable.svg  <-  zint.svg
+  ZintPortableLegacyWinVista.svg  <-  zint.svg
+  ZintPortableLegacyWinXP.svg  <-  zint.svg
+  ZoteroPortable.svg  <-  zotero.svg
+  ZulipPortable.svg  <-  zulip.svg
+  balenaEtcherPortable.svg  <-  balena-etcher.svg
+  balenaEtcherPortableLegacyWin7.svg  <-  balena-etcher.svg
+  balenaEtcherPortableLegacyWin8.svg  <-  balena-etcher.svg
+  calibrePortable.svg  <-  calibre.svg
+  calibrePortableLegacyx86.svg  <-  calibre.svg
+  cdrtfePortable.svg  <-  x-content-blank-cd.svg
+  darktablePortable.svg  <-  darktable.svg
+  darktablePortableLegacyWin7.svg  <-  darktable.svg
+  darktablePortableLegacyWin81.svg  <-  darktable.svg
+  fdmPortable.svg  <-  freedownloadmanager.svg
+  fdmPortableLegacyWin7.svg  <-  freedownloadmanager.svg
+  freacPortable.svg  <-  freac.svg
+  gPodderPortable.svg  <-  gpodder.svg
+  gPodderPortableLegacyWinXP.svg  <-  gpodder.svg
+  gVimPortable.svg  <-  gvim.svg
+  gVimPortableLegacyWinXP.svg  <-  gvim.svg
+  qBittorrentPortable.svg  <-  qbittorrent.svg
+  qBittorrentPortableLegacyWin7.svg  <-  qbittorrent.svg
+  qBittorrentPortableLegacyWinXP.svg  <-  qbittorrent.svg
+  qBittorrentPortableLegacyx86.svg  <-  qbittorrent.svg
+  qToxPortable.svg  <-  qtox.svg
+  qToxPortableLegacyWin7.svg  <-  qtox.svg
+  qToxPortableLegacyWinVista.svg  <-  qtox.svg
+  qToxPortableLegacyWinXP.svg  <-  qtox.svg
+  sPortable.svg  <-  skype.svg
+  uGetPortable.svg  <-  uget.svg
+  zmPortable.svg  <-  Zoom.svg
+  zmPortableLegacy32bit.svg  <-  Zoom.svg
+  zmPortableLegacyWin7.svg  <-  Zoom.svg
+
+### Numix Icon Theme Circle
+  BrainWorkshopPortable.svg  <-  brainworkshop.svg
+  CppcheckPortable.svg  <-  cppcheck-gui.svg
+  CppcheckPortableLegacy32bit.svg  <-  cppcheck-gui.svg
+  CppcheckPortableLegacyWin7.svg  <-  cppcheck-gui.svg
+  CppcheckPortableLegacyWinVista.svg  <-  cppcheck-gui.svg
+  CppcheckPortableLegacyWinXP.svg  <-  cppcheck-gui.svg
+  DiffpdfPortable.svg  <-  diffpdf.svg
+  DogecoinPortable.svg  <-  dogecoin.svg
+  IceBreakerPortable.svg  <-  icebreaker.svg
+  KanriPortable.svg  <-  kanri.svg
+  KeepNotePortable.svg  <-  keepnote.svg
+  PaulStretchPortable.svg  <-  paulstretch.svg
+  PowderToyPortable.svg  <-  powder-toy.svg
+  PowderToyPortableLegacyWinXP.svg  <-  powder-toy.svg
+  SUMoPortable.svg  <-  sumo.svg
+  Scorched3DPortable.svg  <-  scorched3d.svg
+  TaskCoachPortable.svg  <-  taskcoach.svg
+
+### homarr-labs/dashboard-icons
+  FoldingAtHomePortable.svg  <-  foldingathome.svg
+  FoldingAtHomePortableLegacy32bit.svg  <-  foldingathome.svg
+  HandBrakePortable.svg  <-  handbrake.svg
+  HandBrakePortableLegacyWin7.svg  <-  handbrake.svg
+  OpenOfficePortable.svg  <-  apache-openoffice.svg
+  PushoverPortable.svg  <-  pushover.svg
+
+### Kora Icon Theme
+  MaxthonPortable.svg  <-  maxthon.svg
+  MaxthonPortableLegacyWin7.svg  <-  maxthon.svg
+  SudokuPortable.svg  <-  sudoku.svg
+  UNetbootinPortable.svg  <-  unetbootin.svg
+  aMSNPortable.svg  <-  amsn.svg
+
+### Tela Icon Theme
+  LagrangePortable.svg  <-  lagrange.svg
+  PasswordSafePortable.svg  <-  passwordsafe.svg
+  PasswordSafePortableLegacyWinVista.svg  <-  passwordsafe.svg
+  PasswordSafePortableLegacyWinXP.svg  <-  passwordsafe.svg
+
+### selfh.st/icons
+  uTorrentPortable.svg  <-  utorrent.svg
+  uTorrentPortableLegacyWinXP.svg  <-  utorrent.svg
+
+### Flat Remix Icon Theme
+  DetectItEasyPortable.svg  <-  detect-it-easy.svg
+
+### gilbarbara/logos
+  T-3Portable.svg  <-  t3.svg
+
+### vectorseek.com
+  7-ZipPortable.svg  <-  7-zip (vectorseek.com)
