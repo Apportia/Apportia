@@ -193,7 +193,7 @@ jobs:
               for section in data:
                   candidate = section.replace("++", "Plus")
                   if section in stems or candidate in stems:
-                      data[section]["HasVectorIcon"] = True
+                      data[section]["HasVectorIcon"] = "true"
 
 
           def order_fields(fields):
