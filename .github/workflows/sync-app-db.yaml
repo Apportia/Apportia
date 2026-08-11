@@ -180,7 +180,20 @@ jobs:
               "JoinedDate", "DisplayVersion", "PackageVersion", "UpdateDate",
               "DownloadFile", "Hash", "DownloadPath", "UserAgent", "DownloadSize", "InstallSize",
               "RequiresJava",
+              "HasVectorIcon",
           ]
+
+          VECTOR_DIR = Path("data/AppImages/Vector")
+
+
+          def annotate_vector_icons(data):
+              if not VECTOR_DIR.is_dir():
+                  return
+              stems = {p.stem for p in VECTOR_DIR.glob("*.svg")}
+              for section in data:
+                  candidate = section.replace("++", "Plus")
+                  if section in stems or candidate in stems:
+                      data[section]["HasVectorIcon"] = True
 
 
           def order_fields(fields):
@@ -490,6 +503,7 @@ jobs:
                   print(f"Extracted:  {ini_path.name}")
                   ini_date = date.fromtimestamp(os.stat(ini_path).st_mtime).isoformat()
                   data = process_ini(ini_path, wget_ua, chrome_ua, ini_date)
+              annotate_vector_icons(data)
               print(f"Validating: {_count_valid(data):,} complete entries...")
               if not is_valid(data):
                   print("Aborted: result did not pass validation.")
