@@ -8421,15 +8421,15 @@
     "Category": "Development",
     "SubCategory": "Text Editors & IDEs",
     "JoinedDate": "2007-07-05",
-    "DisplayVersion": "8.9.7",
-    "PackageVersion": "8.9.7.0",
-    "UpdateDate": "2026-07-14",
-    "DownloadFile": "NotepadPlusPlusPortable_8.9.7.paf.exe",
-    "Hash": "5f0d676af3c867d5a05ee801f4b6a94f1020f9ea42187cb198bf6b939fa6316e",
+    "DisplayVersion": "8.9.8",
+    "PackageVersion": "8.9.8.0",
+    "UpdateDate": "2026-08-25",
+    "DownloadFile": "NotepadPlusPlusPortable_8.9.8.paf.exe",
+    "Hash": "e74bef093c3558a56613a7a108adc8c9fee353657b11302f6859934fc970a3b5",
     "DownloadPath": "http://downloads.portableapps.com/portableapps/Notepad++Portable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "11",
-    "InstallSize": "37"
+    "InstallSize": "34"
   },
   "Notepad++PortableLegacyWinXP": {
     "Name": "Notepad++ (Legacy WinXP)",
