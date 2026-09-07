@@ -8813,7 +8813,7 @@
     "Hash_Vietnamese": "58b1225ffb2022d020c37a6e96065489395ceee836131250f07e48f0df73e692"
   },
   "OpenJDK": {
-    "Name": "OpenJDK Legacy 17",
+    "Name": "OpenJDK Legacy 17 (Discontinued)",
     "Description": "Java development kit (JDK)",
     "Website": "https://portableapps.com/apps/utilities/OpenJDK",
     "Category": "Utilities",
@@ -8851,7 +8851,7 @@
     "HasVectorIcon": "true"
   },
   "OpenJDKJRE": {
-    "Name": "OpenJDK JRE Legacy 17",
+    "Name": "OpenJDK JRE Legacy 17 (Discontinued)",
     "Description": "Java runtime environment (JRE)",
     "Website": "https://portableapps.com/apps/utilities/OpenJDKJRE",
     "Category": "Utilities",
@@ -12513,11 +12513,11 @@
     "Category": "Utilities",
     "SubCategory": "Remote Connectivity",
     "JoinedDate": "2009-11-02",
-    "DisplayVersion": "15.81.5",
-    "PackageVersion": "15.81.5.0",
-    "UpdateDate": "2026-08-27",
-    "DownloadFile": "TeamViewerPortable_15.81.5.paf.exe",
-    "Hash": "58eb2757e74127b14b2960b3ecaf01b8868dcaadbfae126ff23839bae29396c1",
+    "DisplayVersion": "15.81.6",
+    "PackageVersion": "15.81.6.0",
+    "UpdateDate": "2026-09-06",
+    "DownloadFile": "TeamViewerPortable_15.81.6.paf.exe",
+    "Hash": "8d393b82632e9c3fd0658695a683dc7ae3c993ebdf1d016bd42fcb5af1429af9",
     "DownloadPath": "http://downloads.portableapps.com/portableapps/TeamViewerPortable",
     "UserAgent": "Wget/1.21.4",
     "DownloadSize": "69",
