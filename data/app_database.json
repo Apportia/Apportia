@@ -4991,10 +4991,10 @@
     "SubCategory": "Browsers",
     "Class": "Advanced",
     "JoinedDate": "2009-05-28",
-    "DisplayVersion": "158.0.8106.0",
-    "PackageVersion": "158.0.8106.0",
-    "UpdateDate": "2026-10-26",
-    "DownloadFile": "GoogleChromePortableDev_157.0.8092.0_online.paf.exe",
+    "DisplayVersion": "158.0.8117.2",
+    "PackageVersion": "158.0.8117.2",
+    "UpdateDate": "2026-10-27",
+    "DownloadFile": "GoogleChromePortableDev_158.0.8117.2_online.paf.exe",
     "Hash": "0718e1069da8d380e21926f5c75894f61ff8e459d5e375f63857f2f98d78d0dc",
     "DownloadPath": "https://downloads.sourceforge.net/portableapps",
     "UserAgent": "Wget/1.21.4",
@@ -10849,7 +10849,7 @@
     "HasVectorIcon": "true"
   },
   "RawTherapeePortableLegacyWin8": {
-    "Name": "RawTherapee",
+    "Name": "RawTherapee (Legacy Win8)",
     "Description": "RAW image processor",
     "Website": "https://portableapps.com/apps/graphics_pictures/rawtherapee-portable",
     "Category": "Graphics & Pictures",
@@ -10867,7 +10867,7 @@
     "InstallSize": "210"
   },
   "RawTherapeePortableLegacyWin7": {
-    "Name": "RawTherapee",
+    "Name": "RawTherapee (Legacy Win7)",
     "Description": "RAW image processor",
     "Website": "https://portableapps.com/apps/graphics_pictures/rawtherapee-portable",
     "Category": "Graphics & Pictures",
