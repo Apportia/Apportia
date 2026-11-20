@@ -547,7 +547,7 @@ public partial class CustomAppWindow : Window
         _tempIconPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
         try
         {
-            _galleryIcons[index].Icon.Save(_tempIconPath);
+            _galleryIcons[index].Icon.Save(_tempIconPath, PngBitmapEncoderOptions.Default);
             IconBox.Text = string.Empty;
         }
         catch

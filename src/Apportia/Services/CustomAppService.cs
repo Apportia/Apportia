@@ -701,12 +701,12 @@ public static class CustomAppService
         using var bmp = new Bitmap(sourcePath);
         if (bmp.PixelSize is { Width: <= maxSize, Height: <= maxSize })
         {
-            bmp.Save(destPath);
+            bmp.Save(destPath, PngBitmapEncoderOptions.Default);
             return;
         }
 
         using var scaled = bmp.CreateScaledBitmap(new PixelSize(maxSize, maxSize));
-        scaled.Save(destPath);
+        scaled.Save(destPath, PngBitmapEncoderOptions.Default);
     }
 
     private static async Task CopyDirectoryAsync(
