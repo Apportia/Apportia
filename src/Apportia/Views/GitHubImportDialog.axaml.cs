@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using Apportia.Platform;
 using Apportia.Services;
@@ -284,7 +285,7 @@ public partial class GitHubImportDialog : Window
                 Version = GitHubVersion.Derive(_release.TagName, _release.PublishedAt);
                 DisplayVersion = _release.TagName;
                 var publishedLocal = _release.PublishedAt?.LocalDateTime ?? DateTime.Today;
-                UpdateDate = publishedLocal.ToString("yyyy-MM-dd");
+                UpdateDate = publishedLocal.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 DownloadPath = $"https://github.com/{OwnerBox.Text?.Trim()}/{repo}";
                 DownloadFile = asset.Name;
                 DownloadFileMtime = publishedLocal;

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using Apportia.Models;
 using Apportia.Platform;
 using Apportia.Services;
@@ -419,8 +420,8 @@ public partial class VirusTotalDialog : Window
         {
             var scanDate = DateTimeOffset.FromUnixTimeSeconds(attrs.LastAnalysisDate).LocalDateTime;
             ScanDateText.Text = isStale
-                ? string.Format(UiText.Dialog.VtScanDateCachedFormat, scanDate)
-                : string.Format(UiText.Dialog.VtScanDateFormat, scanDate);
+                ? string.Format(DisplayCulture.Current, UiText.Dialog.VtScanDateCachedFormat, scanDate)
+                : string.Format(DisplayCulture.Current, UiText.Dialog.VtScanDateFormat, scanDate);
         }
 
         FileInfoList.ItemsSource = Filter([
@@ -704,7 +705,7 @@ public partial class VirusTotalDialog : Window
 
     private static string FormatUnixDate(long unixSeconds)
     {
-        return DateTimeOffset.FromUnixTimeSeconds(unixSeconds).LocalDateTime.ToString("yyyy-MM-dd HH:mm");
+        return DateTimeOffset.FromUnixTimeSeconds(unixSeconds).LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
     }
 
     private static EntryRow[] Filter(EntryRow[] rows)

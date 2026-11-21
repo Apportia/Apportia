@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using Apportia.Models;
 using Apportia.Services;
 using Avalonia.Media.Imaging;
@@ -177,8 +178,8 @@ public sealed class AppNode : INotifyPropertyChanged
 
     public bool NeedsUpdate =>
         IsInstalled &&
-        DateTime.TryParse(UpdateDate, out var ud) &&
-        DateTime.TryParse(CurrentDate, out var cd) &&
+        DateTime.TryParse(UpdateDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var ud) &&
+        DateTime.TryParse(CurrentDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var cd) &&
         cd.Date < ud.Date;
 
     public bool ShowCancelInstall { get; private set; }

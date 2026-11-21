@@ -2687,7 +2687,7 @@ public partial class MainWindow : Window, IInstallUi
 
     private static bool IsAppUpToDate(string exePath, string updateDate)
     {
-        if (!DateTime.TryParse(updateDate, out var date))
+        if (!DateTime.TryParse(updateDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
             return true;
         return File.GetLastWriteTime(exePath).Date >= date.Date;
     }
@@ -2754,7 +2754,7 @@ public partial class MainWindow : Window, IInstallUi
         var entry = new AppEntry(
             sectionName, displayName, string.Empty, string.Empty, string.Empty, string.Empty,
             string.Empty, string.Empty, string.Empty,
-            DateTime.Today.ToString("yyyy-MM-dd"),
+            DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             downloadFile, sha256, string.Empty, string.Empty, string.Empty, string.Empty);
         var node = new AppNode(entry, _iconManager.GetIcon(sectionName, vm.Columns.IconSize), vm.Columns);
 

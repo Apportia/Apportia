@@ -1,3 +1,4 @@
+using System.Globalization;
 using Apportia.Text;
 using Apportia.ViewModels;
 using Avalonia.Threading;
@@ -222,7 +223,7 @@ public sealed class InstallOrchestrator(
             var sevenZipPath = AppDeployService.FindSevenZip(appsBaseDir);
             var isLegacyArchive =
                 sevenZipPath != null &&
-                DateTime.TryParse(node.UpdateDate, out var updateDtCheck) &&
+                DateTime.TryParse(node.UpdateDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var updateDtCheck) &&
                 updateDtCheck.Date < new DateTime(2016, 1, 1);
 
             ui.SetDownloadProgress(0, true);
@@ -355,14 +356,14 @@ public sealed class InstallOrchestrator(
                             Log.Write(string.Format(LogText.Install.BackupRestoreFailedFormat, node.SectionName, ex.Message));
                         }
 
-                    if (DateTime.TryParse(node.UpdateDate, out var updateDate))
+                    if (DateTime.TryParse(node.UpdateDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var updateDate))
                     {
                         File.SetLastWriteTime(appExeAfter, updateDate);
-                        node.CurrentDate = updateDate.ToString("yyyy-MM-dd");
+                        node.CurrentDate = updateDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        node.CurrentDate = File.GetLastWriteTime(appExeAfter).ToString("yyyy-MM-dd");
+                        node.CurrentDate = File.GetLastWriteTime(appExeAfter).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                     }
 
                     if (launch && !node.IsPlugin)

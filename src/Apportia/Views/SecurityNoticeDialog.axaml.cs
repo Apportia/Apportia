@@ -55,7 +55,7 @@ public partial class SecurityNoticeDialog : Window
 
     private static string FormatDate(string raw)
     {
-        return DateOnly.TryParse(raw, out var d) ? d.ToString("MMMM d, yyyy") : raw;
+        return DateOnly.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? d.ToString("MMMM d, yyyy", DisplayCulture.Current) : raw;
     }
 
     private static double MeasureTextWidth(string text, double fontSize, FontWeight fontWeight, double minWidth, double maxWidth)

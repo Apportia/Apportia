@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using Apportia.Text;
 using Apportia.ViewModels;
@@ -160,8 +161,8 @@ public static class CustomAppUpdater
             node.SetVersion(release.TagName, newVersion);
             node.LocalDisplayVersion = release.TagName;
             node.LocalPackageVersion = newVersion;
-            node.SetUpstreamUpdateDate(storedLocal.ToString("yyyy-MM-dd"));
-            node.CurrentDate = storedLocal.ToString("yyyy-MM-dd");
+            node.SetUpstreamUpdateDate(storedLocal.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            node.CurrentDate = storedLocal.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             return true;
         }
         finally

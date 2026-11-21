@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -25,7 +26,7 @@ public sealed class TerminateRow(RunningAppsService.KillCandidate source) : INot
     public string PidText => Source.Pid.ToString();
     public string Exe => Source.Exe;
     public string CommandLine => Source.CommandLine;
-    public string StartedText => Source.StartTime is { } t ? t.ToString("HH:mm:ss") : "\u2014";
+    public string StartedText => Source.StartTime is { } t ? t.ToString("HH:mm:ss", CultureInfo.InvariantCulture) : "\u2014";
     public bool IsElevated => Source.IsElevated;
 
     public string CpuText
@@ -195,7 +196,7 @@ public partial class TerminateDialog : Window
             anyRam = true;
         }
 
-        var cpuText = cpuSum is { } cs ? cs.ToString("0.0") + " %" : "\u2014";
+        var cpuText = cpuSum is { } cs ? cs.ToString("0.0", CultureInfo.InvariantCulture) + " %" : "\u2014";
         var ramText = anyRam ? AppDiskUsageService.FormatSize(ramSum) : "\u2014";
         var freeText = _systemFreeBytes is { } fb ? AppDiskUsageService.FormatSize(fb) : "\u2014";
         TotalsText.Text = string.Format(UiText.Dialog.TerminateTotalsFormat, cpuText, ramText, freeText);
@@ -419,7 +420,7 @@ public partial class TerminateDialog : Window
                     continue;
                 if (m.CpuPercent is { } pct)
                 {
-                    row.CpuText = pct.ToString("0.0") + " %";
+                    row.CpuText = pct.ToString("0.0", CultureInfo.InvariantCulture) + " %";
                     row.CpuPercent = pct;
                     row.CpuBrush = CpuBrushForPercent(pct);
                     cpuSum = (cpuSum ?? 0) + pct;
@@ -437,7 +438,7 @@ public partial class TerminateDialog : Window
                 _lastSample[row.Source.Pid] = (m.CpuTime, now);
             }
 
-            group.CpuText = cpuSum is { } c ? c.ToString("0.0") + " %" : "\u2014";
+            group.CpuText = cpuSum is { } c ? c.ToString("0.0", CultureInfo.InvariantCulture) + " %" : "\u2014";
             group.CpuPercent = cpuSum;
             group.CpuBrush = cpuSum is { } gc ? CpuBrushForPercent(gc) : null;
             group.RamText = anyRam ? AppDiskUsageService.FormatSize(ramSum) : "\u2014";

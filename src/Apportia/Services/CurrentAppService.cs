@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Apportia.Models;
 using Apportia.Text;
@@ -170,7 +171,7 @@ public static class CurrentAppService
                 {
                     var marker = PluginService.GetMarkerFile(section);
                     date = File.Exists(marker)
-                        ? File.GetLastWriteTime(marker).ToString("yyyy-MM-dd")
+                        ? File.GetLastWriteTime(marker).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                         : string.Empty;
                 }
                 else
@@ -178,7 +179,7 @@ public static class CurrentAppService
                     var appDir = AppDeployService.GetInstallDir(section);
                     var (exe, _) = AppExecutableService.Resolve(appDir, section);
                     date = exe != null
-                        ? File.GetLastWriteTime(exe).ToString("yyyy-MM-dd")
+                        ? File.GetLastWriteTime(exe).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                         : string.Empty;
                 }
 

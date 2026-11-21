@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Apportia.Models;
 using Apportia.Services;
@@ -1013,7 +1014,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private static DateTime ParseDate(string s)
     {
-        return DateTime.TryParse(s, out var d) ? d : DateTime.MinValue;
+        return DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? d : DateTime.MinValue;
     }
 
     private async Task ScanDiskUsageAsync(DiskUsageCache cache)

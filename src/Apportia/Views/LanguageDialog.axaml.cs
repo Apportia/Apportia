@@ -23,7 +23,7 @@ public partial class LanguageDialog : Window
         _entries.AddRange(
             languageKeys
                 .Select(k => (Key: k, Display: AppLanguageService.FormatLanguageName(k)))
-                .OrderBy(e => e.Display));
+                .OrderBy(e => e.Display, StringComparer.Ordinal));
 
         LanguageList.ItemsSource = _entries.Select(e => e.Display).ToList();
 

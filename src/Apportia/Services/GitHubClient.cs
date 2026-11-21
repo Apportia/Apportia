@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
@@ -70,7 +71,7 @@ public static class GitHubClient
         CancellationToken ct = default,
         bool allowAtomFallback = true)
     {
-        string? error = null;
+        string? error;
         try
         {
             using var response = await Http.GetAsync(
@@ -199,7 +200,7 @@ public static class GitHubClient
                       {
                           TagName = ExtractTag(entry.Element(ns + "id")?.Value ?? string.Empty),
                           Name = entry.Element(ns + "title")?.Value ?? string.Empty,
-                          PublishedAt = DateTimeOffset.TryParse(entry.Element(ns + "updated")?.Value, out var dt) ? dt : null,
+                          PublishedAt = DateTimeOffset.TryParse(entry.Element(ns + "updated")?.Value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt) ? dt : null,
                           Body = entry.Element(ns + "content")?.Value ?? string.Empty,
                           Assets = []
                       })

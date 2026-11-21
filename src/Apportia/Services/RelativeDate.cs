@@ -1,3 +1,4 @@
+using System.Globalization;
 using Apportia.Text;
 
 namespace Apportia.Services;
@@ -6,7 +7,7 @@ public static class RelativeDate
 {
     public static string Format(string? raw)
     {
-        return !DateTime.TryParse(raw, out var date) ? raw ?? string.Empty : Format(date);
+        return !DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? raw ?? string.Empty : Format(date);
     }
 
     public static string Format(DateTime date)
@@ -16,7 +17,7 @@ public static class RelativeDate
 
     public static string FormatShort(string? raw)
     {
-        return !DateTime.TryParse(raw, out var date) ? raw ?? string.Empty : FormatShort(date);
+        return !DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? raw ?? string.Empty : FormatShort(date);
     }
 
     public static string FormatShort(DateTime date)
@@ -36,7 +37,7 @@ public static class RelativeDate
         var hasTime = date.TimeOfDay != TimeSpan.Zero;
 
         if (delta.Ticks < 0)
-            return date.ToString(longForm ? "dddd, MMMM d, yyyy" : "MMM d, yyyy");
+            return date.ToString(longForm ? "dddd, MMMM d, yyyy" : "MMM d, yyyy", DisplayCulture.Current);
 
         if (hasTime && delta.TotalHours < 24)
             return FormatSubDay(delta, longForm);
@@ -44,7 +45,7 @@ public static class RelativeDate
         var days = hasTime
             ? (int)delta.TotalDays
             : (DateTime.Today - date.Date).Days;
-        var dayName = date.ToString("dddd");
+        var dayName = date.ToString("dddd", DisplayCulture.Current);
         return days switch
         {
             0 => longForm ? $"{dayName}, {UiText.Header.RelToday}" : UiText.Header.RelToday,
@@ -53,7 +54,7 @@ public static class RelativeDate
                 ? string.Format(UiText.Header.RelDaysAgoFormat, dayName, days)
                 : string.Format(UiText.Header.RelDaysAgoShortFormat, days),
             7 => longForm ? $"{dayName}, {UiText.Header.RelWeekAgo}" : UiText.Header.RelWeekAgo,
-            _ => date.ToString(longForm ? "dddd, MMMM d, yyyy" : "MMM d, yyyy")
+            _ => date.ToString(longForm ? "dddd, MMMM d, yyyy" : "MMM d, yyyy", DisplayCulture.Current)
         };
     }
 

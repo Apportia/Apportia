@@ -1,3 +1,4 @@
+using System.Globalization;
 using Apportia.Platform;
 using Apportia.Services;
 using Apportia.Text;
@@ -659,10 +660,10 @@ public partial class CustomAppWindow : Window
         UpdateDate = !string.IsNullOrEmpty(_presetUpdateDate)
             ? _presetUpdateDate
             : File.Exists(versionPath)
-                ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
+                ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                 : string.Empty;
         DisplayVersion = string.IsNullOrEmpty(_rawVersion) ? Version : _rawVersion;
-        JoinedDate = DateTime.Today.ToString("yyyy-MM-dd");
+        JoinedDate = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         IconSourcePath = effectiveIconPath;
         Success = true;
         Close();
@@ -713,7 +714,7 @@ public partial class CustomAppWindow : Window
         var versionRelPath = string.IsNullOrEmpty(VersionSourceExe) ? exeFile : VersionSourceExe;
         var versionPath = Path.Combine(_appDir, versionRelPath);
         UpdateDate = File.Exists(versionPath)
-            ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd")
+            ? File.GetLastWriteTime(versionPath).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             : string.Empty;
         DisplayVersion = string.IsNullOrEmpty(_rawVersion) ? Version : _rawVersion;
         IconSourcePath = effectiveIconPath ?? string.Empty;

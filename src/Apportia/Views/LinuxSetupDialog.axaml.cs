@@ -271,7 +271,7 @@ public partial class LinuxSetupDialog : Window
 
             if (!HasEnoughDiskSpace(out var freeGib))
             {
-                ErrorText.Text = string.Format(UiText.Dialog.LinuxDiskSpaceInsufficientFormat, RequiredDiskGib, freeGib, WineService.LinuxDir);
+                ErrorText.Text = string.Format(DisplayCulture.Current, UiText.Dialog.LinuxDiskSpaceInsufficientFormat, RequiredDiskGib, freeGib, WineService.LinuxDir);
                 ErrorText.IsVisible = true;
                 return;
             }
@@ -362,7 +362,7 @@ public partial class LinuxSetupDialog : Window
 
         if (chosen == null)
         {
-            ErrorText.Text = string.Format(UiText.Dialog.LinuxPrefixLocationFailedFormat, tmpFreeGib);
+            ErrorText.Text = string.Format(DisplayCulture.Current, UiText.Dialog.LinuxPrefixLocationFailedFormat, tmpFreeGib);
             ErrorText.IsVisible = true;
             return false;
         }

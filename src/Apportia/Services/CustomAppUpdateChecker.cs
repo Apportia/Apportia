@@ -1,3 +1,4 @@
+using System.Globalization;
 using Apportia.ViewModels;
 
 namespace Apportia.Services;
@@ -26,8 +27,8 @@ public static class CustomAppUpdateChecker
                 continue;
 
             var upstreamDate = published.LocalDateTime.Date;
-            if (!DateTime.TryParse(node.UpdateDate, out var localDate) || upstreamDate > localDate.Date)
-                node.SetUpstreamUpdateDate(upstreamDate.ToString("yyyy-MM-dd"));
+            if (!DateTime.TryParse(node.UpdateDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var localDate) || upstreamDate > localDate.Date)
+                node.SetUpstreamUpdateDate(upstreamDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         }
     }
 

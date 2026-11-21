@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Apportia.Models;
@@ -70,7 +71,7 @@ public static class CustomAppService
 
             if (File.Exists(versionExePath))
             {
-                var actualDate = File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd");
+                var actualDate = File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 if (actualDate != info.UpdateDate || string.IsNullOrEmpty(version))
                 {
                     var rawVersion = ReadExeVersion(versionExePath);
@@ -84,7 +85,7 @@ public static class CustomAppService
 
             if (string.IsNullOrEmpty(info.JoinedDate))
             {
-                info.JoinedDate = DateTime.Today.ToString("yyyy-MM-dd");
+                info.JoinedDate = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 dirty = true;
             }
 
@@ -146,7 +147,7 @@ public static class CustomAppService
         while (Directory.Exists(Path.Combine(CustomAppsDir, folderName)) &&
                !(isInPlace && string.Equals(folderName, currentName, StringComparison.OrdinalIgnoreCase)))
         {
-            var suffix = Convert.ToHexString(RandomNumberGenerator.GetBytes(4)).ToLower();
+            var suffix = Convert.ToHexString(RandomNumberGenerator.GetBytes(4)).ToLowerInvariant();
             folderName = baseFolderName + "_" + suffix;
         }
 
@@ -224,7 +225,7 @@ public static class CustomAppService
         }
 
         var updateDate = File.Exists(versionExePath)
-            ? File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd")
+            ? File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             : string.Empty;
 
         var info = new CustomAppInfo
@@ -235,7 +236,7 @@ public static class CustomAppService
             Website = website,
             Category = category,
             SubCategory = subCategory,
-            JoinedDate = DateTime.Today.ToString("yyyy-MM-dd"),
+            JoinedDate = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             DisplayVersion = displayVersion,
             PackageVersion = version,
             VersionSource = versionSource,
@@ -408,12 +409,12 @@ public static class CustomAppService
         db.TryGetValue(sectionName, out var existing);
         var joinedDate = existing?.JoinedDate;
         if (string.IsNullOrEmpty(joinedDate))
-            joinedDate = DateTime.Today.ToString("yyyy-MM-dd");
+            joinedDate = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         var versionExeRelPath = string.IsNullOrEmpty(versionSource) ? exeFile : versionSource;
         var versionExePath = Path.Combine(CustomAppsDir, sectionName, versionExeRelPath);
         var updateDate = File.Exists(versionExePath)
-            ? File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd")
+            ? File.GetLastWriteTime(versionExePath).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             : string.Empty;
 
         var info = new CustomAppInfo
@@ -455,7 +456,7 @@ public static class CustomAppService
             if (!db.TryGetValue(sectionName, out var info))
                 return;
             info.DownloadFile = newDownloadFile;
-            info.UpdateDate = releaseDate.ToString("yyyy-MM-dd");
+            info.UpdateDate = releaseDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             if (!string.IsNullOrEmpty(newVersion))
                 info.PackageVersion = newVersion;
             if (!string.IsNullOrEmpty(newDisplayVersion))

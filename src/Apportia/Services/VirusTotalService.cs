@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -84,7 +85,7 @@ public static class VirusTotalService
     {
         var path = CachePath(sha256);
         if (!File.Exists(path)) return VtFileStatus.Unknown;
-        if (!DateTime.TryParse(appUpdateDate, out var updateDt)) return VtFileStatus.Fresh;
+        if (!DateTime.TryParse(appUpdateDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var updateDt)) return VtFileStatus.Fresh;
         return File.GetLastWriteTime(path).Date < updateDt.Date ? VtFileStatus.Stale : VtFileStatus.Fresh;
     }
 
