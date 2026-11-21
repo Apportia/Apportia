@@ -10,6 +10,15 @@ namespace Apportia.Views;
 
 public partial class GitHubImportDialog : Window
 {
+    private static readonly string[] ExcludedKeywords =
+        ["arm64", "aarch64", "riscv64", "macos", "osx", "darwin"];
+
+    private static readonly string[] Arch64Keywords =
+        ["amd64", "x64", "64bit", "64-bit"];
+
+    private static readonly string[] Arch32Keywords =
+        ["x86", "32bit", "32-bit"];
+
     private readonly Func<string, string, string, string, string, Task<bool>>? _confirmHashMismatch;
     private List<GhAsset> _assets = [];
     private GhRelease? _release;
@@ -100,12 +109,13 @@ public partial class GitHubImportDialog : Window
             AutoUpdateWarning.IsVisible = AutoUpdateCheck.IsChecked == true && _releaseAgeYears >= 2.0;
 
             var sevenZipAvailable = AppDeployService.FindSevenZip(AppDeployService.AppsDir) != null;
-            _assets = _assets.Where(a => IsSupportedAsset(a.Name, sevenZipAvailable)).ToList();
+            _assets = _assets
+                      .Where(a => IsSupportedAsset(a.Name, sevenZipAvailable))
+                      .OrderBy(a => AssetSortKey(a.Name))
+                      .ToList();
 
             AssetCombo.ItemsSource = _assets.Select(a => a.Name).ToList();
-            var firstPaf = _assets.FindIndex(a => a.Name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase));
-            var firstZip = _assets.FindIndex(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
-            AssetCombo.SelectedIndex = firstPaf >= 0 ? firstPaf : firstZip >= 0 ? firstZip : _assets.Count > 0 ? 0 : -1;
+            AssetCombo.SelectedIndex = _assets.Count > 0 ? 0 : -1;
 
             ReleasePanel.IsVisible = true;
             DownloadButton.IsVisible = _assets.Count > 0;
@@ -391,10 +401,36 @@ public partial class GitHubImportDialog : Window
 
     private static bool IsSupportedAsset(string name, bool sevenZipAvailable)
     {
-        if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-            return true;
+        if (ContainsAny(name, ExcludedKeywords))
+            return false;
         if (name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase))
             return true;
+        if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            return true;
         return sevenZipAvailable && name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static (int Type, int Portable, int Arch) AssetSortKey(string name)
+    {
+        var type = name.EndsWith(".paf.exe", StringComparison.OrdinalIgnoreCase) ? 0 : 1;
+        var portable = name.Contains("portable", StringComparison.OrdinalIgnoreCase) ? 0 : 1;
+        int arch;
+        if (ContainsAny(name, Arch64Keywords))
+            arch = 0;
+        else if (name.Contains("x86_64", StringComparison.OrdinalIgnoreCase))
+            arch = 1;
+        else if (ContainsAny(name, Arch32Keywords))
+            arch = 3;
+        else
+            arch = 2;
+        return (type, portable, arch);
+    }
+
+    private static bool ContainsAny(string name, string[] needles)
+    {
+        foreach (var n in needles)
+            if (name.Contains(n, StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
     }
 }
