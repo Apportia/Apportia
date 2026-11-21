@@ -28,10 +28,6 @@ public static partial class SelfUpdater
     private static readonly string StatePath =
         Path.Combine(AppContext.BaseDirectory, "Data", "self_update.json");
 
-    // TODO: remove in a future version — migration path from the pre-json marker file
-    private static readonly string LegacyMarkerPath =
-        Path.Combine(AppContext.BaseDirectory, "Data", "selfupdate_lastcheck");
-
     public static SelfUpdateInfo? LoadPending()
     {
         var current = Assembly.GetEntryAssembly()?.GetName().Version;
@@ -166,10 +162,6 @@ public static partial class SelfUpdater
         {
             Directory.CreateDirectory(Path.GetDirectoryName(StatePath)!);
             File.WriteAllText(StatePath, JsonSerializer.Serialize(state, SelfUpdateJsonContext.Default.SelfUpdateState));
-
-            // TODO: remove in a future version — cleanup of the pre-selfupdate.json marker file
-            if (File.Exists(LegacyMarkerPath))
-                File.Delete(LegacyMarkerPath);
         }
         catch
         {
