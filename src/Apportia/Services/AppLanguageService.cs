@@ -63,8 +63,8 @@ public static class AppLanguageService
                 dict = File.Exists(FilePath)
                     ? JsonSerializer.Deserialize(
                           File.ReadAllText(FilePath),
-                          LanguagesJsonContext.Default.DictionaryStringString)
-                      ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                          LanguagesJsonContext.Default.DictionaryStringString) ??
+                      new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
             catch

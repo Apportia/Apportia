@@ -156,8 +156,8 @@ public sealed class AppSettingsConverter : JsonConverter<AppSettings>
                 case nameof(AppSettings.WineApplyTheme): s.WineApplyTheme = reader.GetBoolean(); break;
                 case nameof(AppSettings.ViewPresets):
                     s.ViewPresets = JsonSerializer.Deserialize(
-                                        ref reader, SettingsJsonContext.Default.DictionaryStringFilterViewSettings)
-                                    ?? new Dictionary<string, FilterViewSettings>();
+                                        ref reader, SettingsJsonContext.Default.DictionaryStringFilterViewSettings) ??
+                                    new Dictionary<string, FilterViewSettings>();
                     break;
                 default: reader.Skip(); break;
             }
@@ -223,8 +223,8 @@ public static class SettingsService
             if (File.Exists(FilePath))
                 return JsonSerializer.Deserialize(
                            File.ReadAllText(FilePath),
-                           SettingsJsonContext.Default.AppSettings)
-                       ?? new AppSettings();
+                           SettingsJsonContext.Default.AppSettings) ??
+                       new AppSettings();
         }
         catch
         {

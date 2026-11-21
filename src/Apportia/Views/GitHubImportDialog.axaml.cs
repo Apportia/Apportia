@@ -383,8 +383,8 @@ public partial class GitHubImportDialog : Window
         var trimmed = input?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
             return [];
-        if (Uri.TryCreate(trimmed, UriKind.Absolute, out var uri)
-            && uri.Host.EndsWith("github.com", StringComparison.OrdinalIgnoreCase))
+        if (Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) &&
+            uri.Host.EndsWith("github.com", StringComparison.OrdinalIgnoreCase))
             return uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         return trimmed.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
     }

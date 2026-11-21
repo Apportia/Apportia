@@ -26,8 +26,8 @@ public partial class MainWindow : Window, IInstallUi
     private readonly CancellationTokenSource _cts = new();
     private readonly AppDeployService _deployService;
     private readonly AppImageManager _iconManager;
-    private readonly InstallOrchestrator _installer;
     private readonly InstallQueue _installQueue = new();
+    private readonly InstallOrchestrator _installer;
     private readonly List<string> _ipcArgBatch = [];
     private readonly ThemeController _themeController;
 
@@ -243,8 +243,8 @@ public partial class MainWindow : Window, IInstallUi
         var initialFilter = CurrentAppService.LoadAll().Count > 0
             ? InstallFilter.Installed
             : InstallFilter.All;
-        var preset = settings.ViewPresets.GetValueOrDefault(initialFilter.ToString())
-                     ?? FilterViewSettings.Default;
+        var preset = settings.ViewPresets.GetValueOrDefault(initialFilter.ToString()) ??
+                     FilterViewSettings.Default;
 
         ApplyToolbarLabelsFromPreset(preset, initialFilter);
     }
@@ -288,8 +288,8 @@ public partial class MainWindow : Window, IInstallUi
             preset = settings.ViewPresets.GetValueOrDefault(
                          (CurrentAppService.LoadAll().Count > 0
                              ? InstallFilter.Installed
-                             : InstallFilter.All).ToString())
-                     ?? FilterViewSettings.Default;
+                             : InstallFilter.All).ToString()) ??
+                     FilterViewSettings.Default;
         }
 
         var isGrid = preset.IsGridView;
@@ -568,8 +568,8 @@ public partial class MainWindow : Window, IInstallUi
         if (vm.InstallFilter == target)
             return;
 
-        var targetPreset = SettingsService.Load().ViewPresets.GetValueOrDefault(target.ToString())
-                           ?? _defaultView;
+        var targetPreset = SettingsService.Load().ViewPresets.GetValueOrDefault(target.ToString()) ??
+                           _defaultView;
         ApplyToolbarLabelsFromPreset(targetPreset, target);
         vm.Columns.HighlightInstalled = target == InstallFilter.All;
         vm.Columns.ShowUsedColumn = target == InstallFilter.Installed;
@@ -2412,9 +2412,9 @@ public partial class MainWindow : Window, IInstallUi
     private async Task RunLinuxLaunchPrepAsync(AppSettings settings)
     {
         var prefixNeedsInit = !WineService.IsPrefixReady();
-        var fontsNeedDownload = settings.WineInstallFonts
-                                && (!Directory.Exists(WineService.FontsDir)
-                                    || !Directory.EnumerateFiles(WineService.FontsDir).Any());
+        var fontsNeedDownload = settings.WineInstallFonts &&
+                                (!Directory.Exists(WineService.FontsDir) ||
+                                 !Directory.EnumerateFiles(WineService.FontsDir).Any());
         var showBar = prefixNeedsInit || fontsNeedDownload || settings.WineInstallFonts || settings.WineApplyTheme;
         if (!showBar)
             return;

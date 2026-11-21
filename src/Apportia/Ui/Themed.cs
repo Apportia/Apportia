@@ -59,8 +59,8 @@ public static class Themed
         if (host is ThemeVariantScope scope)
             return scope.ActualThemeVariant;
         var topLevel = TopLevel.GetTopLevel(host);
-        return topLevel?.ActualThemeVariant
-               ?? Application.Current?.ActualThemeVariant
-               ?? ThemeVariant.Default;
+        return topLevel?.ActualThemeVariant ??
+               Application.Current?.ActualThemeVariant ??
+               ThemeVariant.Default;
     }
 }

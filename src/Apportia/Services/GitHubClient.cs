@@ -100,9 +100,9 @@ public static class GitHubClient
         var status = (int)response.StatusCode;
         if (status == 404)
             return UiText.Dialog.GitHubImportFetchFailedNotFound;
-        if (status == 403
-            && response.Headers.TryGetValues("x-ratelimit-remaining", out var remaining)
-            && remaining.Any(v => v == "0"))
+        if (status == 403 &&
+            response.Headers.TryGetValues("x-ratelimit-remaining", out var remaining) &&
+            remaining.Any(v => v == "0"))
             return UiText.Dialog.GitHubImportFetchFailedRateLimit;
         if (status == 401)
             return UiText.Dialog.GitHubImportFetchFailedUnauthorized;

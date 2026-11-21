@@ -195,8 +195,8 @@ public partial class VirusTotalDialog : Window
         var cached = VirusTotalService.LoadCachedResult(sha256);
         if (cached?.Data?.Attributes != null)
         {
-            var isStale = entry.Sha256 != null
-                          && VirusTotalService.GetCacheStatus(entry.Sha256, _node?.UpdateDate ?? string.Empty) == VtFileStatus.Stale;
+            var isStale = entry.Sha256 != null &&
+                          VirusTotalService.GetCacheStatus(entry.Sha256, _node?.UpdateDate ?? string.Empty) == VtFileStatus.Stale;
             DisplayResult(cached, sha256, isStale);
             ScanButton.Content = UiText.Button.VtRescan;
         }
@@ -616,8 +616,8 @@ public partial class VirusTotalDialog : Window
 
     private void UpdateScanButtonState()
     {
-        ScanButton.IsEnabled = FileCombo.SelectedItem is VtFileEntry
-                               && !string.IsNullOrWhiteSpace(ApiKeyBox.Text?.Trim());
+        ScanButton.IsEnabled = FileCombo.SelectedItem is VtFileEntry &&
+                               !string.IsNullOrWhiteSpace(ApiKeyBox.Text?.Trim());
     }
 
     private void ResizeWindow(double width, double height)

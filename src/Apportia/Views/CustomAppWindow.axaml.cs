@@ -22,8 +22,8 @@ public partial class CustomAppWindow : Window
     private readonly string _appDir = string.Empty;
     private readonly string _initialDescription = string.Empty;
     private readonly string _initialExe = string.Empty;
-    private readonly bool _initializing;
     private readonly string _initialName = string.Empty;
+    private readonly bool _initializing;
     private readonly bool _isEditMode;
     private readonly string? _presetFolderCleanup;
     private readonly string? _presetUpdateDate;

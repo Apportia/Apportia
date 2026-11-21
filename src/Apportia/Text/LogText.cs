@@ -2,8 +2,11 @@ namespace Apportia.Text;
 
 /// Centralized log-message string constants for the Apportia.
 /// Nested classes group strings by originating service or view. Fields are
-/// sorted alphabetically within each class. Fields with a <c>Format</c>
-/// suffix are <see cref="string.Format(string, object?)" /> patterns.
+/// sorted alphabetically within each class. Fields with a
+/// <c>Format</c>
+/// suffix are
+/// <see cref="string.Format(string, object?)" />
+/// patterns.
 public static class LogText
 {
     public static class AppImage

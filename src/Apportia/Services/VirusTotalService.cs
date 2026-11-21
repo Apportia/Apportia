@@ -30,8 +30,8 @@ public static class VirusTotalService
         try
         {
             var text = File.ReadAllText(IndexPath);
-            if (JsonSerializer.Deserialize(text, VirusTotalJsonContext.Default.VtStore) is { } store
-                && (store.ApiKey != null || store.Files.Count > 0))
+            if (JsonSerializer.Deserialize(text, VirusTotalJsonContext.Default.VtStore) is { } store &&
+                (store.ApiKey != null || store.Files.Count > 0))
             {
                 store.Files = new Dictionary<string, Dictionary<string, string>>(store.Files, StringComparer.OrdinalIgnoreCase);
                 return store;
@@ -39,8 +39,8 @@ public static class VirusTotalService
 
             // Migrate: old format was a plain {app: {file: sha256}} dict without the VtStore wrapper
             if (JsonSerializer.Deserialize(
-                    text, typeof(Dictionary<string, Dictionary<string, string>>), VirusTotalJsonContext.Default)
-                is Dictionary<string, Dictionary<string, string>> { Count: > 0 } oldFiles)
+                    text, typeof(Dictionary<string, Dictionary<string, string>>),
+                    VirusTotalJsonContext.Default) is Dictionary<string, Dictionary<string, string>> { Count: > 0 } oldFiles)
                 return new VtStore { Files = new Dictionary<string, Dictionary<string, string>>(oldFiles, StringComparer.OrdinalIgnoreCase) };
         }
         catch

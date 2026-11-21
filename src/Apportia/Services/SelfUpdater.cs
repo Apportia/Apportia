@@ -136,10 +136,10 @@ public static partial class SelfUpdater
 
     private static SelfUpdateInfo? ToInfo(PendingSnapshot? snapshot, Version current)
     {
-        if (snapshot == null
-            || string.IsNullOrEmpty(snapshot.Version)
-            || !Version.TryParse(snapshot.Version, out var v)
-            || v <= current)
+        if (snapshot == null ||
+            string.IsNullOrEmpty(snapshot.Version) ||
+            !Version.TryParse(snapshot.Version, out var v) ||
+            v <= current)
             return null;
         return new SelfUpdateInfo(v, snapshot.DownloadUrl, snapshot.Changelog, snapshot.Sha256, snapshot.AssetName);
     }

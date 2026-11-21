@@ -79,8 +79,8 @@ public static class WineService
                 probe = parent;
             }
 
-            return Probe("findmnt", ["-n", "-o", "FSTYPE", "-T", probe])
-                   ?? Probe("stat", ["-f", "-c", "%T", probe]);
+            return Probe("findmnt", ["-n", "-o", "FSTYPE", "-T", probe]) ??
+                   Probe("stat", ["-f", "-c", "%T", probe]);
         }
         catch
         {
@@ -134,8 +134,8 @@ public static class WineService
         if (!OperatingSystem.IsLinux())
             return;
 
-        var wine = ResolveWineBinary()
-                   ?? throw new InvalidOperationException(LogText.Wine.WineNotAvailable);
+        var wine = ResolveWineBinary() ??
+                   throw new InvalidOperationException(LogText.Wine.WineNotAvailable);
         var prefix = ResolvePrefix();
 
         if (IsPrefixValid(prefix))
@@ -156,8 +156,8 @@ public static class WineService
         psi.ArgumentList.Add("-u");
         ApplyEnv(psi);
 
-        using var proc = Process.Start(psi)
-                         ?? throw new InvalidOperationException(
+        using var proc = Process.Start(psi) ??
+                         throw new InvalidOperationException(
                              string.Format(LogText.Wine.LaunchFailedFormat, wine, prefix));
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, ct);
@@ -243,9 +243,9 @@ public static class WineService
 
     private static bool IsPrefixValid(string prefix)
     {
-        return File.Exists(Path.Combine(prefix, "system.reg"))
-               && File.Exists(Path.Combine(prefix, "user.reg"))
-               && Directory.Exists(Path.Combine(prefix, "drive_c", "windows", "system32"));
+        return File.Exists(Path.Combine(prefix, "system.reg")) &&
+               File.Exists(Path.Combine(prefix, "user.reg")) &&
+               Directory.Exists(Path.Combine(prefix, "drive_c", "windows", "system32"));
     }
 
     public static void ApplyEnv(ProcessStartInfo psi)

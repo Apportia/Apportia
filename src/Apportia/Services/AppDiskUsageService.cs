@@ -93,8 +93,8 @@ public static class AppDiskUsageService
                 var name = d.Name.TrimEnd('/');
                 if (name.Length == 0)
                     name = "/";
-                var matches = full == name
-                              || full.StartsWith(name == "/" ? "/" : name + "/", StringComparison.Ordinal);
+                var matches = full == name ||
+                              full.StartsWith(name == "/" ? "/" : name + "/", StringComparison.Ordinal);
                 if (matches && name.Length > bestLen)
                 {
                     best = d;

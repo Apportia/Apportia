@@ -121,8 +121,8 @@ public partial class LinuxSetupDialog : Window
 
     private static bool FontsInstalled()
     {
-        return Directory.Exists(WineService.FontsDir)
-               && Directory.EnumerateFiles(WineService.FontsDir).Any();
+        return Directory.Exists(WineService.FontsDir) &&
+               Directory.EnumerateFiles(WineService.FontsDir).Any();
     }
 
     private void UpdateVersionPanelVisibility()

@@ -563,8 +563,8 @@ public sealed class AppDeployService : IDisposable
             };
         }
 
-        using var process = Process.Start(psi)
-                            ?? throw new InvalidOperationException(LogText.Install.SevenZipStartFailed);
+        using var process = Process.Start(psi) ??
+                            throw new InvalidOperationException(LogText.Install.SevenZipStartFailed);
         await process.WaitForExitAsync(ct);
     }
 

@@ -34,9 +34,9 @@ public static class LinuxTheme
             ini.TryGetValue("KDE", out var kde);
 
             // AutomaticLookAndFeel lets KDE manage separate dark/light packages
-            var automatic = kde != null
-                            && kde.TryGetValue("AutomaticLookAndFeel", out var autoVal)
-                            && autoVal.Equals("true", StringComparison.OrdinalIgnoreCase);
+            var automatic = kde != null &&
+                            kde.TryGetValue("AutomaticLookAndFeel", out var autoVal) &&
+                            autoVal.Equals("true", StringComparison.OrdinalIgnoreCase);
             if (automatic)
             {
                 var lafKey = isDark ? "DefaultDarkLookAndFeel" : "DefaultLightLookAndFeel";
@@ -47,9 +47,9 @@ public static class LinuxTheme
             }
 
             string? activeScheme = null;
-            if (ini.TryGetValue("General", out var general)
-                && general.TryGetValue("ColorScheme", out var directScheme)
-                && !string.IsNullOrWhiteSpace(directScheme))
+            if (ini.TryGetValue("General", out var general) &&
+                general.TryGetValue("ColorScheme", out var directScheme) &&
+                !string.IsNullOrWhiteSpace(directScheme))
             {
                 activeScheme = directScheme;
             }
@@ -106,8 +106,8 @@ public static class LinuxTheme
 
             foreach (var (key, section) in ini)
             {
-                if (key.StartsWith("kdeglobals", StringComparison.OrdinalIgnoreCase)
-                    && section.TryGetValue("ColorScheme", out var scheme))
+                if (key.StartsWith("kdeglobals", StringComparison.OrdinalIgnoreCase) &&
+                    section.TryGetValue("ColorScheme", out var scheme))
                     return scheme;
             }
         }
@@ -150,9 +150,9 @@ public static class LinuxTheme
             // BackgroundAlternate equals Window in many KDE themes, so blend as last resort
             var headerBg = KdeColor(header, "BackgroundNormal");
             var viewBgAlt = KdeColor(view, "BackgroundAlternate");
-            var colHeader = headerBg
-                            ?? (viewBgAlt != null && viewBgAlt != bgColor ? viewBgAlt : null)
-                            ?? Blend(bgColor, category, 0.45f);
+            var colHeader = headerBg ??
+                            (viewBgAlt != null && viewBgAlt != bgColor ? viewBgAlt : null) ??
+                            Blend(bgColor, category, 0.45f);
 
             var controlBorder = Blend(bgColor, subText, 0.25f);
 
@@ -297,10 +297,10 @@ public static class LinuxTheme
     private static Color? ParseKdeRgb(string value)
     {
         var parts = value.Split(',');
-        return parts.Length == 3
-               && byte.TryParse(parts[0].Trim(), out var r)
-               && byte.TryParse(parts[1].Trim(), out var g)
-               && byte.TryParse(parts[2].Trim(), out var b)
+        return parts.Length == 3 &&
+               byte.TryParse(parts[0].Trim(), out var r) &&
+               byte.TryParse(parts[1].Trim(), out var g) &&
+               byte.TryParse(parts[2].Trim(), out var b)
             ? Color.FromRgb(r, g, b)
             : null;
     }

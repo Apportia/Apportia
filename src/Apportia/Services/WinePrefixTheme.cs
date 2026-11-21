@@ -166,8 +166,8 @@ public static class WinePrefixTheme
         try
         {
             var text = File.ReadAllText(userReg);
-            return text.Contains($"\"Theme\"=\"{variant}\"", StringComparison.Ordinal)
-                   && text.Contains($"\"User\"=\"{user}\"", StringComparison.Ordinal);
+            return text.Contains($"\"Theme\"=\"{variant}\"", StringComparison.Ordinal) &&
+                   text.Contains($"\"User\"=\"{user}\"", StringComparison.Ordinal);
         }
         catch
         {

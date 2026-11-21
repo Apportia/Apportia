@@ -140,8 +140,8 @@ public static class PeReader
 
         return
         [
-            ..pngEntries.OrderByDescending(e => e.Size).Select(e => e.Variant),
-            ..dibEntries.OrderByDescending(e => e.Size).Select(e => e.Variant)
+            .. pngEntries.OrderByDescending(e => e.Size).Select(e => e.Variant),
+            .. dibEntries.OrderByDescending(e => e.Size).Select(e => e.Variant)
         ];
     }
 

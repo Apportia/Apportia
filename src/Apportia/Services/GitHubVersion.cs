@@ -18,7 +18,7 @@ public static class GitHubVersion
         if (start >= trimmed.Length)
             return string.Empty;
 
-        var parts = trimmed[start..].Split(['.', '-', '_', '+']);
+        var parts = trimmed[start..].Split('.', '-', '_', '+');
         var segments = new List<string>(4);
         foreach (var part in parts)
         {
