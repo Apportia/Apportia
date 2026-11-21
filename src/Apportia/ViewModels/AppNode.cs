@@ -171,7 +171,7 @@ public sealed class AppNode : INotifyPropertyChanged
     public bool RequiresJava { get; }
     public bool IsHighlighted => IsInstalled && Columns.HighlightInstalled;
     public bool HasUrl => !string.IsNullOrEmpty(Website);
-    public bool HasDownloadPath => !string.IsNullOrEmpty(DownloadPath);
+    public bool HasDownloadPath => !string.IsNullOrEmpty(DownloadPath) && !SameMainDomain(DownloadPath, Website);
     public bool IsCustom { get; }
     public bool IsIndented { get; set; }
 
@@ -296,6 +296,20 @@ public sealed class AppNode : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private static bool SameMainDomain(string a, string b)
+    {
+        var da = MainDomain(a);
+        return da.Length > 0 && da == MainDomain(b);
+    }
+
+    private static string MainDomain(string url)
+    {
+        if (string.IsNullOrEmpty(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return string.Empty;
+        var parts = uri.Host.Split('.');
+        return parts.Length < 2 ? uri.Host : string.Join('.', parts[^2..]);
+    }
 
     public void SetUpstreamUpdateDate(string date)
     {
