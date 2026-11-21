@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using Apportia.Text;
 
 namespace Apportia.Services;
 
@@ -63,11 +64,13 @@ public static class GitHubClient
 
     /// Atom fallback never carries assets. Pass allowAtomFallback: false when the caller
     /// needs assets, otherwise a transient API failure gets masked with an assetless release.
-    public static async Task<GhRelease?> FetchLatestReleaseAsync(
+    /// Error is populated only when the API call fails and no release is returned.
+    public static async Task<(GhRelease? Release, string? Error)> FetchLatestReleaseAsync(
         string repo,
         CancellationToken ct = default,
         bool allowAtomFallback = true)
     {
+        string? error = null;
         try
         {
             using var response = await Http.GetAsync(
@@ -75,19 +78,35 @@ public static class GitHubClient
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync(ct);
-                return JsonSerializer.Deserialize(json, GitHubJsonContext.Default.GhRelease);
+                return (JsonSerializer.Deserialize(json, GitHubJsonContext.Default.GhRelease), null);
             }
+
+            error = DescribeHttpError(response);
         }
-        catch
+        catch (Exception ex)
         {
-            // fall through to atom (or return null if the caller opted out)
+            error = ex.Message;
         }
 
         if (!allowAtomFallback)
-            return null;
+            return (null, error);
 
         var atom = await FetchAtomReleasesAsync(repo, ct);
-        return atom.Count > 0 ? atom[0] : null;
+        return (atom.Count > 0 ? atom[0] : null, atom.Count > 0 ? null : error);
+    }
+
+    private static string DescribeHttpError(HttpResponseMessage response)
+    {
+        var status = (int)response.StatusCode;
+        if (status == 404)
+            return UiText.Dialog.GitHubImportFetchFailedNotFound;
+        if (status == 403
+            && response.Headers.TryGetValues("x-ratelimit-remaining", out var remaining)
+            && remaining.Any(v => v == "0"))
+            return UiText.Dialog.GitHubImportFetchFailedRateLimit;
+        if (status == 401)
+            return UiText.Dialog.GitHubImportFetchFailedUnauthorized;
+        return string.Format(UiText.Dialog.GitHubImportFetchFailedHttpFormat, status, response.ReasonPhrase);
     }
 
     /// Newest first. Atom-fallback entries have no assets.

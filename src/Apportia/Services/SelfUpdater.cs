@@ -53,7 +53,7 @@ public static partial class SelfUpdater
 
         if (atom != null && Version.TryParse(atom.TagName, out var latest) && latest > current)
         {
-            var release = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
+            var (release, _) = await GitHubClient.FetchLatestReleaseAsync(Repo, ct);
             var asset = release?.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
             state.Pending = asset == null
                 ? null

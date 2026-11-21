@@ -87,6 +87,10 @@ public static class UiText
         public const string GitHubImportExtracting = "Extracting...";
         public const string GitHubImportExtractionFailed = "The asset could not be extracted.";
         public const string GitHubImportFetchFailed = "Could not fetch release. Check the repository name and your network.";
+        public const string GitHubImportFetchFailedHttpFormat = "GitHub API returned HTTP {0} {1}.";
+        public const string GitHubImportFetchFailedNotFound = "Repository not found or has no releases (HTTP 404).";
+        public const string GitHubImportFetchFailedRateLimit = "GitHub API rate limit exceeded (HTTP 403). Set GITHUB_TOKEN to raise the limit.";
+        public const string GitHubImportFetchFailedUnauthorized = "GitHub authentication failed (HTTP 401). Check GITHUB_TOKEN.";
         public const string GitHubImportFetching = "Fetching latest release...";
         public const string GitHubImportRetryingFormat = "Fetch failed, retrying ({0}/{1})...";
         public const string GitHubImportNoRelease = "No release found for this repository.";

@@ -67,14 +67,14 @@ public partial class GitHubImportDialog : Window
             ShowStatus(UiText.Dialog.GitHubImportFetching);
             FetchButton.IsEnabled = false;
 
-            var release = await FetchWithRetriesAsync($"{owner}/{repo}");
+            var (release, error) = await FetchWithRetriesAsync($"{owner}/{repo}");
 
             HideStatus();
             FetchButton.IsEnabled = true;
 
             if (release is null)
             {
-                ShowError(UiText.Dialog.GitHubImportFetchFailed);
+                ShowError(error is { Length: > 0 } ? error : UiText.Dialog.GitHubImportFetchFailed);
                 return;
             }
 
@@ -359,22 +359,23 @@ public partial class GitHubImportDialog : Window
         StatusText.IsVisible = false;
     }
 
-    private async Task<GhRelease?> FetchWithRetriesAsync(string repo)
+    private async Task<(GhRelease? Release, string? Error)> FetchWithRetriesAsync(string repo)
     {
         const int maxAttempts = 3;
+        (GhRelease? Release, string? Error) last = (null, null);
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            var release = await GitHubClient.FetchLatestReleaseAsync(repo, allowAtomFallback: false);
-            if (release is not null && release.Assets.Count > 0)
-                return release;
+            last = await GitHubClient.FetchLatestReleaseAsync(repo, allowAtomFallback: false);
+            if (last.Release is not null && last.Release.Assets.Count > 0)
+                return last;
             if (attempt == maxAttempts)
-                return release;
+                return last;
             ShowStatus(string.Format(UiText.Dialog.GitHubImportRetryingFormat, attempt, maxAttempts));
             await Task.Delay(TimeSpan.FromMilliseconds(500 * attempt));
             ShowStatus(UiText.Dialog.GitHubImportFetching);
         }
 
-        return null;
+        return last;
     }
 
     private static IEnumerable<string> SplitSegments(string? input)
