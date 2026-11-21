@@ -1,6 +1,8 @@
+using System.Text.RegularExpressions;
+
 namespace Apportia.Services;
 
-public static class AppExecutableService
+public static partial class AppExecutableService
 {
     public static void Save(string sectionName, string exeFileName, string defaultName)
     {
@@ -10,7 +12,7 @@ public static class AppExecutableService
 
     public static void Remove(string sectionName)
     {
-        // Fully drop the entry so a later sync doesn't resurrect it as a phantom install.
+        // Lest the next sync re-add it as a phantom install.
         CurrentAppService.Remove(sectionName);
     }
 
@@ -58,9 +60,33 @@ public static class AppExecutableService
                 return (exePath, []);
             }
             case > 1:
-                return (null, candidates.Select(c => Path.GetFileName(c)).ToArray());
+                return (null, candidates
+                              .Select(c => Path.GetFileName(c))
+                              .OrderBy(CandidateSortKey)
+                              .ToArray());
             default:
                 return (null, []);
         }
     }
+
+    private static (int Secondary, int Annotated, int Length, string Name) CandidateSortKey(string name)
+    {
+        var stem = Path.GetFileNameWithoutExtension(name);
+        var secondary = SecondaryTokenPattern().IsMatch(stem) ? 1 : 0;
+        var annotated = stem.IndexOfAny(['-', '_']) >= 0 ? 1 : 0;
+        return (secondary, annotated, stem.Length, name);
+    }
+
+    public static bool IsSecondaryName(string fileName)
+    {
+        return SecondaryTokenPattern().IsMatch(Path.GetFileNameWithoutExtension(fileName));
+    }
+
+    public static bool IsAnnotatedName(string fileName)
+    {
+        return Path.GetFileNameWithoutExtension(fileName).IndexOfAny(['-', '_']) >= 0;
+    }
+
+    [GeneratedRegex(@"(^|[^A-Za-z])(cli|helper)([^A-Za-z]|$)", RegexOptions.IgnoreCase)]
+    private static partial Regex SecondaryTokenPattern();
 }

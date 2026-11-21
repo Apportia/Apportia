@@ -439,6 +439,8 @@ public partial class CustomAppWindow : Window
                    ".cmd" => 3,
                    _ => 4
                })
+               .ThenBy(f => AppExecutableService.IsSecondaryName(f) ? 1 : 0)
+               .ThenBy(f => AppExecutableService.IsAnnotatedName(f) ? 1 : 0)
                .ThenBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase)
                .ToList();
     }
@@ -450,6 +452,8 @@ public partial class CustomAppWindow : Window
                .Select(f => new SourceItem(Path.GetRelativePath(rootDir, f), f))
                .OrderBy(s => Path.GetDirectoryName(s.Display) ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                .ThenBy(s => Path.GetExtension(s.FullPath).Equals(".dll", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+               .ThenBy(s => AppExecutableService.IsSecondaryName(s.FullPath) ? 1 : 0)
+               .ThenBy(s => AppExecutableService.IsAnnotatedName(s.FullPath) ? 1 : 0)
                .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
                .ToList();
     }
@@ -466,6 +470,8 @@ public partial class CustomAppWindow : Window
                    ".ico" => 1,
                    _ => 2
                })
+               .ThenBy(s => AppExecutableService.IsSecondaryName(s.FullPath) ? 1 : 0)
+               .ThenBy(s => AppExecutableService.IsAnnotatedName(s.FullPath) ? 1 : 0)
                .ThenBy(s => Path.GetFileName(s.Display), StringComparer.OrdinalIgnoreCase)
                .ToList();
     }
