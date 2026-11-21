@@ -26,6 +26,14 @@
         <NoWarn>$(NoWarn);IL2104</NoWarn>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true'">
+        <Compile Include="$(CompilerGeneratedFilesOutputPath)/Avalonia.Generators/**/*.g.cs" />
+    </ItemGroup>
+
     <ItemGroup>
         <AvaloniaResource Include="Assets/ProgramIcon.ico" />
         <AvaloniaResource Include="Assets/Emoji/**/*.svg" />
