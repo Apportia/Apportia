@@ -65,9 +65,7 @@ public static class RunningAppsService
         var failed = new List<int>();
         if (list.Count == 0)
             return failed;
-        foreach (var pid in SortLeafFirst(list))
-            if (!TryKill(pid) && ProcessStillAlive(pid))
-                failed.Add(pid);
+        failed.AddRange(SortLeafFirst(list).Where(pid => !TryKill(pid) && ProcessStillAlive(pid)));
         _ = Task.Run(Poll);
         return failed;
     }
@@ -467,7 +465,7 @@ public static class RunningAppsService
             HashSet<string> diff;
             lock (Gate)
             {
-                diff = new HashSet<string>(_running, StringComparer.OrdinalIgnoreCase);
+                diff = [with(StringComparer.OrdinalIgnoreCase), .. _running];
                 diff.SymmetricExceptWith(current);
                 _running = current;
             }

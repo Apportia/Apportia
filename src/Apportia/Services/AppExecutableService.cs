@@ -60,10 +60,11 @@ public static partial class AppExecutableService
                 return (exePath, []);
             }
             case > 1:
-                return (null, candidates
-                              .Select(c => Path.GetFileName(c))
-                              .OrderBy(CandidateSortKey)
-                              .ToArray());
+                return (null, [
+                    .. candidates
+                       .Select(c => Path.GetFileName(c))
+                       .OrderBy(CandidateSortKey)
+                ]);
             default:
                 return (null, []);
         }

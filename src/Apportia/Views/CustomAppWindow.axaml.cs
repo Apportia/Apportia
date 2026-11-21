@@ -17,8 +17,11 @@ namespace Apportia.Views;
 
 public partial class CustomAppWindow : Window
 {
-    private static readonly HashSet<string> RelevantExtensions = new(StringComparer.OrdinalIgnoreCase)
-        { ".exe", ".dll", ".bat", ".cmd", ".vbs", ".jar", ".ico", ".png" };
+    private static readonly HashSet<string> RelevantExtensions =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
+        ".exe", ".dll", ".bat", ".cmd", ".vbs", ".jar", ".ico", ".png"
+    ];
 
     private readonly string _appDir = string.Empty;
     private readonly string _initialDescription = string.Empty;
@@ -372,8 +375,11 @@ public partial class CustomAppWindow : Window
     {
         var prefix = category + " \u2013 ";
         var subs = _subCategoriesMap.TryGetValue(category, out var list) ? list : [];
-        var items = new List<string> { string.Empty };
-        items.AddRange(subs.Where(s => !s.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
+        List<string> items =
+        [
+            string.Empty,
+            .. subs.Where(s => !s.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        ];
         SubCategoryCombo.ItemsSource = items;
         SubCategoryCombo.SelectedItem = selectedSubCategory;
         if (SubCategoryCombo.SelectedIndex < 0)

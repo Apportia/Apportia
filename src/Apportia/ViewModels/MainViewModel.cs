@@ -262,17 +262,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (row is AppNode app)
             {
                 tileBatch.Add(app);
-                if (tileBatch.Count >= cols)
-                {
-                    newRows.Add(new GridTileRow(tileBatch.ToArray()));
-                    tileBatch.Clear();
-                }
+                if (tileBatch.Count < cols)
+                    continue;
+                newRows.Add(new GridTileRow([.. tileBatch]));
+                tileBatch.Clear();
             }
             else
             {
                 if (tileBatch.Count > 0)
                 {
-                    newRows.Add(new GridTileRow(tileBatch.ToArray()));
+                    newRows.Add(new GridTileRow([.. tileBatch]));
                     tileBatch.Clear();
                 }
 
@@ -281,7 +280,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         if (tileBatch.Count > 0)
-            newRows.Add(new GridTileRow(tileBatch.ToArray()));
+            newRows.Add(new GridTileRow([.. tileBatch]));
 
         GridRows.Clear();
         GridRows.AddRange(newRows);

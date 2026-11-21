@@ -74,9 +74,10 @@ public partial class RunArgsDialog : Window
     public RunChoice Choice { get; private set; } = RunChoice.Cancel;
 
     public string[] ArgsArray =>
-        Args.Select(a => a.Value.Trim())
-            .Where(s => !string.IsNullOrEmpty(s))
-            .ToArray();
+    [
+        .. Args.Select(a => a.Value.Trim())
+               .Where(s => !string.IsNullOrEmpty(s))
+    ];
 
     private void OnArgValueChanged(object? sender, PropertyChangedEventArgs e)
     {

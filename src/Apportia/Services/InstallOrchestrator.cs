@@ -79,7 +79,7 @@ public sealed class InstallOrchestrator(
                     return;
                 }
 
-                var indices = await ui.ShowJavaRequiredDialogAsync(node, available.Select(n => n.Name).ToArray());
+                var indices = await ui.ShowJavaRequiredDialogAsync(node, [.. available.Select(n => n.Name)]);
                 if (indices == null)
                     return;
 

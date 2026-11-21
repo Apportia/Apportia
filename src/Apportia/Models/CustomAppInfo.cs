@@ -113,7 +113,7 @@ public sealed class CustomAppInfoConverter : JsonConverter<CustomAppInfo>
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndArray)
-                return list.ToArray();
+                return [.. list];
             if (reader.TokenType != JsonTokenType.String)
                 throw new JsonException();
             list.Add(reader.GetString()!);

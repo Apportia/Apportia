@@ -710,6 +710,6 @@ public partial class VirusTotalDialog : Window
 
     private static EntryRow[] Filter(EntryRow[] rows)
     {
-        return rows.Where(r => !string.IsNullOrEmpty(r.Value)).ToArray();
+        return [.. rows.Where(r => !string.IsNullOrEmpty(r.Value))];
     }
 }

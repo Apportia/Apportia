@@ -34,10 +34,12 @@ public partial class JavaRequiredDialog : Window
             return;
         if (JavaList.ItemsSource is not string[] source)
             return;
-        SelectedIndices = selected.Cast<string>()
-                                  .Select(s => Array.IndexOf(source, s))
-                                  .Where(i => i >= 0)
-                                  .ToArray();
+        SelectedIndices =
+        [
+            .. selected.Cast<string>()
+                       .Select(s => Array.IndexOf(source, s))
+                       .Where(i => i >= 0)
+        ];
         Close();
     }
 

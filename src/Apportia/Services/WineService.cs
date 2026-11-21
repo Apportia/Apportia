@@ -7,7 +7,7 @@ namespace Apportia.Services;
 // Central resolver for the active Wine command and prefix. In System mode the "wine" on PATH
 // and ~/.wine are used; in Bundled mode Data/Linux/runners/<version>/bin/wine and
 // Data/Linux/prefixes/default.
-public static class WineService
+public static partial class WineService
 {
     public const long FallbackMinFreeBytes = 5L * 1024 * 1024 * 1024;
     public static readonly string FallbackPrefixDir = $"/tmp/apportia.{Environment.UserName}.wine";
@@ -18,14 +18,14 @@ public static class WineService
     public static readonly string PrefixesDir = Path.Combine(LinuxDir, "prefixes");
     public static readonly string DefaultPrefixDir = Path.Combine(PrefixesDir, "default");
 
-    private static readonly HashSet<string> CompatibleFsTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> CompatibleFsTypes =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "ext4", "ext3", "ext2", "ext2/ext3", "btrfs", "xfs", "zfs", "f2fs", "tmpfs"
-    };
+    ];
 
-    private static readonly Regex SharedObjectRegex = new(
-        @"/[\w./+\-]*\.so(?:\.\d+)*",
-        RegexOptions.Compiled);
+    [GeneratedRegex(@"/[\w./+\-]*\.so(?:\.\d+)*", RegexOptions.Compiled)]
+    private static partial Regex SharedObjectRegex { get; }
 
     public static string PrefixDir =>
         !IsBundled()

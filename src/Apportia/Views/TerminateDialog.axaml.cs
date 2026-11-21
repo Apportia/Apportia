@@ -1,7 +1,7 @@
-using System.Globalization;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using Apportia.Platform;
 using Apportia.Services;
 using Apportia.Text;

@@ -186,10 +186,12 @@ public partial class UpdateLeftoverFilesDialog : Window
 
     private void OnDelete(object? sender, RoutedEventArgs e)
     {
-        SelectedForDeletion = _allFiles
-                              .Where(f => f is { IsChecked: true, RelativePath: not null })
-                              .Select(f => f.RelativePath!)
-                              .ToArray();
+        SelectedForDeletion =
+        [
+            .. _allFiles
+               .Where(f => f is { IsChecked: true, RelativePath: not null })
+               .Select(f => f.RelativePath!)
+        ];
         Remember = RememberCheckBox.IsChecked == true;
         Confirmed = true;
         Close();

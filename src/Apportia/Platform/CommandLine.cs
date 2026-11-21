@@ -18,7 +18,7 @@ public sealed class CommandLine
         var original = Combine(args);
         if (!OperatingSystem.IsLinux())
             return new CommandLine(original, original);
-        var mapped = Combine(args.Select(ConvertArgForWine).ToArray());
+        var mapped = Combine([.. args.Select(ConvertArgForWine)]);
         return new CommandLine(original, mapped);
     }
 

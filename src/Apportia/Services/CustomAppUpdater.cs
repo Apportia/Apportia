@@ -93,7 +93,7 @@ public static class CustomAppUpdater
                         IReadOnlyList<string>? toDelete = null;
                         if (skipDialog)
                         {
-                            toDelete = info.LeftoverDelete.Intersect(leftovers, cmp).ToArray();
+                            toDelete = [.. info.LeftoverDelete.Intersect(leftovers, cmp)];
                         }
                         else if (ui != null)
                         {

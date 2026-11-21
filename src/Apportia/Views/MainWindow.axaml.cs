@@ -67,7 +67,7 @@ public partial class MainWindow : Window, IInstallUi
         ApplyPersistedShell();
 
         var cliArgs = Environment.GetCommandLineArgs();
-        _cliAppArgs = cliArgs.Length > 1 ? Environment.GetCommandLineArgs().Skip(1).ToArray() : [];
+        _cliAppArgs = cliArgs.Length > 1 ? [.. Environment.GetCommandLineArgs().Skip(1)] : [];
 
         Log.Clear();
 

@@ -154,8 +154,11 @@ public partial class LinuxSetupDialog : Window
 
     private void PopulateVersionCombo()
     {
-        var items = new List<string> { LatestKey };
-        items.AddRange(_releases.Select(r => r.Version));
+        List<string> items =
+        [
+            LatestKey,
+            .. _releases.Select(r => r.Version)
+        ];
         VersionCombo.ItemsSource = items;
 
         var settings = SettingsService.Load();

@@ -2,8 +2,9 @@ namespace Apportia.Services;
 
 public static class PluginService
 {
-    private static readonly HashSet<string> JavaSections = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> JavaSections =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "Ghostscript",
         "GPG",
         "GPGLegacy32bit",
@@ -15,10 +16,10 @@ public static class PluginService
         "OpenJDK64",
         "OpenJDKJRE",
         "OpenJDKJRE64"
-    };
+    ];
 
     private static readonly HashSet<string> PluginSections =
-        new(JavaSections.Append("Ghostscript"), StringComparer.OrdinalIgnoreCase);
+        [with(StringComparer.OrdinalIgnoreCase), .. JavaSections.Append("Ghostscript")];
 
     public static bool IsPlugin(string sectionName)
     {
